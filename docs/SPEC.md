@@ -61,7 +61,7 @@ We need to change the logo theme color. Put reqs, acceptance criteria or definit
 - tags are denoted by braces. (Ex. [p1])
 - Reserved tags
   - [p1][p2][p3][p4][p5][p6][p7]... - These are priority tags. [p1] is the highest priority. Most users will likely only use [p1], [p2] and [p3] but SIMBL can support up to [p9]. A task can have only zero or one [p#] tags in it.
-  - [canceled] - a decision was made to cancel this task
+  - [canceled] - a decision was made to cancel this task. a task with this tag can only exist under the `# Done` heading or in the archive file.
   - [child-of-#] - is a subtask of another task–has a parent. Changes to the parent should cascade to the child. a task may have only one parent.
   - [depends-on-#] - shows dependancy. this task should not be worked until all know deps are done. (can have multiple)
   - [in-progress] - added when a task is being worked on and is not yet done or canceled.

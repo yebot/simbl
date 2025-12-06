@@ -4,6 +4,13 @@ import { findSimblDir, getSimblPaths } from '../../core/config.ts';
 import { parseSimblFile, serializeSimblFile, findTaskById } from '../../core/parser.ts';
 import { parseReservedTags, deriveStatus } from '../../core/task.ts';
 
+/**
+ * Check if a tag is a priority tag (p1-p9)
+ */
+function isPriorityTag(tag: string): boolean {
+  return /^p[1-9]$/.test(tag);
+}
+
 const addTagCommand = defineCommand({
   meta: {
     name: 'add',
@@ -48,6 +55,17 @@ const addTagCommand = defineCommand({
       process.exit(1);
     }
 
+    // If adding a priority tag, remove any existing priority tag first
+    // (A task can have only zero or one priority tag)
+    let removedPriority: string | null = null;
+    if (isPriorityTag(tag)) {
+      const existingPriority = task.tags.find(isPriorityTag);
+      if (existingPriority) {
+        task.tags = task.tags.filter((t) => t !== existingPriority);
+        removedPriority = existingPriority;
+      }
+    }
+
     // Add tag
     task.tags.push(tag);
 
@@ -59,7 +77,11 @@ const addTagCommand = defineCommand({
     const newContent = serializeSimblFile(file);
     writeFileSync(paths.tasks, newContent, 'utf-8');
 
-    console.log(`✓ Added [${tag}] to "${args.id}"`);
+    if (removedPriority) {
+      console.log(`✓ Added [${tag}] to "${args.id}" (replaced [${removedPriority}])`);
+    } else {
+      console.log(`✓ Added [${tag}] to "${args.id}"`);
+    }
   },
 });
 

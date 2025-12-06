@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "bun run src/index.ts",
     "build": "bun build --compile --target=bun-darwin-arm64 --outfile=dist/simbl src/index.ts",
+    "build:x64": "bun build --compile --target=bun-darwin-x64 --outfile=dist/simbl-x64 src/index.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

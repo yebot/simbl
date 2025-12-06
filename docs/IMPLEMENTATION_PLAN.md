@@ -179,11 +179,12 @@ Task modification:
 - [x] Interactive add task flow
 - [x] Interactive mark done flow
 
-### Phase 7: Build & Distribution
+### Phase 7: Build & Distribution ✓
 
-- [ ] `bun build --compile --target=bun-darwin-arm64`
-- [ ] Binary naming and versioning
-- [ ] Installation instructions
+- [x] `bun build --compile --target=bun-darwin-arm64`
+- [x] x86_64 build script (`bun run build:x64`)
+- [x] README with installation instructions
+- [x] Binary outputs to `dist/simbl`
 
 ### Phase 8: finalize, documentation
 

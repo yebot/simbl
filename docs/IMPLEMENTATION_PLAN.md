@@ -1,5 +1,7 @@
 # SIMBL Implementation Plan
 
+> **Historical Record**: This implementation plan was completed on December 6, 2025. All phases (1-8) have been implemented. This document should be treated as a historical record of the project's development, not an active roadmap. Future enhancements should be tracked separately.
+
 ## Stack
 
 | Component     | Choice           | Rationale                                            |
@@ -186,10 +188,10 @@ Task modification:
 - [x] README with installation instructions
 - [x] Binary outputs to `dist/simbl`
 
-### Phase 8: finalize, documentation
+### Phase 8: Finalize & Documentation ✓
 
-- [ ] add a note to the top of this plan file to inform future instances of agentic coding tools that this was completed on a specific date and should be considered a historical record.
-- [ ] Provide the human owner of this project a readme that describes how to perform HITL testing of SIMBL.
+- [x] Added historical record note to top of this file
+- [x] Created HITL testing guide (docs/TESTING.md)
 
 ## Type Definitions
 

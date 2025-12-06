@@ -48,12 +48,14 @@ TASK MODIFICATION
   simbl update <id> --content "..."  # replace task content
   simbl update <id> --append "..."   # append to task content
 
-RELATIONSHIPS (coming soon)
+RELATIONSHIPS
 
   simbl relate <id> --parent <parent-id>      # set parent task
   simbl relate <id> --depends-on <dep-id>     # add dependency
   simbl unrelate <id> --parent                # remove parent
   simbl unrelate <id> --depends-on <dep-id>   # remove dependency
+
+  Circular dependencies are automatically detected and prevented.
 
 TAG REFERENCE
 

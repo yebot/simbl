@@ -9,6 +9,8 @@ import { doneCommand } from './cli/commands/done.ts';
 import { cancelCommand } from './cli/commands/cancel.ts';
 import { tagCommand } from './cli/commands/tag.ts';
 import { updateCommand } from './cli/commands/update.ts';
+import { relateCommand } from './cli/commands/relate.ts';
+import { unrelateCommand } from './cli/commands/unrelate.ts';
 import { usageCommand } from './cli/commands/usage.ts';
 import { doctorCommand } from './cli/commands/doctor.ts';
 
@@ -27,6 +29,8 @@ const main = defineCommand({
     cancel: cancelCommand,
     tag: tagCommand,
     update: updateCommand,
+    relate: relateCommand,
+    unrelate: unrelateCommand,
     usage: usageCommand,
     doctor: doctorCommand,
   },
@@ -43,16 +47,18 @@ if (!hasSubCommand) {
   console.log('Usage: simbl <command>');
   console.log('');
   console.log('Commands:');
-  console.log('  init     Initialize a new SIMBL instance');
-  console.log('  add      Add a new task');
-  console.log('  list     List tasks');
-  console.log('  show     Show a single task');
-  console.log('  done     Mark task as done');
-  console.log('  cancel   Mark task as canceled');
-  console.log('  tag      Manage task tags (add/remove)');
-  console.log('  update   Update task title or content');
-  console.log('  usage    Show detailed usage information');
-  console.log('  doctor   Validate tasks.md structure');
+  console.log('  init      Initialize a new SIMBL instance');
+  console.log('  add       Add a new task');
+  console.log('  list      List tasks');
+  console.log('  show      Show a single task');
+  console.log('  done      Mark task as done');
+  console.log('  cancel    Mark task as canceled');
+  console.log('  tag       Manage task tags (add/remove)');
+  console.log('  update    Update task title or content');
+  console.log('  relate    Create task relationships');
+  console.log('  unrelate  Remove task relationships');
+  console.log('  usage     Show detailed usage information');
+  console.log('  doctor    Validate tasks.md structure');
   console.log('');
   console.log('Run "simbl <command> --help" for more information.');
   console.log('');

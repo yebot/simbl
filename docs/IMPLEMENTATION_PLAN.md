@@ -163,12 +163,13 @@ Task modification:
 - [x] `simbl update <id> --title <new>` - update task title
 - [x] `simbl update <id> --content` - update task content
 
-### Phase 5: Relationships
+### Phase 5: Relationships ✓
 
-- [ ] Parent-child: `simbl relate --parent`
-- [ ] Dependencies: `simbl relate --depends-on`
-- [ ] Cascade behavior (parent changes affect children)
-- [ ] Validation (no circular dependencies)
+- [x] Parent-child: `simbl relate --parent`
+- [x] Dependencies: `simbl relate --depends-on`
+- [x] `simbl unrelate` to remove relationships
+- [x] Validation (no circular dependencies)
+- [ ] Cascade behavior (parent changes affect children) - deferred
 
 ### Phase 6: TUI
 

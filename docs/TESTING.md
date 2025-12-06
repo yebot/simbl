@@ -9,6 +9,66 @@ cd /path/to/simbl
 bun install
 ```
 
+## Installation Options
+
+### Option 1: Compiled Binary (Recommended)
+
+Build and install the standalone binary:
+
+```bash
+# Build the binary
+bun run build
+
+# Copy to a directory in your PATH
+sudo cp dist/simbl /usr/local/bin/
+
+# Or for user-local install (no sudo):
+mkdir -p ~/.local/bin
+cp dist/simbl ~/.local/bin/
+# Add to PATH if not already (add to ~/.zshrc or ~/.bashrc):
+# export PATH="$HOME/.local/bin:$PATH"
+
+# Verify installation
+simbl --help
+```
+
+### Option 2: Symlink to Source (Development)
+
+Create a symlink that runs via Bun:
+
+```bash
+# Create a wrapper script
+cat > /usr/local/bin/simbl << 'EOF'
+#!/bin/bash
+bun run /path/to/simbl/src/index.ts "$@"
+EOF
+chmod +x /usr/local/bin/simbl
+
+# Or symlink directly (requires bun in PATH)
+sudo ln -s /path/to/simbl/src/index.ts /usr/local/bin/simbl
+```
+
+### Option 3: Shell Alias (Quick Setup)
+
+Add to your `~/.zshrc` or `~/.bashrc`:
+
+```bash
+alias simbl="bun run /path/to/simbl/src/index.ts"
+```
+
+Then reload: `source ~/.zshrc`
+
+### Option 4: npm/bun link (Development)
+
+```bash
+cd /path/to/simbl
+bun link
+
+# Now 'simbl' is available globally via bun
+```
+
+---
+
 ## Test Environment Setup
 
 Create a fresh test directory:
@@ -19,8 +79,6 @@ mkdir /tmp/simbl-test && cd /tmp/simbl-test
 
 Run commands using:
 ```bash
-bun run /path/to/simbl/src/index.ts <command>
-# Or if installed:
 simbl <command>
 ```
 

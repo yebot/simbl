@@ -13,6 +13,7 @@ import { relateCommand } from './cli/commands/relate.ts';
 import { unrelateCommand } from './cli/commands/unrelate.ts';
 import { usageCommand } from './cli/commands/usage.ts';
 import { doctorCommand } from './cli/commands/doctor.ts';
+import { runTuiMenu } from './cli/tui/menu.ts';
 
 const main = defineCommand({
   meta: {
@@ -41,28 +42,8 @@ const args = process.argv.slice(2);
 const hasSubCommand = args.length > 0 && !args[0].startsWith('-');
 
 if (!hasSubCommand) {
-  // No subcommand - show TUI menu (for now, show help)
-  console.log('SIMBL - Simple Backlog');
-  console.log('');
-  console.log('Usage: simbl <command>');
-  console.log('');
-  console.log('Commands:');
-  console.log('  init      Initialize a new SIMBL instance');
-  console.log('  add       Add a new task');
-  console.log('  list      List tasks');
-  console.log('  show      Show a single task');
-  console.log('  done      Mark task as done');
-  console.log('  cancel    Mark task as canceled');
-  console.log('  tag       Manage task tags (add/remove)');
-  console.log('  update    Update task title or content');
-  console.log('  relate    Create task relationships');
-  console.log('  unrelate  Remove task relationships');
-  console.log('  usage     Show detailed usage information');
-  console.log('  doctor    Validate tasks.md structure');
-  console.log('');
-  console.log('Run "simbl <command> --help" for more information.');
-  console.log('');
-  console.log('(TUI mode coming soon - just run "simbl" with no args)');
+  // No subcommand - launch interactive TUI menu
+  runTuiMenu();
 } else {
   runMain(main);
 }

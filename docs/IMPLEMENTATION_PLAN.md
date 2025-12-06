@@ -171,11 +171,13 @@ Task modification:
 - [x] Validation (no circular dependencies)
 - [ ] Cascade behavior (parent changes affect children) - deferred
 
-### Phase 6: TUI
+### Phase 6: TUI ✓
 
-- [ ] Main menu (`simbl` with no args)
-- [ ] Archive flow (multi-select done tasks)
-- [ ] Confirm dialogs for destructive actions
+- [x] Main menu (`simbl` with no args)
+- [x] Archive flow (multi-select done tasks)
+- [x] Task summary display
+- [x] Interactive add task flow
+- [x] Interactive mark done flow
 
 ### Phase 7: Build & Distribution
 

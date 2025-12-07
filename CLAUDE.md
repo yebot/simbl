@@ -64,3 +64,4 @@ Uses remark (unified ecosystem) for parsing. The parser must:
 - TUI is reserved for `simbl` with no args (human mode)
 - Config and tasks files use `findSimblDir()` to walk up from cwd
 - Task IDs are `{prefix}-{n}` with auto-increment
+- Always stop the Bun http server when done with todo list.

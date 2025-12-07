@@ -7,6 +7,20 @@ import { runArchiveFlow } from './archive.ts';
 type MenuAction = 'list' | 'add' | 'done' | 'archive' | 'doctor' | 'quit';
 
 /**
+ * Get the command to run simbl (works in both dev and production)
+ */
+function getSimblCommand(): string[] {
+  // Check if running as a compiled binary (no .ts extension in main script)
+  const isCompiled = !process.argv[1]?.endsWith('.ts');
+  if (isCompiled) {
+    // Use the current executable
+    return [process.execPath];
+  }
+  // Development mode: use bun run
+  return ['bun', 'run', process.argv[1]];
+}
+
+/**
  * Display task summary
  */
 function showTaskSummary(simblDir: string) {
@@ -92,7 +106,7 @@ async function addTaskFlow(_simblDir: string): Promise<void> {
   if (p.isCancel(priority)) return;
 
   // Build command args
-  const args = ['run', 'src/index.ts', 'add', title as string];
+  const args = [...getSimblCommand(), 'add', title as string];
   if (priority) {
     args.push('-p', priority as string);
   }
@@ -132,7 +146,7 @@ async function markDoneFlow(simblDir: string): Promise<void> {
 
   if (p.isCancel(taskId)) return;
 
-  const result = Bun.spawnSync(['bun', 'run', 'src/index.ts', 'done', taskId as string], {
+  const result = Bun.spawnSync([...getSimblCommand(), 'done', taskId as string], {
     cwd: process.cwd(),
     stdout: 'inherit',
     stderr: 'inherit',
@@ -147,7 +161,7 @@ async function markDoneFlow(simblDir: string): Promise<void> {
  * Run doctor validation
  */
 function runDoctor(): void {
-  Bun.spawnSync(['bun', 'run', 'src/index.ts', 'doctor'], {
+  Bun.spawnSync([...getSimblCommand(), 'doctor'], {
     cwd: process.cwd(),
     stdout: 'inherit',
     stderr: 'inherit',
@@ -174,7 +188,7 @@ export async function runTuiMenu(): Promise<void> {
     }
 
     // Run init
-    Bun.spawnSync(['bun', 'run', 'src/index.ts', 'init'], {
+    Bun.spawnSync([...getSimblCommand(), 'init'], {
       cwd: process.cwd(),
       stdout: 'inherit',
       stderr: 'inherit',

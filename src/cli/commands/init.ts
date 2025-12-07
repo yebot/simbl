@@ -72,14 +72,31 @@ export const initCommand = defineCommand({
     // Initialize the directory
     const simblDir = initSimblDir(cwd);
 
-    // If prefix was provided, update config
+    // Determine prefix: CLI arg > interactive prompt > default
+    let prefix = 'task';
     if (args.prefix) {
-      const config = loadConfig(simblDir);
-      config.prefix = args.prefix;
-      saveConfig(simblDir, config);
+      prefix = args.prefix;
+    } else {
+      const prefixInput = await p.text({
+        message: 'Task ID prefix (e.g., "task" → task-1, task-2)',
+        placeholder: 'task',
+        defaultValue: 'task',
+      });
+
+      if (p.isCancel(prefixInput)) {
+        p.outro('Setup cancelled');
+        process.exit(0);
+      }
+
+      if (prefixInput && prefixInput.trim()) {
+        prefix = prefixInput.trim();
+      }
     }
 
+    // Update config with chosen prefix
     const config = loadConfig(simblDir);
+    config.prefix = prefix;
+    saveConfig(simblDir, config);
 
     // Show what was created
     p.log.success(`Created ${SIMBL_DIR}/config.yaml (prefix: "${config.prefix}")`);

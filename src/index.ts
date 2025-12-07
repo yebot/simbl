@@ -13,6 +13,7 @@ import { relateCommand } from './cli/commands/relate.ts';
 import { unrelateCommand } from './cli/commands/unrelate.ts';
 import { usageCommand } from './cli/commands/usage.ts';
 import { doctorCommand } from './cli/commands/doctor.ts';
+import { serveCommand } from './cli/commands/serve.ts';
 import { runTuiMenu } from './cli/tui/menu.ts';
 
 const main = defineCommand({
@@ -34,6 +35,7 @@ const main = defineCommand({
     unrelate: unrelateCommand,
     usage: usageCommand,
     doctor: doctorCommand,
+    serve: serveCommand,
   },
 });
 

@@ -3,6 +3,22 @@ import { readFileSync, writeFileSync } from 'fs';
 import { findSimblDir, getSimblPaths } from '../../core/config.ts';
 import { parseSimblFile, serializeSimblFile, findTaskById } from '../../core/parser.ts';
 
+/**
+ * Normalize heading levels in content.
+ * Task content must use H3+ (H1 is for sections, H2 is for tasks).
+ * This shifts all headings down by 2 levels:
+ *   # H1 → ### H3
+ *   ## H2 → #### H4
+ *   ### H3 → ##### H5
+ */
+function normalizeHeadings(content: string): string {
+  return content.replace(/^(#{1,6})\s/gm, (_match, hashes) => {
+    const level = hashes.length;
+    const newLevel = Math.min(level + 2, 6); // Cap at H6
+    return '#'.repeat(newLevel) + ' ';
+  });
+}
+
 export const updateCommand = defineCommand({
   meta: {
     name: 'update',
@@ -62,15 +78,16 @@ export const updateCommand = defineCommand({
     }
 
     if (args.content) {
-      task.content = args.content;
+      task.content = normalizeHeadings(args.content);
       changes.push('content');
     }
 
     if (args.append) {
+      const normalizedAppend = normalizeHeadings(args.append);
       if (task.content) {
-        task.content = task.content + '\n\n' + args.append;
+        task.content = task.content + '\n\n' + normalizedAppend;
       } else {
-        task.content = args.append;
+        task.content = normalizedAppend;
       }
       changes.push('content (appended)');
     }

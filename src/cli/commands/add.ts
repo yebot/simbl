@@ -5,6 +5,19 @@ import { parseSimblFile, serializeSimblFile } from '../../core/parser.ts';
 import { generateNextId } from '../../utils/id.ts';
 import { parseTagLine, parseReservedTags, deriveStatus, type Task } from '../../core/task.ts';
 
+/**
+ * Normalize heading levels in content.
+ * Task content must use H3+ (H1 is for sections, H2 is for tasks).
+ * This shifts all headings down by 2 levels.
+ */
+function normalizeHeadings(content: string): string {
+  return content.replace(/^(#{1,6})\s/gm, (_match, hashes) => {
+    const level = hashes.length;
+    const newLevel = Math.min(level + 2, 6);
+    return '#'.repeat(newLevel) + ' ';
+  });
+}
+
 export const addCommand = defineCommand({
   meta: {
     name: 'add',
@@ -87,7 +100,8 @@ export const addCommand = defineCommand({
     // Build task content
     let taskContent = '';
     if (args.content) {
-      taskContent = `### Description\n\n${args.content}`;
+      const normalizedContent = normalizeHeadings(args.content);
+      taskContent = `### Description\n\n${normalizedContent}`;
     }
 
     // Create task object

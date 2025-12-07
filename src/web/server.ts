@@ -3,7 +3,8 @@ import { findSimblDir, getSimblPaths, loadConfig } from '../core/config.ts';
 import { parseSimblFile, getAllTasks, serializeSimblFile } from '../core/parser.ts';
 import { parseReservedTags, deriveStatus, type Task } from '../core/task.ts';
 import { generateNextId } from '../utils/id.ts';
-import { renderPage, renderTaskTable, renderTagCloud, renderTaskModal, renderAddTaskForm, shiftHeadingsForStorage, renderViewTabs } from './templates.ts';
+import { renderTaskTable, renderTagCloud, renderTaskModal, renderAddTaskForm, shiftHeadingsForStorage, renderViewTabs } from './templates.ts';
+import { renderPage } from './page.ts';
 import type { ServerWebSocket } from 'bun';
 
 // Track connected WebSocket clients
@@ -166,7 +167,9 @@ export async function startServer(options: ServerOptions): Promise<void> {
         // GET / - Main page
         if (path === '/' && req.method === 'GET') {
           const file = loadTasks();
-          return new Response(renderPage(file), {
+          const simblDir = findSimblDir()!;
+          const config = loadConfig(simblDir);
+          return new Response(renderPage(file, config.name), {
             headers: { 'Content-Type': 'text/html' },
           });
         }

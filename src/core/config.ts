@@ -6,6 +6,8 @@ import yaml from 'js-yaml';
  * SIMBL configuration schema
  */
 export interface SimblConfig {
+  /** Project name */
+  name: string;
   /** Task ID prefix (default: "task") */
   prefix: string;
 }
@@ -14,6 +16,7 @@ export interface SimblConfig {
  * Default configuration values
  */
 export const DEFAULT_CONFIG: SimblConfig = {
+  name: '',
   prefix: 'task',
 };
 

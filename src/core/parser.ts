@@ -30,6 +30,12 @@ export function stringifyMarkdown(ast: Root): string {
       emphasis: '*',
       strong: '*',
       listItemIndent: 'one',
+      handlers: {
+        // Prevent escaping of [ in text nodes (for checkbox lists like "- [ ] item")
+        text(node: { value: string }) {
+          return node.value;
+        },
+      },
     });
   return processor.stringify(ast);
 }

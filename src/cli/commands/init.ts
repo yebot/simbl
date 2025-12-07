@@ -1,7 +1,7 @@
 import { defineCommand } from 'citty';
 import * as p from '@clack/prompts';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { join, basename } from 'path';
 import { SIMBL_DIR, initSimblDir, loadConfig, saveConfig } from '../../core/config.ts';
 
 /**
@@ -47,6 +47,11 @@ export const initCommand = defineCommand({
       description: 'Reinitialize even if .simbl already exists',
       default: false,
     },
+    name: {
+      type: 'string',
+      alias: 'n',
+      description: 'Project name',
+    },
     prefix: {
       type: 'string',
       alias: 'p',
@@ -72,6 +77,30 @@ export const initCommand = defineCommand({
     // Initialize the directory
     const simblDir = initSimblDir(cwd);
 
+    // Get the directory name as default project name
+    const dirName = basename(cwd);
+
+    // Determine name: CLI arg > interactive prompt > directory name
+    let name = dirName;
+    if (args.name) {
+      name = args.name;
+    } else {
+      const nameInput = await p.text({
+        message: 'Project name',
+        placeholder: dirName,
+        defaultValue: dirName,
+      });
+
+      if (p.isCancel(nameInput)) {
+        p.outro('Setup cancelled');
+        process.exit(0);
+      }
+
+      if (nameInput && nameInput.trim()) {
+        name = nameInput.trim();
+      }
+    }
+
     // Determine prefix: CLI arg > interactive prompt > default
     let prefix = 'task';
     if (args.prefix) {
@@ -93,13 +122,14 @@ export const initCommand = defineCommand({
       }
     }
 
-    // Update config with chosen prefix
+    // Update config with chosen values
     const config = loadConfig(simblDir);
+    config.name = name;
     config.prefix = prefix;
     saveConfig(simblDir, config);
 
     // Show what was created
-    p.log.success(`Created ${SIMBL_DIR}/config.yaml (prefix: "${config.prefix}")`);
+    p.log.success(`Created ${SIMBL_DIR}/config.yaml (name: "${config.name}", prefix: "${config.prefix}")`);
     p.log.success(`Created ${SIMBL_DIR}/tasks.md`);
     p.log.success(`Created ${SIMBL_DIR}/tasks-archive.md`);
 

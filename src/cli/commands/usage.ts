@@ -18,6 +18,7 @@ COMMANDS
   simbl update <id>         Update task title or content
   simbl usage               Show this help
   simbl doctor              Validate tasks.md structure
+  simbl serve               Start web UI (HTMX-powered browser interface)
 
 ADDING TASKS
 
@@ -56,6 +57,12 @@ RELATIONSHIPS
   simbl unrelate <id> --depends-on <dep-id>   # remove dependency
 
   Circular dependencies are automatically detected and prevented.
+
+WEB UI
+
+  simbl serve                       # start server on port 3497
+  simbl serve -o                    # start and open browser
+  simbl serve -p 8080               # use custom port
 
 TAG REFERENCE
 

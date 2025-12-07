@@ -8,7 +8,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 bun run dev                    # Run CLI in development
 bun run src/index.ts <cmd>     # Run specific command
 bun run typecheck              # TypeScript type checking
-bun run build                  # Compile to macOS binary (dist/simbl)
+bun run build                  # Compile to macOS ARM binary (dist/simbl)
+bun run build:x64              # Compile to macOS Intel binary (dist/simbl-x64)
+bun run build-and-install      # Build and copy to /usr/local/bin
 ```
 
 ## Architecture
@@ -21,6 +23,7 @@ SIMBL is a CLI backlog manager that stores tasks in a structured markdown file.
 - **src/core/task.ts** - Task type definitions and tag parsing. Tags use bracket notation `[tag]` with reserved tags for priority (`[p1]`-`[p9]`), relationships (`[child-of-X]`, `[depends-on-X]`), and status (`[in-progress]`, `[canceled]`, `[refined]`).
 - **src/core/config.ts** - YAML config handling. Walks up directory tree to find `.simbl/` folder. Default prefix is "task" for IDs like `task-1`.
 - **src/cli/commands/** - One file per command using citty's `defineCommand`.
+- **src/web/** - HTMX-powered browser UI. `server.ts` is a Bun HTTP server with WebSocket for live updates when tasks.md changes. `templates.ts` renders HTML components.
 
 ### Data Model
 

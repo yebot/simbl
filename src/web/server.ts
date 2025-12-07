@@ -3,7 +3,7 @@ import { findSimblDir, getSimblPaths, loadConfig } from '../core/config.ts';
 import { parseSimblFile, getAllTasks, serializeSimblFile } from '../core/parser.ts';
 import { parseReservedTags, deriveStatus, type Task } from '../core/task.ts';
 import { generateNextId } from '../utils/id.ts';
-import { renderTaskTable, renderTagCloud, renderTaskModal, renderAddTaskForm, shiftHeadingsForStorage, renderViewTabs } from './templates.ts';
+import { renderTaskTable, renderTagCloud, renderPriorityFilter, renderStatusFilter, renderTaskModal, renderAddTaskForm, shiftHeadingsForStorage } from './templates.ts';
 import { renderPage } from './page.ts';
 import type { ServerWebSocket } from 'bun';
 
@@ -124,12 +124,16 @@ export async function startServer(options: ServerOptions): Promise<void> {
       const backlogTasks = file.backlog;
 
       // Send fresh task table HTML to all clients
-      const html = renderViewTabs('backlog') + renderTaskTable(backlogTasks);
+      const html = renderTaskTable(backlogTasks);
       const tagCloudHtml = renderTagCloud(allTasks);
+      const priorityFilterHtml = renderPriorityFilter(allTasks);
+      const statusFilterHtml = renderStatusFilter();
 
       // HTMX expects messages as HTML that will be swapped
       const message = `<div id="tasks-container" hx-swap-oob="true">${html}</div>
-<div id="tag-cloud" hx-swap-oob="true">${tagCloudHtml.replace('<div id="tag-cloud">', '').replace('</div>', '')}</div>`;
+<div id="tag-cloud" hx-swap-oob="true">${tagCloudHtml.replace('<div id="tag-cloud">', '').replace('</div>', '')}</div>
+<div id="priority-filter" hx-swap-oob="true">${priorityFilterHtml.replace('<div id="priority-filter">', '').replace('</div>', '')}</div>
+<div id="status-filter" hx-swap-oob="true">${statusFilterHtml.replace('<div id="status-filter">', '').replace('</div>', '')}</div>`;
 
       for (const client of wsClients) {
         client.send(message);
@@ -177,10 +181,21 @@ export async function startServer(options: ServerOptions): Promise<void> {
         // GET /tasks - Task list partial (for HTMX)
         if (path === '/tasks' && req.method === 'GET') {
           const file = loadTasks();
+          const allTasks = getAllTasks(file);
 
-          // View filter (backlog or done)
-          const view = (url.searchParams.get('view') || 'backlog') as 'backlog' | 'done';
-          let tasks = view === 'done' ? file.done : file.backlog;
+          // Status filter determines which tasks to show
+          const statusFilter = url.searchParams.get('status');
+          let tasks: Task[];
+          if (statusFilter === 'in-progress') {
+            // Show tasks with in-progress status from backlog
+            tasks = file.backlog.filter((t) => t.status === 'in-progress');
+          } else if (statusFilter === 'done') {
+            // Show done tasks
+            tasks = file.done;
+          } else {
+            // Default: show backlog tasks only (not done)
+            tasks = file.backlog;
+          }
 
           // Search filter
           const searchQuery = url.searchParams.get('q')?.toLowerCase().trim();
@@ -199,16 +214,27 @@ export async function startServer(options: ServerOptions): Promise<void> {
             tasks = tasks.filter((t) => t.tags.includes(tagFilter));
           }
 
+          // Priority filter
+          const priorityParam = url.searchParams.get('priority');
+          const priorityFilter = priorityParam ? parseInt(priorityParam, 10) : undefined;
+          if (priorityFilter !== undefined && !isNaN(priorityFilter)) {
+            tasks = tasks.filter((t) => t.reserved.priority === priorityFilter);
+          }
+
           const sortBy = url.searchParams.get('sort') || 'id';
           const sortDir = (url.searchParams.get('dir') || 'asc') as 'asc' | 'desc';
 
-          // Build response with view tabs + task table
-          let response = renderViewTabs(view);
-          response += renderTaskTable(tasks, sortBy, sortDir, searchQuery || undefined, tagFilter || undefined, view);
+          // Build response with task table only
+          let response = renderTaskTable(tasks, sortBy, sortDir, searchQuery || undefined, tagFilter || undefined, priorityFilter, statusFilter || undefined);
 
           // Include tag cloud OOB swap to update active state
-          const allTasks = getAllTasks(file);
           response += `\n<div id="tag-cloud" hx-swap-oob="true">${renderTagCloud(allTasks, tagFilter || undefined).replace('<div id="tag-cloud">', '').replace('</div>', '')}</div>`;
+
+          // Include priority filter OOB swap to update active state
+          response += `\n<div id="priority-filter" hx-swap-oob="true">${renderPriorityFilter(allTasks, priorityFilter).replace('<div id="priority-filter">', '').replace('</div>', '')}</div>`;
+
+          // Include status filter OOB swap to update active state
+          response += `\n<div id="status-filter" hx-swap-oob="true">${renderStatusFilter(statusFilter || undefined).replace('<div id="status-filter">', '').replace('</div>', '')}</div>`;
 
           return new Response(response, {
             headers: { 'Content-Type': 'text/html' },
@@ -336,7 +362,7 @@ export async function startServer(options: ServerOptions): Promise<void> {
           // Return updated task list + close modal
           return new Response(
             `<div id="modal-container" hx-swap-oob="true"></div>
-             ${renderViewTabs('backlog')}${renderTaskTable(file.backlog)}`,
+             ${renderTaskTable(file.backlog)}`,
             { headers: { 'Content-Type': 'text/html' } }
           );
         }
@@ -366,23 +392,66 @@ export async function startServer(options: ServerOptions): Promise<void> {
           });
         }
 
-        // POST /task/:id/backlog - Move task back to backlog (restore)
+        // POST /task/:id/in-progress - Add in-progress tag (from backlog or done)
+        if (path.match(/^\/task\/[^/]+\/in-progress$/) && req.method === 'POST') {
+          const id = path.split('/')[2];
+          const file = loadTasks();
+
+          // Check if task is in backlog first
+          let task = file.backlog.find((t) => t.id === id);
+          if (task) {
+            // Task is in backlog - just add in-progress tag
+            if (!task.tags.includes('in-progress')) {
+              task.tags.push('in-progress');
+              task.reserved = parseReservedTags(task.tags);
+              task.status = deriveStatus('backlog', task.reserved);
+              saveTasks(file);
+            }
+          } else {
+            // Check if task is in done
+            const taskIndex = file.done.findIndex((t) => t.id === id);
+            if (taskIndex === -1) {
+              return new Response('Task not found', { status: 404 });
+            }
+
+            // Move from done to backlog with in-progress tag
+            task = file.done.splice(taskIndex, 1)[0];
+            task.section = 'backlog';
+            if (!task.tags.includes('in-progress')) {
+              task.tags.push('in-progress');
+            }
+            task.reserved = parseReservedTags(task.tags);
+            task.status = deriveStatus('backlog', task.reserved);
+            file.backlog.push(task);
+            saveTasks(file);
+          }
+
+          // Return updated modal
+          const allTasks = getAllTasks(file);
+          return new Response(renderTaskModal(task, allTasks), {
+            headers: { 'Content-Type': 'text/html' },
+          });
+        }
+
+        // POST /task/:id/backlog - Remove in-progress tag (send back to backlog status)
         if (path.match(/^\/task\/[^/]+\/backlog$/) && req.method === 'POST') {
           const id = path.split('/')[2];
           const file = loadTasks();
 
-          // Find task in done
-          const taskIndex = file.done.findIndex((t) => t.id === id);
-          if (taskIndex === -1) {
-            return new Response('Task not found in done', { status: 404 });
+          // Find task in backlog
+          const task = file.backlog.find((t) => t.id === id);
+          if (!task) {
+            return new Response('Task not found in backlog', { status: 404 });
           }
 
-          // Move to backlog
-          const task = file.done.splice(taskIndex, 1)[0];
-          task.section = 'backlog';
-          task.status = deriveStatus('backlog', task.reserved);
-          file.backlog.push(task);
-          saveTasks(file);
+          // Remove in-progress tag
+          const tagIndex = task.tags.indexOf('in-progress');
+          if (tagIndex !== -1) {
+            task.tags.splice(tagIndex, 1);
+            task.reserved = parseReservedTags(task.tags);
+            task.status = deriveStatus('backlog', task.reserved);
+            saveTasks(file);
+          }
 
           // Return updated modal
           const allTasks = getAllTasks(file);

@@ -57,38 +57,34 @@ export function shiftHeadingsForStorage(content: string): string {
 }
 
 /**
- * Priority color scheme - single source of truth
- * Returns Pico CSS color name (e.g., "red", "yellow", "azure")
+ * Get CSS variable suffix for priority (p1, p2, p3, or p4-and-up)
  */
-function getPriorityColorName(priority: number): string {
-  const colors: Record<number, string> = {
-    1: "red",
-    2: "yellow",
-    3: "azure",
-  };
-  return colors[priority] || "azure";
+function getPriorityVarSuffix(priority: number): string {
+  if (priority >= 4) return "p4-and-up";
+  return `p${priority}`;
 }
 
 /**
- * Priority badge styling using Pico CSS color variables
+ * Priority badge styling using SIMBL CSS variables
  */
 function getPriorityBadge(priority: number | undefined): string {
   if (!priority) return "";
-  const color = getPriorityColorName(priority);
-  return `<span class="priority-badge" style="background: var(--pico-color-${color}-50); color: var(--pico-color-${color}-500);">P${priority}</span>`;
+  const suffix = getPriorityVarSuffix(priority);
+  return `<span class="priority-badge" style="background: var(--simbl-${suffix}-bg-light); color: var(--simbl-${suffix}-text);">P${priority}</span>`;
 }
 
 /**
- * Status badge styling using Pico CSS color variables
+ * Status badge styling using SIMBL CSS variables
+ * Only shows badge for in-progress, done, and canceled statuses (not backlog)
  */
 function getStatusBadge(status: string): string {
   const colors: Record<string, string> = {
-    backlog: "var(--pico-color-zinc-400)",
-    "in-progress": "var(--pico-color-azure-400)",
-    done: "var(--pico-color-green-550)",
+    "in-progress": "var(--simbl-in-progress-bg)",
+    done: "var(--simbl-done-bg)",
     canceled: "var(--pico-color-red-550)",
   };
-  const color = colors[status] || "var(--pico-color-slate-500)";
+  const color = colors[status];
+  if (!color) return "";
   return `<span style="background: ${color}; color: var(--pico-color-slate-50); padding: 2px 8px; border-radius: var(--pico-border-radius); font-size: 0.8em;">${escapeHtml(
     status
   )}</span>`;
@@ -107,43 +103,103 @@ export function renderTaskRow(task: Task): string {
         hx-target="#modal-container"
         hx-swap="innerHTML"
         style="cursor: pointer;">
-      <td><code>${escapeHtml(task.id)}</code></td>
+      <td style="white-space: nowrap;"><code class="task-id">${escapeHtml(task.id)}</code></td>
       <td>${escapeHtml(task.title)}${badges ? " " + badges : ""}</td>
     </tr>
   `;
 }
 
 /**
- * Render the view tabs (Backlog / Done)
+ * Extract all unique priorities from tasks
  */
-export function renderViewTabs(
-  activeView: "backlog" | "done" = "backlog"
-): string {
-  const backlogStyle =
-    activeView === "backlog"
-      ? "background: var(--pico-primary-background); color: var(--pico-primary-inverse);"
-      : "background: var(--pico-secondary-background); color: var(--pico-color);";
-  const doneStyle =
-    activeView === "done"
-      ? "background: var(--pico-primary-background); color: var(--pico-primary-inverse);"
-      : "background: var(--pico-secondary-background); color: var(--pico-color);";
+export function extractAllPriorities(tasks: Task[]): number[] {
+  const prioritySet = new Set<number>();
+  for (const task of tasks) {
+    if (task.reserved.priority !== undefined) {
+      prioritySet.add(task.reserved.priority);
+    }
+  }
+  return Array.from(prioritySet).sort((a, b) => a - b);
+}
 
-  return `
-    <div id="view-tabs" style="margin-bottom: var(--pico-spacing); display: flex; gap: calc(var(--pico-spacing) / 2);">
-      <button
-        hx-get="/tasks?view=backlog"
-        hx-target="#tasks-container"
-        hx-swap="innerHTML"
-        style="${backlogStyle}"
-      >Backlog</button>
-      <button
-        hx-get="/tasks?view=done"
-        hx-target="#tasks-container"
-        hx-swap="innerHTML"
-        style="${doneStyle}"
-      >Done</button>
-    </div>
-  `;
+/**
+ * Render the priority filter buttons
+ */
+export function renderPriorityFilter(
+  tasks: Task[],
+  activePriority?: number
+): string {
+  const priorities = extractAllPriorities(tasks);
+
+  if (priorities.length === 0) {
+    return '<div id="priority-filter"></div>';
+  }
+
+  const priorityButtons = priorities
+    .map((p) => {
+      const isActive = activePriority === p;
+      const suffix = getPriorityVarSuffix(p);
+      const style = isActive
+        ? `background: var(--simbl-${suffix}-bg); color: var(--pico-color-slate-50);`
+        : `background: var(--simbl-${suffix}-bg-light); color: var(--simbl-${suffix}-text);`;
+      // If active, clicking deselects (go to /tasks without priority filter)
+      const targetUrl = isActive ? "/tasks" : `/tasks?priority=${p}`;
+      return `<button
+      class="tag-btn"
+      style="${style}"
+      hx-get="${targetUrl}"
+      hx-target="#tasks-container"
+      hx-swap="innerHTML"
+      hx-include="#search-input"
+    >P${p}</button>`;
+    })
+    .join("");
+
+  return `<div id="priority-filter">${priorityButtons}</div>`;
+}
+
+/**
+ * Render the status filter buttons (in-progress, done)
+ * When neither is selected, only backlog tasks are shown
+ */
+export function renderStatusFilter(activeStatus?: string): string {
+  const statuses = [
+    {
+      value: "in-progress",
+      label: "in-progress",
+      bgVar: "--simbl-in-progress-bg",
+      bgLightVar: "--simbl-in-progress-bg-light",
+      textVar: "--simbl-in-progress-text",
+    },
+    {
+      value: "done",
+      label: "done",
+      bgVar: "--simbl-done-bg",
+      bgLightVar: "--simbl-done-bg-light",
+      textVar: "--simbl-done-text",
+    },
+  ];
+
+  const statusButtons = statuses
+    .map((s) => {
+      const isActive = activeStatus === s.value;
+      const style = isActive
+        ? `background: var(${s.bgVar}); color: var(--pico-color-slate-50);`
+        : `background: var(${s.bgLightVar}); color: var(${s.textVar});`;
+      // If active, clicking deselects (go to /tasks without status filter)
+      const targetUrl = isActive ? "/tasks" : `/tasks?status=${s.value}`;
+      return `<button
+      class="tag-btn"
+      style="${style}"
+      hx-get="${targetUrl}"
+      hx-target="#tasks-container"
+      hx-swap="innerHTML"
+      hx-include="#search-input"
+    >${s.label}</button>`;
+    })
+    .join("");
+
+  return `<div id="status-filter">${statusButtons}</div>`;
 }
 
 /**
@@ -155,7 +211,8 @@ export function renderTaskTable(
   sortDir: "asc" | "desc" = "asc",
   searchQuery?: string,
   tagFilter?: string,
-  view: "backlog" | "done" = "backlog"
+  priorityFilter?: number,
+  statusFilter?: string
 ): string {
   // Sort tasks
   const sorted = [...tasks].sort((a, b) => {
@@ -184,14 +241,16 @@ export function renderTaskTable(
   const arrow = (col: string) =>
     sortBy === col ? (sortDir === "asc" ? " ↑" : " ↓") : "";
 
-  // Build query string preserving search, tag filters, and view
+  // Build query string preserving search, tag, priority, and status filters
   const buildSortUrl = (col: string) => {
     const params = new URLSearchParams();
     params.set("sort", col);
     params.set("dir", nextDir(col));
     if (searchQuery) params.set("q", searchQuery);
     if (tagFilter) params.set("tag", tagFilter);
-    if (view !== "backlog") params.set("view", view);
+    if (priorityFilter !== undefined)
+      params.set("priority", String(priorityFilter));
+    if (statusFilter) params.set("status", statusFilter);
     return `/tasks?${params.toString()}`;
   };
 
@@ -270,8 +329,8 @@ export function renderTagCloud(tasks: Task[], activeTag?: string): string {
     .map((tag) => {
       const isActive = activeTag === tag;
       const style = isActive
-        ? "background: var(--pico-primary-background); color: var(--pico-primary-inverse);"
-        : "background: var(--pico-color-grey-50); color: var(--pico-color-grey-700);";
+        ? "background: var(--simbl-tag-bg); color: var(--pico-color-slate-50);"
+        : "background: var(--simbl-tag-bg-light); color: var(--simbl-tag-text);";
       // If active, clicking deselects (go to /tasks without tag filter)
       const targetUrl = isActive
         ? "/tasks"
@@ -299,8 +358,10 @@ export function renderTaskModal(
   showSaved = false
 ): string {
   const savedIndicator = showSaved ? "Saved ✓" : "";
-  // Tags display (excluding priority which is shown separately)
-  const displayTags = task.tags.filter((t) => !t.match(/^p[1-9]$/));
+  // Tags display (excluding priority and in-progress which are shown separately)
+  const displayTags = task.tags.filter(
+    (t) => !t.match(/^p[1-9]$/) && t !== "in-progress"
+  );
 
   // Priority display with CRUD
   const currentPriority = task.reserved.priority;
@@ -319,13 +380,13 @@ export function renderTaskModal(
   const priorityButtons = priorities
     .map((p) => {
       const isActive = currentPriority === p;
-      const colorName = getPriorityColorName(p);
+      const suffix = getPriorityVarSuffix(p);
       const bgColor = isActive
-        ? `var(--pico-color-${colorName}-500)`
-        : `var(--pico-color-${colorName}-50)`;
+        ? `var(--simbl-${suffix}-bg)`
+        : `var(--simbl-${suffix}-bg-light)`;
       const textColor = isActive
-        ? `var(--pico-color-${colorName}-50)`
-        : `var(--pico-color-${colorName}-500)`;
+        ? `var(--pico-color-slate-50)`
+        : `var(--simbl-${suffix}-text)`;
       return `<button
       hx-post="/task/${escapeHtml(task.id)}/priority/${p}"
       hx-target="#modal-container"
@@ -433,7 +494,7 @@ export function renderTaskModal(
         <header style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--pico-spacing);">
           <div style="flex: 1;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <h2 style="margin: 0;"><code>${escapeHtml(task.id)}</code></h2>
+              <h2 style="margin: 0;"><code class="task-id">${escapeHtml(task.id)}</code></h2>
               <span id="save-indicator-${escapeHtml(
                 task.id
               )}" class="save-indicator">${savedIndicator}</span>
@@ -460,37 +521,55 @@ export function renderTaskModal(
         </header>
 
         <div style="display: grid; grid-template-columns: auto 1fr; gap: calc(var(--pico-spacing) / 2) var(--pico-spacing); margin-bottom: var(--pico-spacing);">
-          <strong>Status:</strong>
+          <strong>Status</strong>
           <div style="display: flex; align-items: center; gap: calc(var(--pico-spacing) / 2);">
             ${statusHtml}
             ${
-              task.section === "backlog"
+              task.section === "done"
+                ? `<button
+                   hx-post="/task/${escapeHtml(task.id)}/in-progress"
+                   hx-target="#modal-container"
+                   hx-swap="innerHTML"
+                   style="padding: 4px 12px; font-size: 0.8em; background: var(--simbl-in-progress-bg-light); color: var(--simbl-in-progress-text); border: none;"
+                 >Send to In-Progress</button>
+                 <button
+                   hx-delete="/task/${escapeHtml(task.id)}"
+                   hx-target="#modal-container"
+                   hx-swap="innerHTML"
+                   hx-confirm="This will permanently remove this task. This cannot be undone. Continue?"
+                   class="outline"
+                   style="padding: 4px 12px; font-size: 0.8em; color: var(--pico-del-color); border-color: var(--pico-del-color);"
+                 >Send to Archive</button>`
+                : task.status === "in-progress"
                 ? `<button
                    hx-post="/task/${escapeHtml(task.id)}/done"
                    hx-target="#modal-container"
                    hx-swap="innerHTML"
-                   class="outline"
-                   style="padding: 4px 12px; font-size: 0.8em;"
-                 >Mark Done</button>`
-                : `<button
+                   style="padding: 4px 12px; font-size: 0.8em; background: var(--simbl-done-bg-light); color: var(--simbl-done-text); border: none;"
+                 >Send to Done</button>
+                 <button
                    hx-post="/task/${escapeHtml(task.id)}/backlog"
                    hx-target="#modal-container"
                    hx-swap="innerHTML"
                    class="outline secondary"
                    style="padding: 4px 12px; font-size: 0.8em;"
-                 >Restore to Backlog</button>
-                 <button
-                   hx-delete="/task/${escapeHtml(task.id)}"
+                 >Send to Backlog</button>`
+                : `<button
+                   hx-post="/task/${escapeHtml(task.id)}/in-progress"
                    hx-target="#modal-container"
                    hx-swap="innerHTML"
-                   hx-confirm="Are you sure you want to permanently delete this task?"
-                   class="outline"
-                   style="padding: 4px 12px; font-size: 0.8em; color: var(--pico-del-color); border-color: var(--pico-del-color);"
-                 >Delete</button>`
+                   style="padding: 4px 12px; font-size: 0.8em; background: var(--simbl-in-progress-bg-light); color: var(--simbl-in-progress-text); border: none;"
+                 >Send to In-Progress</button>
+                 <button
+                   hx-post="/task/${escapeHtml(task.id)}/done"
+                   hx-target="#modal-container"
+                   hx-swap="innerHTML"
+                   style="padding: 4px 12px; font-size: 0.8em; background: var(--simbl-done-bg-light); color: var(--simbl-done-text); border: none;"
+                 >Send to Done</button>`
             }
           </div>
 
-          <strong>Priority:</strong>
+          <strong>Priority</strong>
           <div>${priorityHtml}</div>
 
           ${
@@ -499,7 +578,7 @@ export function renderTaskModal(
               : ""
           }
 
-          <strong>Tags:</strong>
+          <strong>Tags</strong>
           <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px;">
             ${
               displayTags.length > 0
@@ -514,7 +593,7 @@ export function renderTaskModal(
                       )}/tag/${encodeURIComponent(t)}"
                       hx-target="#modal-container"
                       hx-swap="innerHTML"
-                      style="background: none; border: none; padding: 0; cursor: pointer; font-size: 1em; line-height: 1; color: #6c757d;"
+                      style="background: none; border: none; padding: 0; cursor: pointer; font-size: 1em; line-height: 1; color: var(--simbl-tag-text);"
                       title="Remove tag"
                     >&times;</button>
                   </span>`
@@ -526,15 +605,15 @@ export function renderTaskModal(
               hx-post="/task/${escapeHtml(task.id)}/tag"
               hx-target="#modal-container"
               hx-swap="innerHTML"
-              style="display: inline-flex; gap: .4rem; margin: 0;"
+              style="display: inline-flex; gap: .2rem; margin: 0; align-items: center;"
             >
               <input
-                class="input-sm"
                 type="text"
                 name="tag"
                 placeholder="add tag"
+                style="padding: .2rem .4rem; font-size: 0.85em; width: 5rem; margin: 0; height: auto;"
               >
-              <button type="submit">+</button>
+              <button type="submit" style="padding: .2rem .5rem; font-size: 0.85em; background: var(--simbl-tag-bg-light); color: var(--simbl-tag-text); border: none; margin: 0;">+</button>
             </form>
           </div>
         </div>
@@ -570,15 +649,14 @@ export function renderTaskModal(
   `;
 }
 
-
 /**
  * Get status color using Pico CSS color variables
  */
 function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
     backlog: "var(--pico-color-slate-500)",
-    "in-progress": "var(--pico-color-azure-550)",
-    done: "var(--pico-color-green-550)",
+    "in-progress": "var(--simbl-in-progress-bg)",
+    done: "var(--simbl-done-bg)",
     canceled: "var(--pico-color-red-550)",
   };
   return colors[status] || "var(--pico-color-slate-500)";

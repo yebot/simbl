@@ -3,8 +3,9 @@ import { getAllTasks } from "../core/parser.ts";
 import {
   escapeHtml,
   renderTagCloud,
+  renderPriorityFilter,
+  renderStatusFilter,
   renderTaskTable,
-  renderViewTabs,
   PICO_CSS,
   PICO_COLORS_CSS,
   HTMX_JS,
@@ -30,6 +31,8 @@ export function renderPage(file: SimblFile, projectName?: string): string {
   <style>
     /* Pico CSS variable overrides */
     :root {
+      --pico-color: var(--pico-color-zinc-700);
+
       --pico-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
       --pico-font-size: 90%;
       --pico-border-radius: 0.375rem;
@@ -38,6 +41,42 @@ export function renderPage(file: SimblFile, projectName?: string): string {
       --pico-spacing: .8rem;
       --pico-background-color: #ffffff;
       --pico-card-background-color: var(--pico-color-azure-50);
+
+      /* SIMBL status/priority/tag colors */
+      --simbl-in-progress-bg: var(--pico-color-azure-400);
+      --simbl-in-progress-bg-light: var(--pico-color-azure-50);
+      --simbl-in-progress-text: var(--pico-color-azure-600);
+
+      --simbl-done-bg: var(--pico-color-lime-300);
+      --simbl-done-bg-light: var(--pico-color-lime-50);
+      --simbl-done-text: var(--pico-color-lime-600);
+
+      --simbl-p1-bg: var(--pico-color-red-300);
+      --simbl-p1-bg-light: var(--pico-color-red-50);
+      --simbl-p1-text: var(--pico-color-red-500);
+
+      --simbl-p2-bg: var(--pico-color-amber-300);
+      --simbl-p2-bg-light: var(--pico-color-amber-50);
+      --simbl-p2-text: var(--pico-color-amber-500);
+
+      --simbl-p3-bg: var(--pico-color-cyan-300);
+      --simbl-p3-bg-light: var(--pico-color-cyan-50);
+      --simbl-p3-text: var(--pico-color-cyan-500);
+
+      --simbl-p4-and-up-bg: var(--pico-color-purple-300);
+      --simbl-p4-and-up-bg-light: var(--pico-color-purple-50);
+      --simbl-p4-and-up-text: var(--pico-color-purple-500);
+
+      --simbl-tag-bg: var(--pico-color-zinc-300);
+      --simbl-tag-bg-light: var(--pico-color-zinc-50);
+      --simbl-tag-text: var(--pico-color-zinc-500);
+
+
+      --simbl-add-task-bg: var(--simbl-done-bg);
+    }
+
+    body, h1, h2, h3, h4, h5, h6, td, th {
+      color: var(--pico-color-zinc-700);
     }
 
     button {
@@ -50,15 +89,32 @@ export function renderPage(file: SimblFile, projectName?: string): string {
     }
 
     .btn-add-task {
-      background-color: var(--pico-color-green-300);
+      background-color: var(--simbl-add-task-bg);
       font-size: 1.2em;
       font-weight: 400;
+    }
+    .btn-add-task .btn-text {
+      display: inline;
+    }
+    @media (max-width: 576px) {
+      .btn-add-task .btn-text {
+        display: none;
+      }
     }
 
     .priority-badge {
       padding: 2px 8px;
       border-radius: var(--pico-border-radius);
       font-size: .8em;
+    }
+
+    .task-id {
+      background: var(--simbl-tag-bg-light);
+      color: var(--simbl-tag-text);
+      padding: 2px 8px;
+      border-radius: var(--pico-border-radius);
+      border: .14rem dashed var(--simbl-tag-bg);
+      font-size: .85em;
     }
 
     /* Loading indicator - default hidden */
@@ -170,8 +226,8 @@ export function renderPage(file: SimblFile, projectName?: string): string {
 
     /* Tag badges */
     .tag-badge, .tag-btn {
-      background: var(--pico-color-slate-50);
-      color: var(--pico-color-slate-800);
+      background: var(--simbl-tag-bg-light);
+      color: var(--simbl-tag-text);
       padding: .2rem .4rem;
       margin: .2rem;
       border-width: 0;
@@ -195,7 +251,7 @@ export function renderPage(file: SimblFile, projectName?: string): string {
       position: fixed;
       bottom: 1rem;
       right: 1rem;
-      background: var(--pico-color-red-550);
+      background: var(--pico-color-red-300);
       color: var(--pico-color-slate-50);
       padding: 1rem 1.5rem;
       border-radius: var(--pico-border-radius);
@@ -262,19 +318,28 @@ export function renderPage(file: SimblFile, projectName?: string): string {
         hx-get="/add"
         hx-target="#modal-container"
         hx-swap="innerHTML"
-      >+ Add Task</button>
+      >+<span class="btn-text"> Add Task</span></button>
     </header>
 
     <section>
       <div style="margin-bottom: var(--pico-spacing);">
-        <strong>Tags:</strong>
+        <strong>Tags</strong>
         ${renderTagCloud(allTasks)}
+      </div>
+      <div style="margin-bottom: var(--pico-spacing); display: flex; gap: calc(var(--pico-spacing) * 2); flex-wrap: wrap;">
+        <div>
+          <strong>Priority</strong>
+          ${renderPriorityFilter(allTasks)}
+        </div>
+        <div>
+          <strong>Status</strong>
+          ${renderStatusFilter()}
+        </div>
       </div>
     </section>
 
     <section>
       <div id="tasks-container">
-        ${renderViewTabs("backlog")}
         ${renderTaskTable(backlogTasks)}
       </div>
     </section>

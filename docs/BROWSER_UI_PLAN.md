@@ -1,5 +1,7 @@
 # SIMBL Browser UI Implementation Plan
 
+> **Historical Record**: Core implementation (Phases 1-7) was completed on December 6, 2025. The `simbl serve` command provides a fully functional HTMX-powered web UI with real-time updates. Phases 8-10 contain polish items, some of which remain for future refinement. This document should be treated as a historical record; future enhancements should be tracked separately.
+
 ## Overview
 
 Add `simbl serve` command that launches a local web UI using Bun's HTTP server, HTMX for interactivity, and Pico CSS for styling.

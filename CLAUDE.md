@@ -68,3 +68,11 @@ Uses remark (unified ecosystem) for parsing. The parser must:
 - Config and tasks files use `findSimblDir()` to walk up from cwd
 - Task IDs are `{prefix}-{n}` with auto-increment
 - Always stop the Bun http server when done with todo list.
+
+## Documentation
+
+- [docs/SPEC.md](docs/SPEC.md) - Product specification and requirements
+- [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) - Implementation roadmap
+- [docs/BROWSER_UI_PLAN.md](docs/BROWSER_UI_PLAN.md) - Web UI architecture plan
+- [docs/BROWSER_UI_RESEARCH.md](docs/BROWSER_UI_RESEARCH.md) - Browser UI technology research
+- [docs/TESTING.md](docs/TESTING.md) - Testing strategy and guidelines

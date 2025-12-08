@@ -35,6 +35,95 @@ function hasSimblSection(content: string): boolean {
   return content.includes('<!-- SIMBL:BEGIN -->') || content.includes('## SIMBL');
 }
 
+/**
+ * Extract user-added content from within the SIMBL section.
+ * Looks for content after the standard section but before the END marker.
+ */
+function extractUserContent(content: string): string | null {
+  const beginMarker = '<!-- SIMBL:BEGIN -->';
+  const endMarker = '<!-- SIMBL:END -->';
+
+  const beginIndex = content.indexOf(beginMarker);
+  const endIndex = content.indexOf(endMarker);
+
+  if (beginIndex === -1 || endIndex === -1 || endIndex <= beginIndex) {
+    return null;
+  }
+
+  // Extract everything between markers
+  const sectionContent = content.slice(beginIndex + beginMarker.length, endIndex);
+
+  // Find where our standard content ends within the section
+  // We look for the last line of our standard content
+  const lastStandardLine = '- `simbl done <id>` - mark task complete';
+  const lastLineIndex = sectionContent.indexOf(lastStandardLine);
+
+  if (lastLineIndex === -1) {
+    // Standard content not found - user may have modified everything
+    // Preserve everything as user content
+    return sectionContent.trim() || null;
+  }
+
+  // Extract anything after our standard content
+  const afterStandard = sectionContent.slice(lastLineIndex + lastStandardLine.length);
+  const userContent = afterStandard.trim();
+
+  return userContent || null;
+}
+
+/**
+ * Build the SIMBL section, optionally including preserved user content
+ */
+function buildSimblSection(userContent: string | null): string {
+  const baseSection = `
+<!-- SIMBL:BEGIN -->
+## SIMBL Backlog
+
+This project uses SIMBL for task management. Run \`simbl usage\` for all commands.
+
+Common commands:
+- \`simbl list\` - view all tasks
+- \`simbl add "title"\` - add a task
+- \`simbl done <id>\` - mark task complete`;
+
+  if (userContent) {
+    return `${baseSection}
+
+${userContent}
+<!-- SIMBL:END -->
+`;
+  }
+
+  return `${baseSection}
+<!-- SIMBL:END -->
+`;
+}
+
+/**
+ * Replace the existing SIMBL section in content, preserving user additions
+ */
+function replaceSimblSection(content: string): string {
+  const beginMarker = '<!-- SIMBL:BEGIN -->';
+  const endMarker = '<!-- SIMBL:END -->';
+
+  const beginIndex = content.indexOf(beginMarker);
+  const endIndex = content.indexOf(endMarker);
+
+  if (beginIndex === -1 || endIndex === -1) {
+    // No valid section to replace, append instead
+    return content.trimEnd() + '\n' + buildSimblSection(null);
+  }
+
+  // Extract user content before replacing
+  const userContent = extractUserContent(content);
+
+  // Replace the section
+  const before = content.slice(0, beginIndex);
+  const after = content.slice(endIndex + endMarker.length);
+
+  return before + buildSimblSection(userContent).trim() + after;
+}
+
 export const initCommand = defineCommand({
   meta: {
     name: 'init',
@@ -140,7 +229,19 @@ export const initCommand = defineCommand({
       const content = readFileSync(claudeMdPath, 'utf-8');
 
       if (hasSimblSection(content)) {
-        p.log.info('CLAUDE.md already has SIMBL instructions');
+        if (args.force) {
+          // Re-initialize but preserve user content
+          const userContent = extractUserContent(content);
+          const updatedContent = replaceSimblSection(content);
+          writeFileSync(claudeMdPath, updatedContent, 'utf-8');
+          if (userContent) {
+            p.log.success('Updated SIMBL section in CLAUDE.md (preserved user content)');
+          } else {
+            p.log.success('Updated SIMBL section in CLAUDE.md');
+          }
+        } else {
+          p.log.info('CLAUDE.md already has SIMBL instructions');
+        }
       } else {
         const shouldAdd = await p.confirm({
           message: 'Found CLAUDE.md. Add SIMBL usage instructions?',

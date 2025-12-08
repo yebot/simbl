@@ -76,3 +76,14 @@ Uses remark (unified ecosystem) for parsing. The parser must:
 - [docs/BROWSER_UI_PLAN.md](docs/BROWSER_UI_PLAN.md) - Web UI architecture plan
 - [docs/BROWSER_UI_RESEARCH.md](docs/BROWSER_UI_RESEARCH.md) - Browser UI technology research
 - [docs/TESTING.md](docs/TESTING.md) - Testing strategy and guidelines
+
+<!-- SIMBL:BEGIN -->
+## SIMBL Backlog
+
+This project uses SIMBL for task management. Run `simbl usage` for all commands.
+
+Common commands:
+- `simbl list` - view all tasks
+- `simbl add "title"` - add a task
+- `simbl done <id>` - mark task complete
+<!-- SIMBL:END -->

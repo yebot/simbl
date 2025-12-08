@@ -3,7 +3,7 @@ import { findSimblDir, getSimblPaths, loadConfig } from '../core/config.ts';
 import { parseSimblFile, getAllTasks, serializeSimblFile } from '../core/parser.ts';
 import { parseReservedTags, deriveStatus, type Task } from '../core/task.ts';
 import { generateNextId } from '../utils/id.ts';
-import { renderTaskTable, renderTagCloud, renderPriorityFilter, renderStatusFilter, renderTaskModal, renderAddTaskForm, shiftHeadingsForStorage } from './templates.ts';
+import { renderTaskTable, renderTagCloud, renderPriorityFilter, renderStatusFilter, renderProjectFilter, renderTaskModal, renderAddTaskForm, shiftHeadingsForStorage } from './templates.ts';
 import { renderPage } from './page.ts';
 import type { ServerWebSocket } from 'bun';
 
@@ -20,36 +20,14 @@ export interface ServerOptions {
 }
 
 /**
- * Check if a port is available
+ * Check if an error is a port-in-use error
  */
-async function isPortAvailable(port: number): Promise<boolean> {
-  try {
-    const server = Bun.serve({
-      port,
-      fetch() {
-        return new Response('test');
-      },
-    });
-    server.stop();
-    return true;
-  } catch {
-    return false;
+function isPortInUseError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+    return msg.includes('eaddrinuse') || msg.includes('address already in use') || msg.includes('port') && msg.includes('in use');
   }
-}
-
-/**
- * Find an available port starting from the given port
- */
-async function findAvailablePort(startPort: number): Promise<number> {
-  let port = startPort;
-  while (!(await isPortAvailable(port))) {
-    console.warn(`⚠ Port ${port} is in use, trying ${port + 1}...`);
-    port++;
-    if (port > startPort + 100) {
-      throw new Error(`Could not find available port after 100 attempts`);
-    }
-  }
-  return port;
+  return false;
 }
 
 /**
@@ -93,19 +71,14 @@ function saveTasks(file: ReturnType<typeof parseSimblFile>) {
 }
 
 /**
- * Start the SIMBL web server
+ * Start the SIMBL web server with automatic port retry
  */
 export async function startServer(options: ServerOptions): Promise<void> {
   const { open } = options;
-  let { port } = options;
+  const startPort = options.port;
+  const maxAttempts = 100;
 
-  // Find available port
-  if (!(await isPortAvailable(port))) {
-    console.warn(`⚠ Port ${port} is in use`);
-    port = await findAvailablePort(port + 1);
-  }
-
-  // Get paths for file watcher
+  // Get paths for file watcher (do this before server start to fail fast)
   const paths = getPathsOrThrow();
 
   /**
@@ -128,12 +101,14 @@ export async function startServer(options: ServerOptions): Promise<void> {
       const tagCloudHtml = renderTagCloud(allTasks);
       const priorityFilterHtml = renderPriorityFilter(allTasks);
       const statusFilterHtml = renderStatusFilter();
+      const projectFilterHtml = renderProjectFilter(allTasks);
 
       // HTMX expects messages as HTML that will be swapped
       const message = `<div id="tasks-container" hx-swap-oob="true">${html}</div>
 <div id="tag-cloud" hx-swap-oob="true">${tagCloudHtml.replace('<div id="tag-cloud">', '').replace('</div>', '')}</div>
 <div id="priority-filter" hx-swap-oob="true">${priorityFilterHtml.replace('<div id="priority-filter">', '').replace('</div>', '')}</div>
-<div id="status-filter" hx-swap-oob="true">${statusFilterHtml.replace('<div id="status-filter">', '').replace('</div>', '')}</div>`;
+<div id="status-filter" hx-swap-oob="true">${statusFilterHtml.replace('<div id="status-filter">', '').replace('</div>', '')}</div>
+<div id="project-filter" hx-swap-oob="true">${projectFilterHtml.replace('<div id="project-filter">', '').replace('</div>', '')}</div>`;
 
       for (const client of wsClients) {
         client.send(message);
@@ -143,24 +118,23 @@ export async function startServer(options: ServerOptions): Promise<void> {
     }
   }
 
-  // Set up file watcher on tasks.md
-  const watcher = watch(paths.tasks, (eventType) => {
-    if (eventType === 'change') {
-      broadcastUpdate();
-    }
-  });
+  // Try to bind to ports atomically with retry
+  let server: ReturnType<typeof Bun.serve> | null = null;
+  let boundPort = startPort;
 
-  const server = Bun.serve({
-    port,
-    hostname: '0.0.0.0',
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      server = Bun.serve({
+        port: boundPort,
+        hostname: '0.0.0.0',
 
-    async fetch(req, server) {
+        async fetch(req, server) {
       const url = new URL(req.url);
       const path = url.pathname;
 
       // Handle WebSocket upgrade
       if (path === '/ws') {
-        const upgraded = server.upgrade(req);
+        const upgraded = server.upgrade(req, { data: {} });
         if (!upgraded) {
           return new Response('WebSocket upgrade failed', { status: 400 });
         }
@@ -221,6 +195,12 @@ export async function startServer(options: ServerOptions): Promise<void> {
             tasks = tasks.filter((t) => t.reserved.priority === priorityFilter);
           }
 
+          // Project filter
+          const projectFilter = url.searchParams.get('project');
+          if (projectFilter) {
+            tasks = tasks.filter((t) => t.reserved.project === projectFilter);
+          }
+
           const sortBy = url.searchParams.get('sort') || 'id';
           const sortDir = (url.searchParams.get('dir') || 'asc') as 'asc' | 'desc';
 
@@ -235,6 +215,9 @@ export async function startServer(options: ServerOptions): Promise<void> {
 
           // Include status filter OOB swap to update active state
           response += `\n<div id="status-filter" hx-swap-oob="true">${renderStatusFilter(statusFilter || undefined).replace('<div id="status-filter">', '').replace('</div>', '')}</div>`;
+
+          // Include project filter OOB swap to update active state
+          response += `\n<div id="project-filter" hx-swap-oob="true">${renderProjectFilter(allTasks, projectFilter || undefined).replace('<div id="project-filter">', '').replace('</div>', '')}</div>`;
 
           return new Response(response, {
             headers: { 'Content-Type': 'text/html' },
@@ -639,22 +622,43 @@ export async function startServer(options: ServerOptions): Promise<void> {
       }
     },
 
-    websocket: {
-      open(ws) {
-        wsClients.add(ws);
-        console.log(`WebSocket client connected (${wsClients.size} total)`);
-      },
-      close(ws) {
-        wsClients.delete(ws);
-        console.log(`WebSocket client disconnected (${wsClients.size} total)`);
-      },
-      message(_ws, _message) {
-        // We don't expect messages from clients, but handle anyway
-      },
-    },
+        websocket: {
+          open(ws) {
+            wsClients.add(ws);
+            console.log(`WebSocket client connected (${wsClients.size} total)`);
+          },
+          close(ws) {
+            wsClients.delete(ws);
+            console.log(`WebSocket client disconnected (${wsClients.size} total)`);
+          },
+          message(_ws, _message) {
+            // We don't expect messages from clients, but handle anyway
+          },
+        },
+      });
+      // Successfully bound - exit retry loop
+      break;
+    } catch (error) {
+      if (isPortInUseError(error)) {
+        boundPort++;
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  if (!server) {
+    throw new Error(`Could not find available port after ${maxAttempts} attempts starting from ${startPort}`);
+  }
+
+  // Set up file watcher on tasks.md AFTER successful server bind
+  const watcher = watch(paths.tasks, (eventType) => {
+    if (eventType === 'change') {
+      broadcastUpdate();
+    }
   });
 
-  const url = `http://localhost:${port}`;
+  const url = `http://localhost:${boundPort}`;
   console.log(`\n🚀 SIMBL UI running at ${url}\n`);
 
   if (open) {

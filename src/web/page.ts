@@ -5,6 +5,7 @@ import {
   renderTagCloud,
   renderPriorityFilter,
   renderStatusFilter,
+  renderProjectFilter,
   renderTaskTable,
   PICO_CSS,
   PICO_COLORS_CSS,
@@ -71,6 +72,9 @@ export function renderPage(file: SimblFile, projectName?: string): string {
       --simbl-tag-bg-light: var(--pico-color-zinc-50);
       --simbl-tag-text: var(--pico-color-zinc-500);
 
+      --simbl-project-bg: var(--pico-color-violet-400);
+      --simbl-project-bg-light: var(--pico-color-violet-100);
+      --simbl-project-text: var(--pico-color-violet-600);
 
       --simbl-add-task-bg: var(--simbl-done-bg);
     }
@@ -113,7 +117,7 @@ export function renderPage(file: SimblFile, projectName?: string): string {
       color: var(--simbl-tag-text);
       padding: 2px 8px;
       border-radius: var(--pico-border-radius);
-      border: .14rem dashed var(--simbl-tag-bg);
+      border: .12rem dashed var(--simbl-tag-bg);
       font-size: .85em;
     }
 
@@ -179,6 +183,18 @@ export function renderPage(file: SimblFile, projectName?: string): string {
       max-height: 90vh;
       overflow-y: auto;
       position: relative;
+      transition: max-width 200ms ease, width 200ms ease, max-height 200ms ease, height 200ms ease, border-radius 200ms ease;
+    }
+
+    #modal-content.maximized {
+      max-width: 98vw;
+      width: 98vw;
+      max-height: 98vh;
+      height: 98vh;
+    }
+
+    #modal-content.maximized .content-textarea {
+      min-height: calc(98vh - 400px);
     }
 
     /* Modal close button */
@@ -196,6 +212,26 @@ export function renderPage(file: SimblFile, projectName?: string): string {
     .modal-close-btn:hover {
       background: #e0e0e0;
       color: #333;
+    }
+
+    /* Copy ID button */
+    .copy-id-btn {
+      background: transparent;
+      border: none;
+      font-size: 0.9rem;
+      cursor: pointer;
+      padding: 0.2rem 0.4rem;
+      line-height: 1;
+      border-radius: var(--pico-border-radius);
+      opacity: 0.6;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    .copy-id-btn:hover {
+      opacity: 1;
+      background: var(--simbl-tag-bg-light);
+    }
+    .copy-id-btn.copied {
+      opacity: 1;
     }
 
     /* Modal title input */
@@ -240,6 +276,53 @@ export function renderPage(file: SimblFile, projectName?: string): string {
 
     table tbody tr:hover {
       background: var(--pico-secondary-hover-background);
+    }
+
+    /* Keyboard navigation selection */
+    table tbody tr.kb-selected td {
+      background: var(--pico-color-yellow-50);
+    }
+
+    /* Keyboard hints footer */
+    .keyboard-hints {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--pico-color-zinc-100);
+      border-top: 1px solid var(--pico-color-zinc-200);
+      padding: 0.4rem 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1.25rem;
+      font-size: 0.8em;
+      color: var(--pico-color-zinc-500);
+      z-index: 100;
+    }
+    .keyboard-hints span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .keyboard-hints kbd {
+      display: inline-block;
+      min-width: 1.4em;
+      padding: 0.15rem 0.35rem;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 0.85em;
+      font-weight: 500;
+      line-height: 1;
+      text-align: center;
+      color: var(--pico-color-zinc-600);
+      background: var(--pico-color-zinc-50);
+      border: 1px solid var(--pico-color-zinc-300);
+      border-radius: 4px;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.05), inset 0 -1px 0 rgba(0,0,0,0.05);
+    }
+    /* Add bottom padding to main so content isn't hidden behind footer */
+    main.container {
+      padding-bottom: 3rem;
     }
 
     th[hx-get]:hover {
@@ -335,6 +418,10 @@ export function renderPage(file: SimblFile, projectName?: string): string {
           <strong>Status</strong>
           ${renderStatusFilter()}
         </div>
+        <div>
+          <strong>Project</strong>
+          ${renderProjectFilter(allTasks)}
+        </div>
       </div>
     </section>
 
@@ -347,6 +434,14 @@ export function renderPage(file: SimblFile, projectName?: string): string {
     <div id="modal-container"></div>
   </main>
 
+  <footer class="keyboard-hints" aria-label="Keyboard shortcuts">
+    <span><kbd>n</kbd> New task</span>
+    <span><kbd>p</kbd> Priority</span>
+    <span><kbd>/</kbd> Search</span>
+    <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+    <span><kbd>Enter</kbd> Open</span>
+  </footer>
+
   <script>
     // Close modal on backdrop click or Escape key
     document.addEventListener('click', function(e) {
@@ -358,6 +453,231 @@ export function renderPage(file: SimblFile, projectName?: string): string {
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         document.getElementById('modal-container').innerHTML = '';
+        return;
+      }
+
+      // Skip if modifier keys are pressed (except Shift for some keys)
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      // Skip if typing in an input
+      const activeEl = document.activeElement;
+      const isTyping = activeEl && (
+        activeEl.tagName === 'INPUT' ||
+        activeEl.tagName === 'TEXTAREA' ||
+        activeEl.tagName === 'SELECT' ||
+        activeEl.hasAttribute('contenteditable')
+      );
+
+      const modalOpen = document.getElementById('modal-backdrop') !== null;
+      const key = e.key.toLowerCase();
+
+      // 'w' - Toggle maximize on task detail modal only
+      if (key === 'w' && modalOpen && !isTyping) {
+        const taskModal = document.querySelector('#modal-content[data-task-id]');
+        if (taskModal) {
+          e.preventDefault();
+          toggleModalMaximize();
+        }
+        return;
+      }
+
+      // Shortcuts that only work when no modal is open
+      if (modalOpen) return;
+
+      // 'n' - Open Add Task modal
+      if (key === 'n' && !isTyping) {
+        e.preventDefault();
+        htmx.ajax('GET', '/add', {target: '#modal-container', swap: 'innerHTML'});
+        return;
+      }
+
+      // '/' - Focus search input
+      if (key === '/' && !isTyping) {
+        e.preventDefault();
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) searchInput.focus();
+        return;
+      }
+
+      // 'p' - Cycle through priority filters
+      if (key === 'p' && !isTyping) {
+        e.preventDefault();
+        cyclePriorityFilter();
+        return;
+      }
+
+      // Arrow Down - Navigate down through task list
+      if (e.key === 'ArrowDown' && !isTyping) {
+        e.preventDefault();
+        navigateTaskList(1);
+        return;
+      }
+
+      // Arrow Up - Navigate up through task list
+      if (e.key === 'ArrowUp' && !isTyping) {
+        e.preventDefault();
+        navigateTaskList(-1);
+        return;
+      }
+
+      // Enter or Space - Open selected task
+      if ((key === 'enter' || key === ' ') && !isTyping) {
+        const selectedRow = document.querySelector('tr.kb-selected');
+        if (selectedRow) {
+          e.preventDefault();
+          selectedRow.click();
+        }
+        return;
+      }
+    });
+
+    // Modal maximize toggle
+    function toggleModalMaximize() {
+      const modal = document.getElementById('modal-content');
+      const btn = document.getElementById('modal-maximize-btn');
+      if (!modal || !btn) return;
+
+      const isMaximized = modal.classList.toggle('maximized');
+      btn.setAttribute('aria-pressed', isMaximized ? 'true' : 'false');
+      btn.setAttribute('aria-label', isMaximized ? 'Restore modal' : 'Maximize modal');
+      btn.setAttribute('title', isMaximized ? 'Restore' : 'Maximize');
+      btn.textContent = isMaximized ? '⧉' : '⛶';
+    }
+
+    // Copy task ID to clipboard
+    function copyTaskId(taskId) {
+      navigator.clipboard.writeText(taskId).then(function() {
+        // Find the button and show feedback
+        const btn = document.querySelector('.copy-id-btn');
+        if (btn) {
+          const originalText = btn.textContent;
+          btn.textContent = '✓';
+          btn.classList.add('copied');
+          setTimeout(function() {
+            btn.textContent = originalText;
+            btn.classList.remove('copied');
+          }, 1500);
+        }
+      }).catch(function(err) {
+        console.error('Failed to copy task ID:', err);
+        showError('Failed to copy to clipboard');
+      });
+    }
+
+    // Cycle through priority filters (none → P1 → P2 → P3 → none)
+    function cyclePriorityFilter() {
+      // Get all priority filter buttons
+      const priorityBtns = Array.from(document.querySelectorAll('[data-priority-filter]'));
+      if (priorityBtns.length === 0) return;
+
+      // Build sorted list of priority values
+      const priorities = priorityBtns
+        .map(function(btn) { return btn.getAttribute('data-priority-filter'); })
+        .sort(function(a, b) { return parseInt(a) - parseInt(b); });
+
+      // Find currently active priority by checking which button would deselect (hx-get="/tasks")
+      // Active button has hx-get="/tasks", inactive buttons have hx-get="/tasks?priority=X"
+      const activeBtn = priorityBtns.find(function(btn) {
+        return btn.getAttribute('hx-get') === '/tasks';
+      });
+      const currentPriority = activeBtn ? activeBtn.getAttribute('data-priority-filter') : null;
+
+      // Cycle: none → P1 → P2 → P3 → none
+      let nextPriority;
+      if (currentPriority === null) {
+        // No filter → first priority
+        nextPriority = priorities[0];
+      } else {
+        const currentIndex = priorities.indexOf(currentPriority);
+        if (currentIndex === priorities.length - 1) {
+          // Last priority → clear filter
+          nextPriority = null;
+        } else {
+          // Go to next priority
+          nextPriority = priorities[currentIndex + 1];
+        }
+      }
+
+      // Apply the filter
+      if (nextPriority === null) {
+        // Clear filter - click the active button to deselect
+        if (activeBtn) {
+          activeBtn.click();
+        }
+      } else {
+        // Click the button for the next priority
+        const targetBtn = priorityBtns.find(function(btn) {
+          return btn.getAttribute('data-priority-filter') === nextPriority;
+        });
+        if (targetBtn) {
+          targetBtn.click();
+        }
+      }
+    }
+
+    // Navigate through task list with j/k
+    let selectedTaskIndex = -1;
+
+    function navigateTaskList(direction) {
+      const rows = Array.from(document.querySelectorAll('#tasks-container table tbody tr'));
+      if (rows.length === 0) return;
+
+      // Remove current selection
+      rows.forEach(function(row) {
+        row.classList.remove('kb-selected');
+      });
+
+      // Calculate new index
+      if (selectedTaskIndex === -1) {
+        // No selection yet, start at first (j) or last (k)
+        selectedTaskIndex = direction > 0 ? 0 : rows.length - 1;
+      } else {
+        selectedTaskIndex += direction;
+        // Wrap around
+        if (selectedTaskIndex < 0) {
+          selectedTaskIndex = rows.length - 1;
+        } else if (selectedTaskIndex >= rows.length) {
+          selectedTaskIndex = 0;
+        }
+      }
+
+      // Apply selection
+      const selectedRow = rows[selectedTaskIndex];
+      if (selectedRow) {
+        selectedRow.classList.add('kb-selected');
+        selectedRow.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+
+    // Select row on click (for mouse users)
+    function selectTaskRow(row) {
+      const rows = Array.from(document.querySelectorAll('#tasks-container table tbody tr'));
+      rows.forEach(function(r) {
+        r.classList.remove('kb-selected');
+      });
+      row.classList.add('kb-selected');
+      selectedTaskIndex = rows.indexOf(row);
+    }
+
+    // Attach click and hover handlers to task rows (use event delegation)
+    document.getElementById('tasks-container').addEventListener('click', function(evt) {
+      const row = evt.target.closest('tr');
+      if (row && row.closest('tbody')) {
+        selectTaskRow(row);
+      }
+    });
+
+    document.getElementById('tasks-container').addEventListener('mouseover', function(evt) {
+      const row = evt.target.closest('tr');
+      if (row && row.closest('tbody')) {
+        selectTaskRow(row);
+      }
+    });
+
+    // Reset selection when tasks are updated via HTMX
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+      if (evt.detail.target.id === 'tasks-container') {
+        selectedTaskIndex = -1;
       }
     });
 

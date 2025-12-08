@@ -91,12 +91,25 @@ function getStatusBadge(status: string): string {
 }
 
 /**
+ * Project badge styling using SIMBL CSS variables
+ * Non-interactive badge - use the project filter section to filter by project
+ */
+function getProjectBadge(project: string | undefined): string {
+  if (!project) return "";
+  return `<span
+    class="project-badge"
+    style="background: var(--simbl-project-bg-light); color: var(--simbl-project-text); padding: 2px 8px; border-radius: var(--pico-border-radius); font-size: 0.8em;"
+  >${escapeHtml(project)}</span>`;
+}
+
+/**
  * Render a single task row
  */
 export function renderTaskRow(task: Task): string {
   const priorityBadge = getPriorityBadge(task.reserved.priority);
   const statusBadge = getStatusBadge(task.status);
-  const badges = [priorityBadge, statusBadge].filter(Boolean).join(" ");
+  const projectBadge = getProjectBadge(task.reserved.project);
+  const badges = [priorityBadge, statusBadge, projectBadge].filter(Boolean).join(" ");
 
   return `
     <tr hx-get="/task/${escapeHtml(task.id)}"
@@ -123,6 +136,19 @@ export function extractAllPriorities(tasks: Task[]): number[] {
 }
 
 /**
+ * Extract all unique projects from tasks
+ */
+export function extractAllProjects(tasks: Task[]): string[] {
+  const projectSet = new Set<string>();
+  for (const task of tasks) {
+    if (task.reserved.project) {
+      projectSet.add(task.reserved.project);
+    }
+  }
+  return Array.from(projectSet).sort();
+}
+
+/**
  * Render the priority filter buttons
  */
 export function renderPriorityFilter(
@@ -144,9 +170,11 @@ export function renderPriorityFilter(
         : `background: var(--simbl-${suffix}-bg-light); color: var(--simbl-${suffix}-text);`;
       // If active, clicking deselects (go to /tasks without priority filter)
       const targetUrl = isActive ? "/tasks" : `/tasks?priority=${p}`;
+      // data-priority-filter always stores the priority number for keyboard cycling
       return `<button
       class="tag-btn"
       style="${style}"
+      data-priority-filter="${p}"
       hx-get="${targetUrl}"
       hx-target="#tasks-container"
       hx-swap="innerHTML"
@@ -200,6 +228,43 @@ export function renderStatusFilter(activeStatus?: string): string {
     .join("");
 
   return `<div id="status-filter">${statusButtons}</div>`;
+}
+
+/**
+ * Render the project filter buttons
+ */
+export function renderProjectFilter(
+  tasks: Task[],
+  activeProject?: string
+): string {
+  const projects = extractAllProjects(tasks);
+
+  if (projects.length === 0) {
+    return '<div id="project-filter"></div>';
+  }
+
+  const projectButtons = projects
+    .map((project) => {
+      const isActive = activeProject === project;
+      const style = isActive
+        ? "background: var(--simbl-project-bg); color: var(--pico-color-slate-50);"
+        : "background: var(--simbl-project-bg-light); color: var(--simbl-project-text);";
+      // If active, clicking deselects (go to /tasks without project filter)
+      const targetUrl = isActive
+        ? "/tasks"
+        : `/tasks?project=${encodeURIComponent(project)}`;
+      return `<button
+      class="tag-btn"
+      style="${style}"
+      hx-get="${targetUrl}"
+      hx-target="#tasks-container"
+      hx-swap="innerHTML"
+      hx-include="#search-input"
+    >${escapeHtml(project)}</button>`;
+    })
+    .join("");
+
+  return `<div id="project-filter">${projectButtons}</div>`;
 }
 
 /**
@@ -293,6 +358,8 @@ function isReservedTag(tag: string): boolean {
   // Relation tags: depends-on-*, child-of-*
   if (tag.startsWith("depends-on-")) return true;
   if (tag.startsWith("child-of-")) return true;
+  // Project tags: project:xxx
+  if (tag.startsWith("project:")) return true;
   // Status tags
   if (tag === "in-progress" || tag === "canceled" || tag === "refined")
     return true;
@@ -358,9 +425,9 @@ export function renderTaskModal(
   showSaved = false
 ): string {
   const savedIndicator = showSaved ? "Saved ✓" : "";
-  // Tags display (excluding priority and in-progress which are shown separately)
+  // Tags display (excluding priority, in-progress, and project which are shown separately)
   const displayTags = task.tags.filter(
-    (t) => !t.match(/^p[1-9]$/) && t !== "in-progress"
+    (t) => !t.match(/^p[1-9]$/) && t !== "in-progress" && !t.startsWith("project:")
   );
 
   // Priority display with CRUD
@@ -478,9 +545,9 @@ export function renderTaskModal(
     `);
   }
 
-  // Project
+  // Project (using violet styling consistent with project badges)
   const projectHtml = task.reserved.project
-    ? `<span style="background: var(--pico-secondary-background); padding: 4px 10px; border-radius: var(--pico-border-radius);">${escapeHtml(
+    ? `<span style="background: var(--simbl-project-bg-light); color: var(--simbl-project-text); padding: 4px 10px; border-radius: var(--pico-border-radius);">${escapeHtml(
         task.reserved.project
       )}</span>`
     : "";
@@ -490,11 +557,20 @@ export function renderTaskModal(
 
   return `
     <div id="modal-backdrop">
-      <article id="modal-content">
+      <article id="modal-content" data-task-id="${escapeHtml(task.id)}">
         <header style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--pico-spacing);">
           <div style="flex: 1;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <h2 style="margin: 0;"><code class="task-id">${escapeHtml(task.id)}</code></h2>
+              <h2 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <code class="task-id">${escapeHtml(task.id)}</code>
+                <button
+                  type="button"
+                  class="copy-id-btn"
+                  onclick="copyTaskId('${escapeHtml(task.id)}')"
+                  title="Copy task ID"
+                  aria-label="Copy task ID to clipboard"
+                >📋</button>
+              </h2>
               <span id="save-indicator-${escapeHtml(
                 task.id
               )}" class="save-indicator">${savedIndicator}</span>
@@ -513,11 +589,21 @@ export function renderTaskModal(
               >
             </div>
           </div>
-          <button
-            onclick="document.getElementById('modal-container').innerHTML = ''"
-            class="modal-close-btn"
-            aria-label="Close modal"
-          >&times;</button>
+          <div style="display: flex; gap: 0.5rem;">
+            <button
+              onclick="toggleModalMaximize()"
+              class="modal-close-btn"
+              id="modal-maximize-btn"
+              aria-label="Maximize modal"
+              aria-pressed="false"
+              title="Maximize"
+            >⛶</button>
+            <button
+              onclick="document.getElementById('modal-container').innerHTML = ''"
+              class="modal-close-btn"
+              aria-label="Close modal"
+            >&times;</button>
+          </div>
         </header>
 
         <div style="display: grid; grid-template-columns: auto 1fr; gap: calc(var(--pico-spacing) / 2) var(--pico-spacing); margin-bottom: var(--pico-spacing);">

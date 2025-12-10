@@ -10,6 +10,8 @@ export interface SimblConfig {
   name: string;
   /** Task ID prefix (default: "task") */
   prefix: string;
+  /** Preferred port for web UI (default: 3497) */
+  webPort?: number;
 }
 
 /**

@@ -157,18 +157,24 @@ export async function startServer(options: ServerOptions): Promise<void> {
           const file = loadTasks();
           const allTasks = getAllTasks(file);
 
-          // Status filter determines which tasks to show
-          const statusFilter = url.searchParams.get('status');
+          // Project filter takes precedence - shows both backlog and done
+          const projectFilter = url.searchParams.get('project');
+          // Status filter determines which tasks to show (mutually exclusive with project filter)
+          const statusFilter = projectFilter ? null : url.searchParams.get('status');
+
           let tasks: Task[];
-          if (statusFilter === 'in-progress') {
-            // Show tasks with in-progress status from backlog
+          if (projectFilter) {
+            // Project filter shows tasks from both Backlog AND Done sections
+            tasks = [...file.backlog, ...file.done].filter((t) => t.reserved.project === projectFilter);
+          } else if (statusFilter === 'in-progress') {
+            // Show tasks with in-progress status from backlog only
             tasks = file.backlog.filter((t) => t.status === 'in-progress');
           } else if (statusFilter === 'done') {
-            // Show done tasks
+            // Show done tasks only
             tasks = file.done;
           } else {
-            // Default: show backlog tasks only (not done)
-            tasks = file.backlog;
+            // Default: show both backlog AND done tasks
+            tasks = [...file.backlog, ...file.done];
           }
 
           // Search filter
@@ -193,12 +199,6 @@ export async function startServer(options: ServerOptions): Promise<void> {
           const priorityFilter = priorityParam ? parseInt(priorityParam, 10) : undefined;
           if (priorityFilter !== undefined && !isNaN(priorityFilter)) {
             tasks = tasks.filter((t) => t.reserved.priority === priorityFilter);
-          }
-
-          // Project filter
-          const projectFilter = url.searchParams.get('project');
-          if (projectFilter) {
-            tasks = tasks.filter((t) => t.reserved.project === projectFilter);
           }
 
           const sortBy = url.searchParams.get('sort') || 'id';
@@ -284,8 +284,11 @@ export async function startServer(options: ServerOptions): Promise<void> {
             saveTasks(file);
           }
 
-          // Return "Saved" indicator
-          return new Response('Saved ✓', {
+          // Return "Saved" indicator - determine which indicator to update based on field
+          // The hx-target will be either #save-indicator-{id} or #content-save-indicator-{id}
+          // We return a span that will replace the target via outerHTML
+          const indicatorType = title !== null ? 'save-indicator' : 'content-save-indicator';
+          return new Response(`<span id="${indicatorType}-${id}" class="save-indicator">Saved ✓</span>`, {
             headers: { 'Content-Type': 'text/html' },
           });
         }
@@ -375,6 +378,41 @@ export async function startServer(options: ServerOptions): Promise<void> {
           });
         }
 
+        // POST /task/:id/cancel - Mark task as canceled and move to done
+        if (path.match(/^\/task\/[^/]+\/cancel$/) && req.method === 'POST') {
+          const id = path.split('/')[2];
+          const file = loadTasks();
+
+          // Find task in backlog
+          const taskIndex = file.backlog.findIndex((t) => t.id === id);
+          if (taskIndex === -1) {
+            return new Response('Task not found in backlog', { status: 404 });
+          }
+
+          // Move to done with canceled tag
+          const task = file.backlog.splice(taskIndex, 1)[0];
+          task.section = 'done';
+          task.status = 'canceled';
+          // Remove in-progress tag if present
+          const inProgressIndex = task.tags.indexOf('in-progress');
+          if (inProgressIndex !== -1) {
+            task.tags.splice(inProgressIndex, 1);
+          }
+          // Add canceled tag if not present
+          if (!task.tags.includes('canceled')) {
+            task.tags.push('canceled');
+          }
+          task.reserved = parseReservedTags(task.tags);
+          file.done.push(task);
+          saveTasks(file);
+
+          // Return updated modal
+          const allTasks = getAllTasks(file);
+          return new Response(renderTaskModal(task, allTasks), {
+            headers: { 'Content-Type': 'text/html' },
+          });
+        }
+
         // POST /task/:id/in-progress - Add in-progress tag (from backlog or done)
         if (path.match(/^\/task\/[^/]+\/in-progress$/) && req.method === 'POST') {
           const id = path.split('/')[2];
@@ -402,6 +440,11 @@ export async function startServer(options: ServerOptions): Promise<void> {
             task.section = 'backlog';
             if (!task.tags.includes('in-progress')) {
               task.tags.push('in-progress');
+            }
+            // Remove canceled tag if present (task is being reactivated)
+            const canceledIndex = task.tags.indexOf('canceled');
+            if (canceledIndex !== -1) {
+              task.tags.splice(canceledIndex, 1);
             }
             task.reserved = parseReservedTags(task.tags);
             task.status = deriveStatus('backlog', task.reserved);
@@ -657,6 +700,11 @@ export async function startServer(options: ServerOptions): Promise<void> {
       broadcastUpdate();
     }
   });
+
+  // Warn if we're running on a different port than requested
+  if (boundPort !== startPort) {
+    console.warn(`\n⚠️  Warning: Preferred port ${startPort} is in use. Starting on port ${boundPort} instead.`);
+  }
 
   const url = `http://localhost:${boundPort}`;
   console.log(`\n🚀 SIMBL UI running at ${url}\n`);

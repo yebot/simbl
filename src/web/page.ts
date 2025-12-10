@@ -7,6 +7,7 @@ import {
   renderStatusFilter,
   renderProjectFilter,
   renderTaskTable,
+  extractAllProjects,
   PICO_CSS,
   PICO_COLORS_CSS,
   HTMX_JS,
@@ -43,7 +44,7 @@ export function renderPage(file: SimblFile, projectName?: string): string {
       --pico-background-color: #ffffff;
       --pico-card-background-color: var(--pico-color-azure-50);
 
-      /* SIMBL status/priority/tag colors */
+      /* SIMBL status colors */
       --simbl-in-progress-bg: var(--pico-color-azure-400);
       --simbl-in-progress-bg-light: var(--pico-color-azure-50);
       --simbl-in-progress-text: var(--pico-color-azure-600);
@@ -52,26 +53,34 @@ export function renderPage(file: SimblFile, projectName?: string): string {
       --simbl-done-bg-light: var(--pico-color-lime-50);
       --simbl-done-text: var(--pico-color-lime-600);
 
-      --simbl-p1-bg: var(--pico-color-red-300);
-      --simbl-p1-bg-light: var(--pico-color-red-50);
-      --simbl-p1-text: var(--pico-color-red-500);
+      /* SIMBL Priority colors */
+      --simbl-p1-bg: var(--pico-color-orange-400);
+      --simbl-p1-bg-light: var(--pico-color-orange-350);
+      --simbl-p1-text: var(--pico-color-orange-800);
 
-      --simbl-p2-bg: var(--pico-color-amber-300);
-      --simbl-p2-bg-light: var(--pico-color-amber-50);
-      --simbl-p2-text: var(--pico-color-amber-500);
+      --simbl-p2-bg: var(--pico-color-orange-350);
+      --simbl-p2-bg-light: var(--pico-color-orange-300);
+      --simbl-p2-text: var(--pico-color-orange-800);
 
-      --simbl-p3-bg: var(--pico-color-cyan-300);
-      --simbl-p3-bg-light: var(--pico-color-cyan-50);
-      --simbl-p3-text: var(--pico-color-cyan-500);
+      --simbl-p3-bg: var(--pico-color-orange-300);
+      --simbl-p3-bg-light: var(--pico-color-orange-250);
+      --simbl-p3-text: var(--pico-color-orange-800);
 
-      --simbl-p4-and-up-bg: var(--pico-color-purple-300);
-      --simbl-p4-and-up-bg-light: var(--pico-color-purple-50);
-      --simbl-p4-and-up-text: var(--pico-color-purple-500);
+      --simbl-p4-bg: var(--pico-color-orange-250);
+      --simbl-p4-bg-light: var(--pico-color-orange-200);
+      --simbl-p4-text: var(--pico-color-orange-800);
 
+      --simbl-p5-and-up-bg: var(--pico-color-orange-200);
+      --simbl-p5-and-up-bg-light: var(--pico-color-orange-150);
+      --simbl-p5-and-up-text: var(--pico-color-orange-800);
+
+      
+      /* SIMBL tag colors */
       --simbl-tag-bg: var(--pico-color-zinc-300);
       --simbl-tag-bg-light: var(--pico-color-zinc-50);
       --simbl-tag-text: var(--pico-color-zinc-500);
 
+      /* SIMBL Project colors */
       --simbl-project-bg: var(--pico-color-violet-400);
       --simbl-project-bg-light: var(--pico-color-violet-100);
       --simbl-project-text: var(--pico-color-violet-600);
@@ -119,6 +128,24 @@ export function renderPage(file: SimblFile, projectName?: string): string {
       border-radius: var(--pico-border-radius);
       border: .12rem dashed var(--simbl-tag-bg);
       font-size: .85em;
+    }
+
+    /* Clickable task ID in modal */
+    .task-id-clickable {
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .task-id-clickable:hover {
+      background: var(--simbl-tag-bg);
+      color: var(--pico-color-slate-50);
+    }
+    .task-id-clickable:active {
+      transform: scale(0.98);
+    }
+    .task-id-clickable.copied {
+      background: var(--pico-color-green-100);
+      border-color: var(--pico-color-green-300);
+      color: var(--pico-color-green-600);
     }
 
     /* Loading indicator - default hidden */
@@ -212,26 +239,6 @@ export function renderPage(file: SimblFile, projectName?: string): string {
     .modal-close-btn:hover {
       background: #e0e0e0;
       color: #333;
-    }
-
-    /* Copy ID button */
-    .copy-id-btn {
-      background: transparent;
-      border: none;
-      font-size: 0.9rem;
-      cursor: pointer;
-      padding: 0.2rem 0.4rem;
-      line-height: 1;
-      border-radius: var(--pico-border-radius);
-      opacity: 0.6;
-      transition: opacity 0.2s, background 0.2s;
-    }
-    .copy-id-btn:hover {
-      opacity: 1;
-      background: var(--simbl-tag-bg-light);
-    }
-    .copy-id-btn.copied {
-      opacity: 1;
     }
 
     /* Modal title input */
@@ -418,7 +425,9 @@ export function renderPage(file: SimblFile, projectName?: string): string {
           <strong>Status</strong>
           ${renderStatusFilter()}
         </div>
-        <div>
+        <div id="project-filter-section" style="${
+          extractAllProjects(allTasks).length === 0 ? "display: none;" : ""
+        }">
           <strong>Project</strong>
           ${renderProjectFilter(allTasks)}
         </div>
@@ -545,18 +554,17 @@ export function renderPage(file: SimblFile, projectName?: string): string {
     }
 
     // Copy task ID to clipboard
-    function copyTaskId(taskId) {
+    function copyTaskId(taskId, element) {
       navigator.clipboard.writeText(taskId).then(function() {
-        // Find the button and show feedback
-        const btn = document.querySelector('.copy-id-btn');
-        if (btn) {
-          const originalText = btn.textContent;
-          btn.textContent = '✓';
-          btn.classList.add('copied');
+        // Show feedback on the clicked element
+        if (element) {
+          const originalText = element.textContent;
+          element.textContent = 'Copied';
+          element.classList.add('copied');
           setTimeout(function() {
-            btn.textContent = originalText;
-            btn.classList.remove('copied');
-          }, 1500);
+            element.textContent = originalText;
+            element.classList.remove('copied');
+          }, 1000);
         }
       }).catch(function(err) {
         console.error('Failed to copy task ID:', err);

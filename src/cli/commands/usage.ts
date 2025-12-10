@@ -16,38 +16,52 @@ COMMANDS
   simbl tag add <id> <tag>  Add tag to task
   simbl tag remove <id> <tag>  Remove tag from task
   simbl update <id>         Update task title or content
-  simbl usage               Show this help
-  simbl doctor              Validate tasks.md structure
+  simbl relate <id>         Create task relationships
+  simbl unrelate <id>       Remove task relationships
   simbl serve               Start web UI (HTMX-powered browser interface)
+  simbl doctor              Validate tasks.md structure
+  simbl usage               Show this help
+
+  Tip: Run any command with --help for detailed options.
 
 ADDING TASKS
 
   simbl add "Fix login bug"
-  simbl add "Add dark mode" -p 1                    # priority 1
+  simbl add "Add dark mode" -p 1                    # priority (1-9)
   simbl add "Auth feature" -t "[p2][design]"        # with tags
   simbl add "New feature" --project auth            # with project
   simbl add "Task" -c "Description here"            # with content
+  simbl add "Task" --json                           # output as JSON
 
-LISTING TASKS
+  Flags: -p/--priority, -t/--tags, -c/--content, --project, --json
+
+VIEWING TASKS
+
+  simbl show <id>                   # show full task details
+  simbl show <id> --json            # output as JSON
 
   simbl list                        # brief output (one line per task)
-  simbl list --full                 # show all content
+  simbl list -f                     # show all content (--full)
   simbl list --ids                  # show only task IDs
-  simbl list --tag p1               # filter by tag
-  simbl list --project auth         # filter by project
-  simbl list --search login         # search in title/content
+  simbl list -t p1                  # filter by tag (--tag)
+  simbl list -p auth                # filter by project (--project)
+  simbl list -s login               # search in title/content (--search)
   simbl list --status in-progress   # filter by status
   simbl list --json                 # output as JSON
 
+  Status values: backlog, in-progress, done, canceled
+
 TASK MODIFICATION
 
-  simbl done <id>                   # move task to Done
-  simbl cancel <id>                 # mark task as canceled
+  simbl done <id>                   # move task to Done section
+  simbl cancel <id>                 # add [canceled] tag
+
   simbl tag add <id> <tag>          # add tag to task
   simbl tag remove <id> <tag>       # remove tag from task
-  simbl update <id> --title "New"   # update task title
-  simbl update <id> --content "..."  # replace task content
-  simbl update <id> --append "..."   # append to task content
+
+  simbl update <id> -t "New title"  # update title (-t/--title)
+  simbl update <id> -c "Content"    # replace content (-c/--content)
+  simbl update <id> -a "More info"  # append content (-a/--append)
 
 RELATIONSHIPS
 
@@ -56,7 +70,8 @@ RELATIONSHIPS
   simbl unrelate <id> --parent                # remove parent
   simbl unrelate <id> --depends-on <dep-id>   # remove dependency
 
-  Circular dependencies are automatically detected and prevented.
+  Note: Circular dependencies are automatically detected and prevented.
+  Note: Use flag syntax (--parent, --depends-on), not positional args.
 
 WEB UI
 
@@ -64,23 +79,42 @@ WEB UI
   simbl serve -o                    # start and open browser
   simbl serve -p 8080               # use custom port
 
+COMMON WORKFLOWS
+
+  # Create a task with full details
+  simbl add "Implement auth" -p 1 --project auth -c "Add OAuth2 login flow"
+
+  # Create related tasks
+  simbl add "Parent epic" -p 1
+  simbl add "Subtask" && simbl relate smb-2 --parent smb-1
+
+  # Refine a task (add details, update content)
+  simbl show smb-1                          # review current state
+  simbl update smb-1 -a "## Acceptance Criteria..."  # append criteria
+  simbl tag add smb-1 refined               # mark as refined
+  simbl tag remove smb-1 needs-refinement   # remove old tag
+
+  # Find and update tasks
+  simbl list -s "auth" --status backlog     # find auth tasks
+  simbl list -t p1 --json | jq '.[]'        # parse with jq
+
 TAG REFERENCE
 
   Priority:     [p1] [p2] [p3] ... [p9]   (p1 is highest)
   Status:       [in-progress] [canceled] [refined]
   Project:      [project:name]
-  Hierarchy:    [child-of-task-1]
-  Dependency:   [depends-on-task-2]
+  Hierarchy:    [child-of-<id>]
+  Dependency:   [depends-on-<id>]
   Custom:       [any-tag-you-want]
 
 FILE STRUCTURE
 
   .simbl/
     config.yaml         Configuration (task ID prefix, etc.)
-    tasks.md            Active tasks (Backlog + Done)
-    tasks-archive.md    Archived tasks
+    tasks.md            Active tasks (Backlog + Done sections)
+    tasks-archive.md    Archived completed tasks
 
-TASK FORMAT
+TASK FORMAT IN MARKDOWN
 
   # Backlog
 
@@ -90,7 +124,7 @@ TASK FORMAT
 
   ### Description
 
-  Task content with markdown support.
+  Task content with **markdown** support.
 
   # Done
 

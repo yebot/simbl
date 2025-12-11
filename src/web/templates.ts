@@ -831,7 +831,7 @@ export function renderAddTaskForm(): string {
                 type="button"
                 class="tag-btn"
                 id="add-task-priority-clear"
-                style="background: transparent; color: #6c757d; display: none;"
+                style="background: transparent; color: var(--pico-muted-color); display: none;"
                 title="Clear priority"
                 onclick="clearAddTaskPriority()"
               >&times;</button>

@@ -374,9 +374,8 @@ function isReservedTag(tag: string): boolean {
   if (tag.startsWith("child-of-")) return true;
   // Project tags: project:xxx
   if (tag.startsWith("project:")) return true;
-  // Status tags
-  if (tag === "in-progress" || tag === "canceled" || tag === "refined")
-    return true;
+  // Status tags (in-progress and canceled affect workflow, refined is metadata and should be shown)
+  if (tag === "in-progress" || tag === "canceled") return true;
   return false;
 }
 

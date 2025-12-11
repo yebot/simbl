@@ -19,14 +19,15 @@ import {
 export function renderPage(file: SimblFile, projectName?: string): string {
   const allTasks = getAllTasks(file);
   const backlogTasks = file.backlog;
-  const title = projectName || "SIMBL";
+  const pageTitle = projectName ? `${projectName} - SIMBL` : "SIMBL";
+  const headerTitle = projectName || "SIMBL";
 
   return `<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(title)}</title>
+  <title>${escapeHtml(pageTitle)}</title>
   <link rel="stylesheet" href="${PICO_CSS}">
   <link rel="stylesheet" href="${PICO_COLORS_CSS}">
   <script src="${HTMX_JS}"></script>
@@ -392,7 +393,7 @@ export function renderPage(file: SimblFile, projectName?: string): string {
 <body>
   <main class="container">
     <header>
-      <h1>${escapeHtml(title)}</h1>
+      <h1>${escapeHtml(headerTitle)}</h1>
       <input
         type="search"
         id="search-input"

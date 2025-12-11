@@ -306,6 +306,7 @@ export async function startServer(options: ServerOptions): Promise<void> {
           const title = formData.get('title');
           const tagsInput = formData.get('tags');
           const contentInput = formData.get('content');
+          const priorityInput = formData.get('priority');
 
           if (!title || typeof title !== 'string' || !title.trim()) {
             return new Response('Title is required', { status: 400 });
@@ -320,6 +321,15 @@ export async function startServer(options: ServerOptions): Promise<void> {
 
           // Parse tags from comma-separated input
           const tags: string[] = [];
+
+          // Add priority tag first if specified
+          if (priorityInput && typeof priorityInput === 'string') {
+            const priority = parseInt(priorityInput, 10);
+            if (priority >= 1 && priority <= 9) {
+              tags.push(`p${priority}`);
+            }
+          }
+
           if (tagsInput && typeof tagsInput === 'string' && tagsInput.trim()) {
             const tagList = tagsInput.split(',').map(t => t.trim()).filter(t => t.length > 0);
             tags.push(...tagList);

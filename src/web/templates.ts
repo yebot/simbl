@@ -790,6 +790,21 @@ function getStatusColor(status: string): string {
  * Render the add task form modal
  */
 export function renderAddTaskForm(): string {
+  // Generate priority buttons for P1-P3
+  const priorityButtons = [1, 2, 3]
+    .map((p) => {
+      const suffix = getPriorityVarSuffix(p);
+      return `<button
+        type="button"
+        class="tag-btn add-task-priority-btn"
+        data-priority="${p}"
+        style="background: var(--simbl-${suffix}-bg-light); color: var(--simbl-${suffix}-text);"
+        title="Set priority P${p}"
+        onclick="selectAddTaskPriority(${p})"
+      >P${p}</button>`;
+    })
+    .join("");
+
   return `
     <div id="modal-backdrop">
       <article id="modal-content" style="max-width: 700px;">
@@ -807,9 +822,24 @@ export function renderAddTaskForm(): string {
             Title <span style="color: var(--pico-del-color);">*</span>
             <input type="text" name="title" placeholder="Task title..." required autofocus>
           </label>
+          <div style="margin-bottom: var(--pico-spacing);">
+            <label style="margin-bottom: calc(var(--pico-spacing) / 2);">Priority <small style="color: var(--pico-muted-color);">(optional)</small></label>
+            <input type="hidden" name="priority" id="add-task-priority" value="">
+            <div style="display: flex; gap: calc(var(--pico-spacing) / 4); align-items: center;">
+              ${priorityButtons}
+              <button
+                type="button"
+                class="tag-btn"
+                id="add-task-priority-clear"
+                style="background: transparent; color: var(--pico-muted-color); display: none;"
+                title="Clear priority"
+                onclick="clearAddTaskPriority()"
+              >&times;</button>
+            </div>
+          </div>
           <label>
             Tags <small style="color: var(--pico-muted-color);">(comma separated)</small>
-            <input type="text" name="tags" placeholder="e.g. p2, feature, auth">
+            <input type="text" name="tags" placeholder="e.g. feature, auth">
           </label>
           <label>
             Content <small style="color: var(--pico-muted-color);">(markdown)</small>
@@ -822,5 +852,35 @@ export function renderAddTaskForm(): string {
         </form>
       </article>
     </div>
+    <script>
+      function selectAddTaskPriority(p) {
+        // Update hidden input
+        document.getElementById('add-task-priority').value = p;
+        // Update button styles
+        document.querySelectorAll('.add-task-priority-btn').forEach(btn => {
+          const btnP = parseInt(btn.dataset.priority);
+          const suffix = btnP >= 5 ? 'p5-and-up' : 'p' + btnP;
+          if (btnP === p) {
+            btn.style.background = 'var(--simbl-' + suffix + '-bg)';
+          } else {
+            btn.style.background = 'var(--simbl-' + suffix + '-bg-light)';
+          }
+        });
+        // Show clear button
+        document.getElementById('add-task-priority-clear').style.display = 'inline-block';
+      }
+      function clearAddTaskPriority() {
+        // Clear hidden input
+        document.getElementById('add-task-priority').value = '';
+        // Reset button styles
+        document.querySelectorAll('.add-task-priority-btn').forEach(btn => {
+          const btnP = parseInt(btn.dataset.priority);
+          const suffix = btnP >= 5 ? 'p5-and-up' : 'p' + btnP;
+          btn.style.background = 'var(--simbl-' + suffix + '-bg-light)';
+        });
+        // Hide clear button
+        document.getElementById('add-task-priority-clear').style.display = 'none';
+      }
+    </script>
   `;
 }

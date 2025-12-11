@@ -78,12 +78,18 @@ Uses remark (unified ecosystem) for parsing. The parser must:
 - [docs/TESTING.md](docs/TESTING.md) - Testing strategy and guidelines
 
 <!-- SIMBL:BEGIN -->
+
 ## SIMBL Backlog
 
 This project uses SIMBL for task management. Run `simbl usage` for all commands.
 
 Common commands:
+
 - `simbl list` - view all tasks
 - `simbl add "title"` - add a task
 - `simbl done <id>` - mark task complete
 <!-- SIMBL:END -->
+
+## Design
+
+Use [this page](https://icon.kitchen/i/H4sIAAAAAAAAA02QS04DMQyGr1KZbRctdGbK7BASLEHQHWKRNM40Io8qkwGqUc%2FCkhNwL46A7dKqWfn34%2FMfj%2FCu%2FIA9tCMYld9WGwwIrVW%2BxynYbrXbkoSCnwVEc9DC79f3j%2Bi7FEmPYFVwfkeVm6fJQ8TJs4o9NejkzYnmivJu%2FS%2F3VDzS18mnLLhHZYyLHRNL2kI7n00hu25DOzjUqZQUDrFHK1kB3WdlHB6sCG1O2IvralljQ2BJXXKqrquZpFTsPO1eVDJ%2FKw6obq2tccnO5atDpp6RW5Tp2GrvgvZcZn2aumoarRfyg3MSPaDZkMzg%2BcQvtNXk5Ax1usT3%2BUANr%2Fs%2FitmewIUBAAA%3D) to make this app's icon.

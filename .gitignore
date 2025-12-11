@@ -18,9 +18,9 @@ Thumbs.db
 # Claude Code local settings
 .claude/
 
-# Local SIMBL instance (for testing)
-# Users should have their own .simbl/ in their projects
-.simbl/
+# Local SIMBL instance (for testing & improving SIMBL)
+# Users should have their own .simbl/ in their projects but I'm commenting this out because I want SIMBL on GH where Claude mobile app can read from it.
+# .simbl/
 
 # Environment files
 .env

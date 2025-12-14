@@ -38,7 +38,7 @@ Wherever there exists a tag input field, auto-complete functionality should exis
 
 ## smb-24 Refactor web UI using html-template-tag
 
-[p1][web][refactor][project:web][refined]
+[p1][web][refactor][project:web][refined][in-progress]
 
 #### Overview
 
@@ -219,19 +219,7 @@ Sort by header DESC, then by Task Title ASC
 
 FOLLOW UP! There's still default behavior on initial page load that omits [done] tasks
 
-## smb-33 Bug: why does 'refined' tag not show up in the tag cloud?
-
-[bug][p1]
-
-Why does 'refined' tag not show up in the tag cloud even though there are tasks in the backlog that have it?
-
-## smb-34 Improve *.bun-build file handling
-
-[p1][bun]
-
-Config Bun to NOT put *.bun-build files in the root
-
-## smb-35 Add icons
+## smb-35 Add app icons & favicons
 
 [p2][design]
 
@@ -312,7 +300,75 @@ simbl sync
 - No changes → 'Already up to date'
 - Dirty working tree → warn but proceed (or require clean?)
 
+## smb-39 Show status badges for all relation links in task modal
+
+[p2][web][ui][refined]
+
+In the task modal Relations section, show status badges (in-progress, done, canceled) next to all relation links:
+
+- **Children** - tasks with `[child-of-smb-39]`
+- **Parent** - the parent task if this task has `[child-of-X]`
+- **Dependencies** - tasks listed in `[depends-on-X]`
+
+##### Implementation
+
+1. Create `getChildStatusBadge(status)` helper in `templates.ts` (smaller variant of existing `getStatusBadge()`)
+
+2. Modify `renderTaskModal()` to append badge after each relation link:
+
+   - Children loop (~line 543)
+   - Parent link (~line 510)
+   - Dependencies loop (~line 530)
+
+3. Use existing CSS variables:
+
+   - `var(--simbl-in-progress-bg)` - blue/cyan
+   - `var(--simbl-done-bg)` - green
+   - `var(--pico-color-red-550)` - red for canceled
+
+4. Badge styling: `font-size: 0.75em`, `padding: 2px 6px`, `margin-left: 0.5em`
+
+##### Files to Modify
+
+- `src/web/templates.ts`
+
+##### Acceptance Criteria
+
+- [ ] Children with `[in-progress]` tag show "in-progress" badge
+- [ ] Children in Done section show "done" badge
+- [ ] Children with `[canceled]` tag show "canceled" badge
+- [ ] Backlog children show no badge
+- [ ] Parent link shows status badge
+- [ ] Dependency links show status badges
+- [ ] Badge uses same color scheme as task row badges
+- [ ] Badge has `aria-label` for accessibility
+- [ ] Badge does not break layout on mobile
+- [ ] Clicking relation link still opens that task's modal
+
 # Done
+
+## smb-40 Updates to CLAUDE.md snippet
+
+[p1][claude.md]
+
+update `const CLAUDE_MD_SECTION`:
+
+1. give it knowledge of the file path location of `tasks.md`, `config.yaml`, `tasks-archive.md`
+2. add an IMPORTANT instruction to always proactively update task descriptions when new information, surprises, course-corrections or architectural decisions are made. And, provide an example CLI command that does this.
+
+## smb-33 Bug: why does 'refined' tag not show up in the tag cloud?
+
+[bug][p1]
+
+Why does 'refined' tag not show up in the tag cloud even though there are tasks in the backlog that have it?
+
+## smb-34 Improve *.bun-build file handling
+
+[p1][bun]
+
+1. Config Bun to NOT put *.bun-build files in the root
+
+2. Make sure *.bun-build files are gitignore'd.
 
 ## smb-38 Update the web app title tag
 

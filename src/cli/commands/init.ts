@@ -13,10 +13,20 @@ const CLAUDE_MD_SECTION = `
 
 This project uses SIMBL for task management. Run \`simbl usage\` for all commands.
 
-Common commands:
+**Data files** (in \`.simbl/\`):
+- \`tasks.md\` - active backlog and done tasks
+- \`tasks-archive.md\` - archived tasks
+- \`config.yaml\` - project configuration
+
+**Common commands:**
 - \`simbl list\` - view all tasks
 - \`simbl add "title"\` - add a task
 - \`simbl done <id>\` - mark task complete
+
+**IMPORTANT:** When working on a task, proactively update its description with discoveries, surprises, course-corrections, or architectural decisions. Example:
+\`\`\`bash
+simbl update <id> --append "### Notes\\nDiscovered that X requires Y..."
+\`\`\`
 <!-- SIMBL:END -->
 `;
 
@@ -54,9 +64,9 @@ function extractUserContent(content: string): string | null {
   const sectionContent = content.slice(beginIndex + beginMarker.length, endIndex);
 
   // Find where our standard content ends within the section
-  // We look for the last line of our standard content
-  const lastStandardLine = '- `simbl done <id>` - mark task complete';
-  const lastLineIndex = sectionContent.indexOf(lastStandardLine);
+  // We look for the last line of our standard content (the code block end)
+  const lastStandardLine = '```';
+  const lastLineIndex = sectionContent.lastIndexOf(lastStandardLine);
 
   if (lastLineIndex === -1) {
     // Standard content not found - user may have modified everything
@@ -81,10 +91,20 @@ function buildSimblSection(userContent: string | null): string {
 
 This project uses SIMBL for task management. Run \`simbl usage\` for all commands.
 
-Common commands:
+**Data files** (in \`.simbl/\`):
+- \`tasks.md\` - active backlog and done tasks
+- \`tasks-archive.md\` - archived tasks
+- \`config.yaml\` - project configuration
+
+**Common commands:**
 - \`simbl list\` - view all tasks
 - \`simbl add "title"\` - add a task
-- \`simbl done <id>\` - mark task complete`;
+- \`simbl done <id>\` - mark task complete
+
+**IMPORTANT:** When working on a task, proactively update its description with discoveries, surprises, course-corrections, or architectural decisions. Example:
+\`\`\`bash
+simbl update <id> --append "### Notes\\nDiscovered that X requires Y..."
+\`\`\``;
 
   if (userContent) {
     return `${baseSection}

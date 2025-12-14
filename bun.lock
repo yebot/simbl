@@ -7,6 +7,7 @@
       "dependencies": {
         "@clack/prompts": "^0.8.2",
         "citty": "^0.1.6",
+        "html-template-tag": "4.1.1",
         "js-yaml": "^4.1.0",
         "remark": "^15.0.1",
         "remark-parse": "^11.0.0",
@@ -60,6 +61,12 @@
     "devlop": ["devlop@1.1.0", "", { "dependencies": { "dequal": "^2.0.0" } }, "sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA=="],
 
     "extend": ["extend@3.0.2", "", {}, "sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g=="],
+
+    "html-element-attributes": ["html-element-attributes@3.5.0", "", {}, "sha512-rU2BFhp0kQla9sqPBI46C+zbP6PFOtD7z6XNAJ6as+cGecCDXLx0W3aIs6XdPLmBBG/Fy1meRi/n65Exofz4Qw=="],
+
+    "html-es6cape": ["html-es6cape@2.0.2", "", {}, "sha512-utzhH8rq2VABdW1LsPdv5tmxeMNOtP83If0jKCa79xPBgLWfcMvdf9K+EZoxJ5P7KioCxTs6WBnSDWLQHJ2lWA=="],
+
+    "html-template-tag": ["html-template-tag@4.1.1", "", { "dependencies": { "html-element-attributes": "^3.4.0", "html-es6cape": "^2.0.0" } }, "sha512-lHiH/LZgS9dmW1GyjtNEKdpREd3o+qvhFZKFgM/9MyQ33BOZ+KXQDVcVkXgOkxEgrwjIWPLexgBPn6ooL6CV+g=="],
 
     "is-plain-obj": ["is-plain-obj@4.1.0", "", {}, "sha512-+Pgi+vMuUNkJyExiMBt5IlFoMyKnr5zhJ4Uspz58WOhBF5QoIZkFyNHIbBAtHwzVAgk5RtndVNsDRN61/mmDqg=="],
 

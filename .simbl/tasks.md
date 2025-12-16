@@ -18,14 +18,6 @@ In the web UI's task edit modal, user should be able to:
 - add the task to an existing project (drop-down or autocomplete)
 - add the task to a project that doesn't exist yet
 
-## smb-17 Add priority selection UI to the 'Add Task' modal
-
-[feature][web][p2][project:web]
-
-Allow the user to specify which Priority tag to add to a task in the 'Add Task' modal.
-
-This field is optional.
-
 ## smb-18 Add auto-complete to new tag input field
 
 [feature][p3][project:web]
@@ -146,19 +138,6 @@ Add tests to verify XSS prevention in web UI templates.
 
 smb-24 (template tag refactor should be done first)
 
-## smb-5 CLI tag add should be graceful when tag already exists
-
-[cli]
-
-### Description
-
-The CLI response when attempting to add an 'in-progress' tag to a task that already has it should not be an error, but a graceful informational reply that the tag is already there. Same for priority tags.
-
-Currently returns exit code 1 with error message. Should return exit code 0 with informational message like:
-
-- 'Task already has tag [in-progress]'
-- 'Task already has priority [p2]'
-
 ## smb-28 Add Task Log Feature
 
 [p2]
@@ -252,6 +231,8 @@ simbl sync
 - No changes → 'Already up to date'
 - Dirty working tree → warn but proceed (or require clean?)
 
+# Done
+
 ## smb-39 Show status badges for all relation links in task modal
 
 [p2][web][ui][refined]
@@ -297,7 +278,26 @@ In the task modal Relations section, show status badges (in-progress, done, canc
 - [ ] Badge does not break layout on mobile
 - [ ] Clicking relation link still opens that task's modal
 
-# Done
+## smb-5 CLI tag add should be graceful when tag already exists
+
+[cli]
+
+### Description
+
+The CLI response when attempting to add an 'in-progress' tag to a task that already has it should not be an error, but a graceful informational reply that the tag is already there. Same for priority tags.
+
+Currently returns exit code 1 with error message. Should return exit code 0 with informational message like:
+
+- 'Task already has tag [in-progress]'
+- 'Task already has priority [p2]'
+
+## smb-17 Add priority selection UI to the 'Add Task' modal
+
+[feature][web][p2][project:web]
+
+Allow the user to specify which Priority tag to add to a task in the 'Add Task' modal.
+
+This field is optional.
 
 ## smb-41 the CLAUDE.md init update should mention task ID format
 

@@ -56,8 +56,12 @@ const addTagCommand = defineCommand({
     const tag = args.tag.replace(/^\[|\]$/g, '');
 
     if (task.tags.includes(tag)) {
-      console.error(`Task "${args.id}" already has tag [${tag}].`);
-      process.exit(1);
+      if (args.json) {
+        console.log(JSON.stringify(task, null, 2));
+        return;
+      }
+      console.log(`Task "${args.id}" already has tag [${tag}].`);
+      return;
     }
 
     // If adding a priority tag, remove any existing priority tag first
@@ -140,8 +144,12 @@ const removeTagCommand = defineCommand({
     const tag = args.tag.replace(/^\[|\]$/g, '');
 
     if (!task.tags.includes(tag)) {
-      console.error(`Task "${args.id}" doesn't have tag [${tag}].`);
-      process.exit(1);
+      if (args.json) {
+        console.log(JSON.stringify(task, null, 2));
+        return;
+      }
+      console.log(`Task "${args.id}" doesn't have tag [${tag}].`);
+      return;
     }
 
     // Remove tag

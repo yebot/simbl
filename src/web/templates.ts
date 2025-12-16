@@ -91,6 +91,23 @@ function getStatusBadge(status: string): string {
 }
 
 /**
+ * Small status badge for relation links
+ * Only shows badge for in-progress, done, and canceled statuses (not backlog)
+ */
+function getRelationStatusBadge(status: string): string {
+  const colors: Record<string, string> = {
+    "in-progress": "var(--simbl-in-progress-bg)",
+    done: "var(--simbl-done-bg)",
+    canceled: "var(--pico-color-red-550)",
+  };
+  const color = colors[status];
+  if (!color) return "";
+  return `<span style="background: ${color}; color: var(--pico-color-slate-50); padding: 2px 6px; border-radius: var(--pico-border-radius); font-size: 0.75em; margin-left: 0.5em;" aria-label="${escapeHtml(status)} status">${escapeHtml(
+    status
+  )}</span>`;
+}
+
+/**
  * Project badge styling using SIMBL CSS variables
  * Non-interactive badge - use the project filter section to filter by project
  */
@@ -508,6 +525,7 @@ export function renderTaskModal(
   if (task.reserved.parentId) {
     const parentTask = allTasks.find((t) => t.id === task.reserved.parentId);
     const parentTitle = parentTask ? escapeHtml(parentTask.title) : "";
+    const parentStatusBadge = parentTask ? getRelationStatusBadge(parentTask.status) : "";
     relationsHtml.push(`
       <div style="margin-bottom: 0.5rem;">
         <strong>Parent:</strong>
@@ -516,7 +534,7 @@ export function renderTaskModal(
         )}" hx-target="#modal-container" hx-swap="innerHTML" style="text-decoration: none;">
           <code>${escapeHtml(
             task.reserved.parentId
-          )}</code><span class="relation-title">${parentTitle}</span>
+          )}</code><span class="relation-title">${parentTitle}</span>${parentStatusBadge}
         </a>
       </div>
     `);
@@ -528,11 +546,12 @@ export function renderTaskModal(
       .map((depId) => {
         const depTask = allTasks.find((t) => t.id === depId);
         const depTitle = depTask ? escapeHtml(depTask.title) : "";
+        const depStatusBadge = depTask ? getRelationStatusBadge(depTask.status) : "";
         return `<a href="#" class="relation-link" hx-get="/task/${escapeHtml(
           depId
         )}" hx-target="#modal-container" hx-swap="innerHTML" style="text-decoration: none;"><code>${escapeHtml(
           depId
-        )}</code><span class="relation-title">${depTitle}</span></a>`;
+        )}</code><span class="relation-title">${depTitle}</span>${depStatusBadge}</a>`;
       })
       .join("");
     relationsHtml.push(`
@@ -555,7 +574,7 @@ export function renderTaskModal(
             child.id
           )}</code><span class="relation-title">${escapeHtml(
             child.title
-          )}</span></a>`
+          )}</span>${getRelationStatusBadge(child.status)}</a>`
       )
       .join("");
     relationsHtml.push(`

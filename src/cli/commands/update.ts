@@ -45,6 +45,11 @@ export const updateCommand = defineCommand({
       alias: 'a',
       description: 'Append content to existing content',
     },
+    json: {
+      type: 'boolean',
+      description: 'Output as JSON',
+      default: false,
+    },
   },
   async run({ args }) {
     const simblDir = findSimblDir();
@@ -95,6 +100,11 @@ export const updateCommand = defineCommand({
     // Write back
     const newContent = serializeSimblFile(file);
     writeFileSync(paths.tasks, newContent, 'utf-8');
+
+    if (args.json) {
+      console.log(JSON.stringify(task, null, 2));
+      return;
+    }
 
     console.log(`✓ Updated "${args.id}": ${changes.join(', ')}`);
   },

@@ -22,6 +22,8 @@
       - tasks with [child-of-#] tag are shown nest under parent.
     - Done tasks
       - sorted by id DESC
+- All commands support `--json` flag for machine-readable output
+  - Mutation commands (`done`, `cancel`, `update`, `tag`, `relate`, `unrelate`) output the updated Task object as JSON
 
 ## Task Fields
 
@@ -74,4 +76,6 @@ We need to change the logo theme color. Put reqs, acceptance criteria or definit
 
 ## Config options
 
+- Task ID prefix (e.g., "task", "abc", "smb")
+- Web UI port (default: 3497)
 - should SIMBL's files be .gitignore'd?

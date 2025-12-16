@@ -105,6 +105,7 @@ simbl/
 - [x] Create config.yaml schema and loader
 - [x] Create Task type definitions
 - [x] Enhance `simbl init` with interactive CLAUDE.md integration
+- [x] Add web UI port configuration to init wizard
 
 ### Phase 2: Markdown Parser ✓
 
@@ -155,21 +156,22 @@ Context optimization (agentic-friendly defaults):
 - [x] `simbl list --full` - show all tasks with full content (bird's eye view)
 - [x] `simbl list --ids` - show only task IDs (minimal context)
 - [x] `simbl show <id>` - show one task's full details
+- [x] JSON output flag for all mutation commands (done, cancel, update, tag, relate, unrelate)
 
 Task modification:
 
-- [x] `simbl done <id>` - move task to Done section
-- [x] `simbl cancel <id>` - add [canceled] tag
-- [x] `simbl tag add <id> <tag>` - add tag to task
-- [x] `simbl tag remove <id> <tag>` - remove tag from task
-- [x] `simbl update <id> --title <new>` - update task title
-- [x] `simbl update <id> --content` - update task content
+- [x] `simbl done <id>` - move task to Done section (supports --json)
+- [x] `simbl cancel <id>` - add [canceled] tag (supports --json)
+- [x] `simbl tag add <id> <tag>` - add tag to task (supports --json)
+- [x] `simbl tag remove <id> <tag>` - remove tag from task (supports --json)
+- [x] `simbl update <id> --title <new>` - update task title (supports --json)
+- [x] `simbl update <id> --content` - update task content (supports --json)
 
 ### Phase 5: Relationships ✓
 
-- [x] Parent-child: `simbl relate --parent`
-- [x] Dependencies: `simbl relate --depends-on`
-- [x] `simbl unrelate` to remove relationships
+- [x] Parent-child: `simbl relate --parent` (supports --json)
+- [x] Dependencies: `simbl relate --depends-on` (supports --json)
+- [x] `simbl unrelate` to remove relationships (supports --json)
 - [x] Validation (no circular dependencies)
 - [ ] Cascade behavior (parent changes affect children) - deferred
 
@@ -224,7 +226,9 @@ interface Config {
 
 ```yaml
 # .simbl/config.yaml
-prefix: "task" # Task ID prefix (task-1, task-2, ...)
+name: "Project Name"     # Project name
+prefix: "task"           # Task ID prefix (task-1, task-2, ...)
+webPort: 3497            # Optional: custom web UI port (default: 3497)
 ```
 
 ## Validation Rules (doctor)

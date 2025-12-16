@@ -166,6 +166,9 @@ export async function startServer(options: ServerOptions): Promise<void> {
           if (projectFilter) {
             // Project filter shows tasks from both Backlog AND Done sections
             tasks = [...file.backlog, ...file.done].filter((t) => t.reserved.project === projectFilter);
+          } else if (statusFilter === 'backlog') {
+            // Show pure backlog tasks (not in-progress, not done/canceled)
+            tasks = file.backlog.filter((t) => t.status === 'backlog');
           } else if (statusFilter === 'in-progress') {
             // Show tasks with in-progress status from backlog only
             tasks = file.backlog.filter((t) => t.status === 'in-progress');

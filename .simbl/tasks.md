@@ -159,27 +159,6 @@ Currently returns exit code 1 with error message. Should return exit code 0 with
 - 'Task already has tag [in-progress]'
 - 'Task already has priority [p2]'
 
-## smb-27 Add 'Backlog' Status filter button
-
-[p1][project:web]
-
-### Description
-
-Add a "Backlog" status filter button alongside the existing "In-Progress" and "Done" filters.
-
-### Requirements
-
-- Filter shows tasks that do NOT have `[in-progress]` or `[done]` tags (pure backlog items)
-- Clicking a status filter clears any active project filter (mutual exclusivity with project filters)
-- Button styling matches existing status filter buttons
-
-### Acceptance Criteria
-
-- [ ] "Backlog" filter button appears in status filter section
-- [ ] Clicking "Backlog" shows only tasks without `[in-progress]` or `[done]` tags
-- [ ] Clicking "Backlog" clears any active project filter
-- [ ] Button uses consistent styling with other status filters
-
 ## smb-28 Add Task Log Feature
 
 [p2]
@@ -191,33 +170,6 @@ Add Task Log Feature
 - show/hide log toggle in task modal
 - every time a task changes, a log entry is made
 - for small changes, log entries less than 30 minutes old can be appended. (tag changes, small content edits, status moves.)
-
-## smb-30 Update sorting for the HTMX table of tasks
-
-[web][ui][p1][in-progress]
-
-1. Always show [done] items unless filtered out by 'in-progress' filter
-
-2. Change the default sort
-
-Sort by header DESC (# Header or # Done) The tasks under `# Header` will come before the tasks under `# Done`
-Then by task-ID ASC
-
-3. Change the sort behavior
-
-If the user clicks the ID sort table heading from ASC to DESC,
-Sort by header DESC, then by task-ID DESC
-
-If the user clicks the ID sort table heading from DESC to ASC,
-Sort by header DESC, then by task-ID ASC
-
-If the user clicks the Task sort table heading from ASC to DESC,
-Sort by header DESC, then by Task Title DESC
-
-If the user clicks the Task sort table heading from DESC to ASC,
-Sort by header DESC, then by Task Title ASC
-
-FOLLOW UP! There's still default behavior on initial page load that omits [done] tasks
 
 ## smb-35 Add app icons & favicons
 
@@ -346,6 +298,72 @@ In the task modal Relations section, show status badges (in-progress, done, canc
 - [ ] Clicking relation link still opens that task's modal
 
 # Done
+
+## smb-41 the CLAUDE.md init update should mention task ID format
+
+[p2][init]
+
+if the config has a custom prefix, CLAUDE.md should inform accordingly, if no prefix specified in config, default 'task-' prefix should be mentioned.
+
+## smb-30 Update sorting for the HTMX table of tasks
+
+[web][ui][p1]
+
+1. Always show [done] items unless filtered out by 'in-progress' filter
+
+2. Change the default sort
+
+Sort by header DESC (# Header or # Done) The tasks under `# Header` will come before the tasks under `# Done`
+Then by task-ID ASC
+
+3. Change the sort behavior
+
+If the user clicks the ID sort table heading from ASC to DESC,
+Sort by header DESC, then by task-ID DESC
+
+If the user clicks the ID sort table heading from DESC to ASC,
+Sort by header DESC, then by task-ID ASC
+
+If the user clicks the Task sort table heading from ASC to DESC,
+Sort by header DESC, then by Task Title DESC
+
+If the user clicks the Task sort table heading from DESC to ASC,
+Sort by header DESC, then by Task Title ASC
+
+FOLLOW UP! There's still default behavior on initial page load that omits [done] tasks
+
+## smb-42 inti wizard should ask if the user wants to specify a custom port
+
+[p1][init]
+
+## smb-27 Add 'Backlog' Status filter button
+
+[p1][project:web]
+
+### Description
+
+Add a "Backlog" status filter button alongside the existing "In-Progress" and "Done" filters.
+
+### Requirements
+
+- Filter shows tasks that do NOT have `[in-progress]` or `[done]` tags (pure backlog items)
+- Clicking a status filter clears any active project filter (mutual exclusivity with project filters)
+- Button styling matches existing status filter buttons
+
+### Acceptance Criteria
+
+- [ ] "Backlog" filter button appears in status filter section
+- [ ] Clicking "Backlog" shows only tasks without `[in-progress]` or `[done]` tags
+- [ ] Clicking "Backlog" clears any active project filter
+- [ ] Button uses consistent styling with other status filters
+
+## smb-43 Expand implementation of json output flag
+
+[p1][cli][json]
+
+For every CLI command that an agentic AI tool might run on SIMBL, there should be an option to have SIMBL respond with JSON.
+
+##### Implementation Notes\nAdded --json flag to: done, cancel, update, relate, unrelate, tag add, tag remove
 
 ## smb-40 Updates to CLAUDE.md snippet
 

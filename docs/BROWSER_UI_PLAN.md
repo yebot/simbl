@@ -19,7 +19,9 @@ Add `simbl serve` command that launches a local web UI using Bun's HTTP server, 
 ## Architecture
 
 ```
-simbl serve [--port 3497] [--open]
+simbl serve [--port <custom>] [--open]
+│
+│ Note: Port can be configured via `simbl init --port` or serve flag
 │
 ├── GET /                     # Task list page (HTML)
 ├── GET /tasks                # Task list fragment (HTMX partial)
@@ -50,6 +52,8 @@ simbl serve [--port 3497] [--open]
 │ Search: [_______________]                               │
 │                                                         │
 │ Tags: [p1] [p2] [design] [auth] [project:api]  [clear]  │
+│                                                         │
+│ Status: [backlog] [in-progress] [done]  [clear]        │
 ├─────────────────────────────────────────────────────────┤
 │ ID       │ Title              │ Priority │ Status       │
 │──────────┼────────────────────┼──────────┼──────────────│
@@ -65,6 +69,7 @@ simbl serve [--port 3497] [--open]
 - Sortable columns: ID, Title, Priority, Status (click header to sort)
 - Search box: filters by title + content (debounced)
 - Tag cloud: click tag to filter, click again or "clear" to reset
+- Status filter buttons: backlog, in-progress, done (click to filter by status)
 - Click row → opens task detail modal
 
 ### 2. Task Detail Modal
@@ -129,13 +134,15 @@ src/
 
 ## Implementation Phases
 
-### Phase 1: Basic Server + Read-Only List
+### Phase 1: Basic Server + Read-Only List ✓
 
-- [ ] Create `simbl serve` command
-- [ ] Set up Bun.serve() with basic routing
-- [ ] Render task list page with Pico CSS
-- [ ] Sortable table (ID, title, priority, status)
-- [ ] Include HTMX + Pico from CDN
+- [x] Create `simbl serve` command
+- [x] Support custom port from config.yaml (set via `simbl init --port`)
+- [x] Support --port flag override
+- [x] Set up Bun.serve() with basic routing
+- [x] Render task list page with Pico CSS
+- [x] Sortable table (ID, title, priority, status)
+- [x] Include HTMX + Pico from CDN
 
 ### Phase 2: Search + Tag Cloud
 
@@ -160,12 +167,13 @@ src/
 - [ ] "Saving..." / "Saved" indicator
 - [ ] PATCH endpoint implementation
 
-### Phase 5: Task Actions
+### Phase 5: Task Actions ✓
 
-- [ ] Add task form/modal
-- [ ] Mark Done action
-- [ ] Archive action
-- [ ] Tag add/remove
+- [x] Add task form/modal
+- [x] Mark Done action
+- [x] Archive action
+- [x] Tag add/remove
+- [x] Status filter buttons (backlog, in-progress, done)
 
 ### Phase 6: Archive View
 

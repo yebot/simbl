@@ -24,6 +24,11 @@ export const unrelateCommand = defineCommand({
       type: 'string',
       description: 'Remove dependency on specific task ID',
     },
+    json: {
+      type: 'boolean',
+      description: 'Output as JSON',
+      default: false,
+    },
   },
   async run({ args }) {
     const simblDir = findSimblDir();
@@ -82,6 +87,11 @@ export const unrelateCommand = defineCommand({
     // Write back
     const newContent = serializeSimblFile(file);
     writeFileSync(paths.tasks, newContent, 'utf-8');
+
+    if (args.json) {
+      console.log(JSON.stringify(task, null, 2));
+      return;
+    }
 
     console.log(`✓ Updated "${args.id}": ${changes.join(', ')}`);
   },

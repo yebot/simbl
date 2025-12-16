@@ -24,6 +24,14 @@ COMMANDS
 
   Tip: Run any command with --help for detailed options.
 
+INITIALIZATION
+
+  simbl init                            # interactive setup
+  simbl init -n "MyProject" -p "smb"    # with name and prefix
+  simbl init --port 8080                # with custom web UI port
+
+  Flags: -n/--name (project name), -p/--prefix (task ID prefix), --port (web UI port)
+
 ADDING TASKS
 
   simbl add "Fix login bug"
@@ -54,21 +62,35 @@ VIEWING TASKS
 TASK MODIFICATION
 
   simbl done <id>                   # move task to Done section
+  simbl done <id> --json            # output updated task as JSON
+
   simbl cancel <id>                 # add [canceled] tag
+  simbl cancel <id> --json          # output updated task as JSON
 
   simbl tag add <id> <tag>          # add tag to task
+  simbl tag add <id> <tag> --json   # output updated task as JSON
+
   simbl tag remove <id> <tag>       # remove tag from task
+  simbl tag remove <id> <tag> --json  # output updated task as JSON
 
   simbl update <id> -t "New title"  # update title (-t/--title)
   simbl update <id> -c "Content"    # replace content (-c/--content)
   simbl update <id> -a "More info"  # append content (-a/--append)
+  simbl update <id> --json          # output updated task as JSON
 
 RELATIONSHIPS
 
-  simbl relate <id> --parent <parent-id>      # set parent task
-  simbl relate <id> --depends-on <dep-id>     # add dependency
-  simbl unrelate <id> --parent                # remove parent
-  simbl unrelate <id> --depends-on <dep-id>   # remove dependency
+  simbl relate <id> --parent <parent-id>        # set parent task
+  simbl relate <id> --parent <parent-id> --json  # output as JSON
+
+  simbl relate <id> --depends-on <dep-id>       # add dependency
+  simbl relate <id> --depends-on <dep-id> --json  # output as JSON
+
+  simbl unrelate <id> --parent                  # remove parent
+  simbl unrelate <id> --parent --json           # output as JSON
+
+  simbl unrelate <id> --depends-on <dep-id>     # remove dependency
+  simbl unrelate <id> --depends-on <dep-id> --json  # output as JSON
 
   Note: Circular dependencies are automatically detected and prevented.
   Note: Use flag syntax (--parent, --depends-on), not positional args.

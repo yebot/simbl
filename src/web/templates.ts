@@ -191,11 +191,18 @@ export function renderPriorityFilter(
 }
 
 /**
- * Render the status filter buttons (in-progress, done)
- * When neither is selected, only backlog tasks are shown
+ * Render the status filter buttons (backlog, in-progress, done)
+ * Default view shows all tasks. Filters narrow the view.
  */
 export function renderStatusFilter(activeStatus?: string): string {
   const statuses = [
+    {
+      value: "backlog",
+      label: "backlog",
+      bgVar: "--pico-color-slate-500",
+      bgLightVar: "--pico-color-slate-100",
+      textVar: "--pico-color-slate-600",
+    },
     {
       value: "in-progress",
       label: "in-progress",

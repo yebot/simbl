@@ -14,6 +14,11 @@ export const doneCommand = defineCommand({
       description: 'Task ID to mark as done',
       required: true,
     },
+    json: {
+      type: 'boolean',
+      description: 'Output as JSON',
+      default: false,
+    },
   },
   async run({ args }) {
     const simblDir = findSimblDir();
@@ -59,6 +64,11 @@ export const doneCommand = defineCommand({
     // Write back
     const newContent = serializeSimblFile(file);
     writeFileSync(paths.tasks, newContent, 'utf-8');
+
+    if (args.json) {
+      console.log(JSON.stringify(task, null, 2));
+      return;
+    }
 
     console.log(`✓ Marked "${args.id}" as done`);
   },

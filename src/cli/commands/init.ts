@@ -5,38 +5,14 @@ import { join, basename } from 'path';
 import { SIMBL_DIR, initSimblDir, loadConfig, saveConfig } from '../../core/config.ts';
 
 /**
- * The SIMBL section to add to CLAUDE.md
+ * Build starter CLAUDE.md content when creating a new file
  */
-const CLAUDE_MD_SECTION = `
-<!-- SIMBL:BEGIN -->
-## SIMBL Backlog
-
-This project uses SIMBL for task management. Run \`simbl usage\` for all commands.
-
-**Data files** (in \`.simbl/\`):
-- \`tasks.md\` - active backlog and done tasks
-- \`tasks-archive.md\` - archived tasks
-- \`config.yaml\` - project configuration
-
-**Common commands:**
-- \`simbl list\` - view all tasks
-- \`simbl add "title"\` - add a task
-- \`simbl done <id>\` - mark task complete
-
-**IMPORTANT:** When working on a task, proactively update its description with discoveries, surprises, course-corrections, or architectural decisions. Example:
-\`\`\`bash
-simbl update <id> --append "### Notes\\nDiscovered that X requires Y..."
-\`\`\`
-<!-- SIMBL:END -->
-`;
-
-/**
- * Starter CLAUDE.md content when creating a new file
- */
-const CLAUDE_MD_STARTER = `# CLAUDE.md
+function buildClaudeMdStarter(prefix: string = 'task'): string {
+  return `# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-${CLAUDE_MD_SECTION}`;
+${buildSimblSection(null, prefix)}`;
+}
 
 /**
  * Check if CLAUDE.md already has a SIMBL section
@@ -82,14 +58,15 @@ function extractUserContent(content: string): string | null {
 }
 
 /**
- * Build the SIMBL section, optionally including preserved user content
+ * Build the SIMBL section, optionally including preserved user content and prefix
  */
-function buildSimblSection(userContent: string | null): string {
+function buildSimblSection(userContent: string | null, prefix: string = 'task'): string {
+  const exampleId = `${prefix}-1`;
   const baseSection = `
 <!-- SIMBL:BEGIN -->
 ## SIMBL Backlog
 
-This project uses SIMBL for task management. Run \`simbl usage\` for all commands.
+This project uses SIMBL for task management. Run \`simbl usage\` for all commands. Tasks have a custom prefix: \`${prefix}-\`.
 
 **Data files** (in \`.simbl/\`):
 - \`tasks.md\` - active backlog and done tasks
@@ -103,7 +80,7 @@ This project uses SIMBL for task management. Run \`simbl usage\` for all command
 
 **IMPORTANT:** When working on a task, proactively update its description with discoveries, surprises, course-corrections, or architectural decisions. Example:
 \`\`\`bash
-simbl update <id> --append "### Notes\\nDiscovered that X requires Y..."
+simbl update ${exampleId} --append "### Notes\\nDiscovered that X requires Y..."
 \`\`\``;
 
   if (userContent) {
@@ -122,7 +99,7 @@ ${userContent}
 /**
  * Replace the existing SIMBL section in content, preserving user additions
  */
-function replaceSimblSection(content: string): string {
+function replaceSimblSection(content: string, prefix: string = 'task'): string {
   const beginMarker = '<!-- SIMBL:BEGIN -->';
   const endMarker = '<!-- SIMBL:END -->';
 
@@ -131,7 +108,7 @@ function replaceSimblSection(content: string): string {
 
   if (beginIndex === -1 || endIndex === -1) {
     // No valid section to replace, append instead
-    return content.trimEnd() + '\n' + buildSimblSection(null);
+    return content.trimEnd() + '\n' + buildSimblSection(null, prefix);
   }
 
   // Extract user content before replacing
@@ -141,7 +118,7 @@ function replaceSimblSection(content: string): string {
   const before = content.slice(0, beginIndex);
   const after = content.slice(endIndex + endMarker.length);
 
-  return before + buildSimblSection(userContent).trim() + after;
+  return before + buildSimblSection(userContent, prefix).trim() + after;
 }
 
 export const initCommand = defineCommand({
@@ -165,6 +142,10 @@ export const initCommand = defineCommand({
       type: 'string',
       alias: 'p',
       description: 'Set custom task ID prefix (default: "task")',
+    },
+    port: {
+      type: 'string',
+      description: 'Set custom web UI port (default: 3497)',
     },
   },
   async run({ args }) {
@@ -231,14 +212,59 @@ export const initCommand = defineCommand({
       }
     }
 
+    // Determine port: CLI arg > interactive prompt > no custom port
+    let webPort: number | undefined;
+    if (args.port) {
+      const parsedPort = parseInt(args.port, 10);
+      if (!isNaN(parsedPort) && parsedPort > 0 && parsedPort < 65536) {
+        webPort = parsedPort;
+      }
+    } else {
+      const wantsPort = await p.confirm({
+        message: 'Set a custom web UI port? (default is 3497)',
+        initialValue: false,
+      });
+
+      if (p.isCancel(wantsPort)) {
+        p.outro('Setup cancelled');
+        process.exit(0);
+      }
+
+      if (wantsPort) {
+        const portInput = await p.text({
+          message: 'Web UI port',
+          placeholder: '3497',
+          validate: (value) => {
+            const port = parseInt(value, 10);
+            if (isNaN(port) || port < 1 || port > 65535) {
+              return 'Port must be a number between 1 and 65535';
+            }
+          },
+        });
+
+        if (p.isCancel(portInput)) {
+          p.outro('Setup cancelled');
+          process.exit(0);
+        }
+
+        if (portInput) {
+          webPort = parseInt(portInput, 10);
+        }
+      }
+    }
+
     // Update config with chosen values
     const config = loadConfig(simblDir);
     config.name = name;
     config.prefix = prefix;
+    if (webPort) {
+      config.webPort = webPort;
+    }
     saveConfig(simblDir, config);
 
     // Show what was created
-    p.log.success(`Created ${SIMBL_DIR}/config.yaml (name: "${config.name}", prefix: "${config.prefix}")`);
+    const portInfo = config.webPort ? `, port: ${config.webPort}` : '';
+    p.log.success(`Created ${SIMBL_DIR}/config.yaml (name: "${config.name}", prefix: "${config.prefix}"${portInfo})`);
     p.log.success(`Created ${SIMBL_DIR}/tasks.md`);
     p.log.success(`Created ${SIMBL_DIR}/tasks-archive.md`);
 
@@ -252,7 +278,7 @@ export const initCommand = defineCommand({
         if (args.force) {
           // Re-initialize but preserve user content
           const userContent = extractUserContent(content);
-          const updatedContent = replaceSimblSection(content);
+          const updatedContent = replaceSimblSection(content, prefix);
           writeFileSync(claudeMdPath, updatedContent, 'utf-8');
           if (userContent) {
             p.log.success('Updated SIMBL section in CLAUDE.md (preserved user content)');
@@ -274,7 +300,7 @@ export const initCommand = defineCommand({
         }
 
         if (shouldAdd) {
-          const updatedContent = content.trimEnd() + '\n' + CLAUDE_MD_SECTION;
+          const updatedContent = content.trimEnd() + '\n' + buildSimblSection(null, prefix);
           writeFileSync(claudeMdPath, updatedContent, 'utf-8');
           p.log.success('Added SIMBL section to CLAUDE.md');
         }
@@ -291,7 +317,7 @@ export const initCommand = defineCommand({
       }
 
       if (shouldCreate) {
-        writeFileSync(claudeMdPath, CLAUDE_MD_STARTER, 'utf-8');
+        writeFileSync(claudeMdPath, buildClaudeMdStarter(prefix), 'utf-8');
         p.log.success('Created CLAUDE.md with SIMBL instructions');
       }
     }

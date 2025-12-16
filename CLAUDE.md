@@ -81,13 +81,26 @@ Uses remark (unified ecosystem) for parsing. The parser must:
 
 ## SIMBL Backlog
 
-This project uses SIMBL for task management. Run `simbl usage` for all commands.
+This project uses SIMBL for task management. Run `simbl usage` for all commands. Tasks have a custom prefix: `smb-`.
 
-Common commands:
+**Data files** (in `.simbl/`):
+
+- `tasks.md` - active backlog and done tasks
+- `tasks-archive.md` - archived tasks
+- `config.yaml` - project configuration
+
+**Common commands:**
 
 - `simbl list` - view all tasks
 - `simbl add "title"` - add a task
 - `simbl done <id>` - mark task complete
+
+**IMPORTANT:** When working on a task, proactively update its description with discoveries, surprises, course-corrections, or architectural decisions. Example:
+
+```bash
+simbl update <id> --append "### Notes\nDiscovered that X requires Y..."
+```
+
 <!-- SIMBL:END -->
 
 ## Design
@@ -96,6 +109,7 @@ Use [this page](https://icon.kitchen/i/H4sIAAAAAAAAA02QS04DMQyGr1KZbRctdGbK7BASL
 
 <!-- BRANCH-WORKFLOW-ENABLED -->
 <!-- WORKTREE-MODE -->
+
 ## Branch-Based Workflow (Worktree Mode)
 
 This project uses a worktree-based development workflow. Each feature gets its own directory, allowing parallel development without branch switching.
@@ -109,6 +123,7 @@ This project uses a worktree-based development workflow. Each feature gets its o
 ### Worktree Workflow
 
 1. **Start new work**: Create a worktree for the feature
+
    ```bash
    # From main repo directory
    git fetch origin
@@ -117,18 +132,21 @@ This project uses a worktree-based development workflow. Each feature gets its o
    ```
 
 2. **Make commits**: Work in the worktree directory
+
    ```bash
    git add .
    git commit -m "feat: description of change"
    ```
 
 3. **Stay in sync**: Periodically rebase on main (hooks will remind you)
+
    ```bash
    git fetch origin
    git rebase origin/main
    ```
 
 4. **Push and create PR**: When ready for review
+
    ```bash
    git push -u origin feat/feature-name
    gh pr create --title "feat: your feature" --body "Description..."
@@ -161,6 +179,7 @@ git worktree prune
 ### Directory Structure
 
 Keep worktrees alongside the main repo:
+
 ```
 ~/projects/
 ├── myproject/              <- main branch (primary repo)
@@ -172,6 +191,7 @@ Keep worktrees alongside the main repo:
 ### Task Tracker Integration
 
 When working on tracked tasks:
+
 - Reference task IDs in branch names: `feat/TASK-123-add-feature`
 - Include task references in commit messages: `feat: add feature [TASK-123]`
 - Link PRs to tasks in the PR description

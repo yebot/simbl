@@ -27,6 +27,11 @@ const addTagCommand = defineCommand({
       description: 'Tag to add (without brackets)',
       required: true,
     },
+    json: {
+      type: 'boolean',
+      description: 'Output as JSON',
+      default: false,
+    },
   },
   async run({ args }) {
     const simblDir = findSimblDir();
@@ -77,6 +82,11 @@ const addTagCommand = defineCommand({
     const newContent = serializeSimblFile(file);
     writeFileSync(paths.tasks, newContent, 'utf-8');
 
+    if (args.json) {
+      console.log(JSON.stringify(task, null, 2));
+      return;
+    }
+
     if (removedPriority) {
       console.log(`✓ Added [${tag}] to "${args.id}" (replaced [${removedPriority}])`);
     } else {
@@ -100,6 +110,11 @@ const removeTagCommand = defineCommand({
       type: 'positional',
       description: 'Tag to remove (without brackets)',
       required: true,
+    },
+    json: {
+      type: 'boolean',
+      description: 'Output as JSON',
+      default: false,
     },
   },
   async run({ args }) {
@@ -139,6 +154,11 @@ const removeTagCommand = defineCommand({
     // Write back
     const newContent = serializeSimblFile(file);
     writeFileSync(paths.tasks, newContent, 'utf-8');
+
+    if (args.json) {
+      console.log(JSON.stringify(task, null, 2));
+      return;
+    }
 
     console.log(`✓ Removed [${tag}] from "${args.id}"`);
   },

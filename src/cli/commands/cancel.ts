@@ -14,6 +14,11 @@ export const cancelCommand = defineCommand({
       description: 'Task ID to cancel',
       required: true,
     },
+    json: {
+      type: 'boolean',
+      description: 'Output as JSON',
+      default: false,
+    },
   },
   async run({ args }) {
     const simblDir = findSimblDir();
@@ -64,6 +69,11 @@ export const cancelCommand = defineCommand({
     // Write back
     const newContent = serializeSimblFile(file);
     writeFileSync(paths.tasks, newContent, 'utf-8');
+
+    if (args.json) {
+      console.log(JSON.stringify(task, null, 2));
+      return;
+    }
 
     console.log(`✓ Marked "${args.id}" as canceled`);
   },

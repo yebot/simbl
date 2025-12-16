@@ -18,7 +18,6 @@ import {
  */
 export function renderPage(file: SimblFile, projectName?: string): string {
   const allTasks = getAllTasks(file);
-  const backlogTasks = file.backlog;
   const pageTitle = projectName ? `${projectName} - SIMBL` : "SIMBL";
   const headerTitle = projectName || "SIMBL";
 
@@ -437,7 +436,7 @@ export function renderPage(file: SimblFile, projectName?: string): string {
 
     <section>
       <div id="tasks-container">
-        ${renderTaskTable(backlogTasks)}
+        ${renderTaskTable(allTasks)}
       </div>
     </section>
 

@@ -12,12 +12,6 @@ In the web UI's task edit modal, user should be able to:
 - add the task to an existing project (drop-down or autocomplete)
 - add the task to a project that doesn't exist yet
 
-## smb-18 Add auto-complete to new tag input field
-
-[feature][p3][project:web]
-
-Wherever there exists a tag input field, auto-complete functionality should exist where the auto-complete has knowledge of all existing tags in tasks.md as well as reserved special tags so its easier to add tags to a task w/o making mistakes.
-
 ## smb-23 Add production building for Windows and Linux
 
 [p3][needs-refinement]
@@ -220,6 +214,12 @@ simbl sync
 - Dirty working tree → warn but proceed (or require clean?)
 
 # Done
+
+## smb-18 Add auto-complete to new tag input field
+
+[feature][p3][project:web]
+
+Wherever there exists a tag input field, auto-complete functionality should exist where the auto-complete has knowledge of all existing tags in tasks.md as well as reserved special tags so its easier to add tags to a task w/o making mistakes.
 
 ## smb-35 Add app icons & favicons
 

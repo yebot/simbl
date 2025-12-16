@@ -482,6 +482,17 @@ export function renderTaskModal(
     if (existingPriorities.has(p)) priorities.push(p);
   }
 
+  // Gather all unique tags for autocomplete (excluding current task's tags)
+  const allTagsSet = new Set<string>();
+  // Add reserved/special tags
+  ['in-progress', 'refined', 'needs-refinement', 'canceled'].forEach(t => allTagsSet.add(t));
+  // Add all tags from all tasks
+  allTasks.forEach(t => t.tags.forEach(tag => allTagsSet.add(tag)));
+  // Remove tags the current task already has
+  task.tags.forEach(t => allTagsSet.delete(t));
+  // Sort alphabetically
+  const autocompleteTags = Array.from(allTagsSet).sort();
+
   // Priority buttons using tag-btn class for smaller sizing
   const priorityButtons = priorities
     .map((p) => {
@@ -762,8 +773,13 @@ export function renderTaskModal(
               type="text"
               name="tag"
               placeholder="add tag"
-              style="padding: .2rem .4rem; font-size: 0.85em; width: 5rem; margin: 0; height: auto;"
+              list="tag-suggestions-${escapeHtml(task.id)}"
+              autocomplete="off"
+              style="padding: .2rem .4rem; font-size: 0.85em; width: 7rem; margin: 0; height: auto;"
             >
+            <datalist id="tag-suggestions-${escapeHtml(task.id)}">
+              ${autocompleteTags.map(t => `<option value="${escapeHtml(t)}">`).join('')}
+            </datalist>
             <button type="submit" class="tag-btn" style="background: var(--simbl-tag-bg-light); color: var(--simbl-tag-text);">+</button>
           </form>
         </div>

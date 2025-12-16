@@ -1,17 +1,5 @@
 # Backlog
 
-## smb-13 Project CRUD operations in task modal
-
-[project][project:web]
-
-### Description
-
-In the web UI's task edit modal, user should be able to:
-
-- remove the task from a project
-- add the task to an existing project (drop-down or autocomplete)
-- add the task to a project that doesn't exist yet
-
 ## smb-23 Add production building for Windows and Linux
 
 [p3][needs-refinement]
@@ -214,6 +202,18 @@ simbl sync
 - Dirty working tree → warn but proceed (or require clean?)
 
 # Done
+
+## smb-13 Project CRUD operations in task modal
+
+[project][project:web]
+
+### Description
+
+In the web UI's task edit modal, user should be able to:
+
+- remove the task from a project
+- add the task to an existing project (drop-down or autocomplete)
+- add the task to a project that doesn't exist yet
 
 ## smb-18 Add auto-complete to new tag input field
 

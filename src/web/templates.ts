@@ -596,12 +596,47 @@ export function renderTaskModal(
     `);
   }
 
-  // Project badge using tag-btn style for consistency
+  // Gather all unique projects for autocomplete
+  const allProjectsSet = new Set<string>();
+  allTasks.forEach(t => {
+    if (t.reserved.project) allProjectsSet.add(t.reserved.project);
+  });
+  const autocompleteProjects = Array.from(allProjectsSet).sort();
+
+  // Project badge with CRUD controls
   const projectHtml = task.reserved.project
-    ? `<span class="tag-btn" style="background: var(--simbl-project-bg-light); color: var(--simbl-project-text); cursor: default;">${escapeHtml(
-        task.reserved.project
-      )}</span>`
+    ? `<span class="tag-badge" style="background: var(--simbl-project-bg-light); color: var(--simbl-project-text);">
+        ${escapeHtml(task.reserved.project)}
+        <button
+          hx-delete="/task/${escapeHtml(task.id)}/project"
+          hx-target="#modal-container"
+          hx-swap="innerHTML"
+          style="background: none; border: none; padding: 0; cursor: pointer; font-size: 1em; line-height: 1; color: var(--simbl-project-text);"
+          title="Remove from project"
+        >&times;</button>
+      </span>`
     : "";
+
+  // Project input form (for adding/changing project)
+  const projectInputHtml = `<form
+    hx-post="/task/${escapeHtml(task.id)}/project"
+    hx-target="#modal-container"
+    hx-swap="innerHTML"
+    style="display: inline-flex; gap: .2rem; margin: 0; align-items: center;"
+  >
+    <input
+      type="text"
+      name="project"
+      placeholder="${task.reserved.project ? 'change project' : 'add to project'}"
+      list="project-suggestions-${escapeHtml(task.id)}"
+      autocomplete="off"
+      style="padding: .2rem .4rem; font-size: 0.85em; width: 8rem; margin: 0; height: auto;"
+    >
+    <datalist id="project-suggestions-${escapeHtml(task.id)}">
+      ${autocompleteProjects.map(p => `<option value="${escapeHtml(p)}">`).join('')}
+    </datalist>
+    <button type="submit" class="tag-btn" style="background: var(--simbl-project-bg-light); color: var(--simbl-project-text);">${task.reserved.project ? '↻' : '+'}</button>
+  </form>`;
 
   // Shift heading levels for display (H3 -> H1, etc.)
   const displayContent = shiftHeadingsForDisplay(task.content);
@@ -735,11 +770,10 @@ export function renderTaskModal(
         <div style="display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--pico-spacing) / 2); margin-bottom: var(--pico-spacing);">
           <strong style="margin-right: 4px;">Priority</strong>
           ${priorityHtml}
-          ${
-            projectHtml
-              ? `<span style="margin-left: calc(var(--pico-spacing) / 2);"></span><strong style="margin-right: 4px;">Project</strong>${projectHtml}`
-              : ""
-          }
+          <span style="margin-left: calc(var(--pico-spacing) / 2);"></span>
+          <strong style="margin-right: 4px;">Project</strong>
+          ${projectHtml}
+          ${projectInputHtml}
           <span style="margin-left: calc(var(--pico-spacing) / 2);"></span>
           <strong style="margin-right: 4px;">Tags</strong>
           ${

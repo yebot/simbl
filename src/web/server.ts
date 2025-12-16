@@ -665,6 +665,77 @@ export async function startServer(options: ServerOptions): Promise<void> {
           });
         }
 
+        // POST /task/:id/project - Set project for task
+        if (path.match(/^\/task\/[^/]+\/project$/) && req.method === 'POST') {
+          const id = path.split('/')[2];
+          const formData = await req.formData();
+          const project = formData.get('project');
+
+          if (!project || typeof project !== 'string' || !project.trim()) {
+            return new Response('Project name is required', { status: 400 });
+          }
+
+          const file = loadTasks();
+
+          // Find task in either section
+          let task = file.backlog.find((t) => t.id === id);
+          let section: 'backlog' | 'done' = 'backlog';
+          if (!task) {
+            task = file.done.find((t) => t.id === id);
+            section = 'done';
+          }
+
+          if (!task) {
+            return new Response('Task not found', { status: 404 });
+          }
+
+          // Remove any existing project tag
+          task.tags = task.tags.filter((t) => !t.startsWith('project:'));
+
+          // Add new project tag
+          const projectTag = `project:${project.trim()}`;
+          task.tags.push(projectTag);
+          task.reserved = parseReservedTags(task.tags);
+          task.status = deriveStatus(section, task.reserved);
+          saveTasks(file);
+
+          // Return updated modal with saved indicator
+          const allTasks = getAllTasks(file);
+          return new Response(renderTaskModal(task, allTasks, true), {
+            headers: { 'Content-Type': 'text/html' },
+          });
+        }
+
+        // DELETE /task/:id/project - Remove project from task
+        if (path.match(/^\/task\/[^/]+\/project$/) && req.method === 'DELETE') {
+          const id = path.split('/')[2];
+          const file = loadTasks();
+
+          // Find task in either section
+          let task = file.backlog.find((t) => t.id === id);
+          let section: 'backlog' | 'done' = 'backlog';
+          if (!task) {
+            task = file.done.find((t) => t.id === id);
+            section = 'done';
+          }
+
+          if (!task) {
+            return new Response('Task not found', { status: 404 });
+          }
+
+          // Remove project tag
+          task.tags = task.tags.filter((t) => !t.startsWith('project:'));
+          task.reserved = parseReservedTags(task.tags);
+          task.status = deriveStatus(section, task.reserved);
+          saveTasks(file);
+
+          // Return updated modal with saved indicator
+          const allTasks = getAllTasks(file);
+          return new Response(renderTaskModal(task, allTasks, true), {
+            headers: { 'Content-Type': 'text/html' },
+          });
+        }
+
         // DELETE /task/:id - Delete task (done section only)
         if (path.match(/^\/task\/[^/]+$/) && req.method === 'DELETE') {
           const id = path.slice(6); // Remove '/task/'

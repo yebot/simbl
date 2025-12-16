@@ -2,7 +2,7 @@
 
 ## smb-23 Add production building for Windows and Linux
 
-[p3][needs-refinement]
+[p5][needs-refinement]
 
 ## smb-24 Refactor web UI using html-template-tag
 
@@ -202,6 +202,12 @@ simbl sync
 - Dirty working tree → warn but proceed (or require clean?)
 
 # Done
+
+## smb-44 Bug: missing icons
+
+[p1][bug][web][ui]
+
+both /apple-touch-icon.png and /favicon.ico are giving 404 in production build.
 
 ## smb-13 Project CRUD operations in task modal
 

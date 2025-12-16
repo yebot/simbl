@@ -5,6 +5,7 @@ import { parseReservedTags, deriveStatus, type Task } from '../core/task.ts';
 import { generateNextId } from '../utils/id.ts';
 import { renderTaskTable, renderTagCloud, renderPriorityFilter, renderStatusFilter, renderProjectFilter, renderTaskModal, renderAddTaskForm, shiftHeadingsForStorage } from './templates.ts';
 import { renderPage } from './page.ts';
+import { FAVICON_ICO_BASE64, APPLE_TOUCH_ICON_BASE64 } from './icons.ts';
 import type { ServerWebSocket } from 'bun';
 
 // Track connected WebSocket clients
@@ -142,27 +143,19 @@ export async function startServer(options: ServerOptions): Promise<void> {
       }
 
       try {
-        // Serve static icon files
+        // Serve embedded icon files (base64-encoded for production builds)
         if (path === '/favicon.ico' && req.method === 'GET') {
-          const iconPath = new URL('../../icons/web/favicon.ico', import.meta.url).pathname;
-          const file = Bun.file(iconPath);
-          if (await file.exists()) {
-            return new Response(file, {
-              headers: { 'Content-Type': 'image/x-icon', 'Cache-Control': 'public, max-age=86400' },
-            });
-          }
-          return new Response('Not found', { status: 404 });
+          const iconData = Buffer.from(FAVICON_ICO_BASE64, 'base64');
+          return new Response(iconData, {
+            headers: { 'Content-Type': 'image/x-icon', 'Cache-Control': 'public, max-age=86400' },
+          });
         }
 
         if (path === '/apple-touch-icon.png' && req.method === 'GET') {
-          const iconPath = new URL('../../icons/web/apple-touch-icon.png', import.meta.url).pathname;
-          const file = Bun.file(iconPath);
-          if (await file.exists()) {
-            return new Response(file, {
-              headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400' },
-            });
-          }
-          return new Response('Not found', { status: 404 });
+          const iconData = Buffer.from(APPLE_TOUCH_ICON_BASE64, 'base64');
+          return new Response(iconData, {
+            headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400' },
+          });
         }
 
         // GET / - Main page

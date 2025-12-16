@@ -126,6 +126,8 @@ Add Task Log Feature
 - every time a task changes, a log entry is made
 - for small changes, log entries less than 30 minutes old can be appended. (tag changes, small content edits, status moves.)
 
+# Done
+
 ## smb-37 Add simbl sync command for pulling remote task changes
 
 [p4][depends-on-smb-36][project:mobile-capture]
@@ -158,8 +160,6 @@ simbl sync
 - Conflicts in tasks.md → show warning, let user resolve
 - No changes → 'Already up to date'
 - Dirty working tree → warn but proceed (or require clean?)
-
-# Done
 
 ## smb-36 Add GitHub workflow_dispatch for mobile task capture
 

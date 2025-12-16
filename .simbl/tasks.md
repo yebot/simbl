@@ -1,11 +1,5 @@
 # Backlog
 
-## smb-9 Update 'Send to...' action buttons
-
-[p3][ui][project:web]
-
-Replace all 'Send to...' action buttons with 'Move to...'.
-
 ## smb-13 Project CRUD operations in task modal
 
 [project][project:web]
@@ -232,6 +226,12 @@ simbl sync
 - Dirty working tree → warn but proceed (or require clean?)
 
 # Done
+
+## smb-9 Update 'Send to...' action buttons
+
+[p3][ui][project:web]
+
+Replace all 'Send to...' action buttons with 'Move to...'.
 
 ## smb-39 Show status badges for all relation links in task modal
 

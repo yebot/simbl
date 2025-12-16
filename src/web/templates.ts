@@ -701,7 +701,7 @@ export function renderTaskModal(
                    hx-swap="innerHTML"
                    class="tag-btn"
                    style="background: var(--simbl-in-progress-bg-light); color: var(--simbl-in-progress-text);"
-                 >⮕ Send to In-Progress</button>
+                 >⮕ Move to In-Progress</button>
                  <button
                    hx-post="/task/${escapeHtml(task.id)}/done"
                    hx-target="#modal-container"

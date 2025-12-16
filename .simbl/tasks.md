@@ -144,12 +144,6 @@ Add Task Log Feature
 - every time a task changes, a log entry is made
 - for small changes, log entries less than 30 minutes old can be appended. (tag changes, small content edits, status moves.)
 
-## smb-35 Add app icons & favicons
-
-[p2][design]
-
-Add supplied files in `icons` directory to give this app icons and favicons.
-
 ## smb-36 Add GitHub workflow_dispatch for mobile task capture
 
 [project:mobile-capture]
@@ -226,6 +220,12 @@ simbl sync
 - Dirty working tree → warn but proceed (or require clean?)
 
 # Done
+
+## smb-35 Add app icons & favicons
+
+[p2][design]
+
+Add supplied files in `icons` directory to give this app icons and favicons.
 
 ## smb-9 Update 'Send to...' action buttons
 

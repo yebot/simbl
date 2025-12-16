@@ -27,6 +27,8 @@ export function renderPage(file: SimblFile, projectName?: string): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(pageTitle)}</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="${PICO_CSS}">
   <link rel="stylesheet" href="${PICO_COLORS_CSS}">
   <script src="${HTMX_JS}"></script>

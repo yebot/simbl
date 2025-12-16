@@ -142,6 +142,29 @@ export async function startServer(options: ServerOptions): Promise<void> {
       }
 
       try {
+        // Serve static icon files
+        if (path === '/favicon.ico' && req.method === 'GET') {
+          const iconPath = new URL('../../icons/web/favicon.ico', import.meta.url).pathname;
+          const file = Bun.file(iconPath);
+          if (await file.exists()) {
+            return new Response(file, {
+              headers: { 'Content-Type': 'image/x-icon', 'Cache-Control': 'public, max-age=86400' },
+            });
+          }
+          return new Response('Not found', { status: 404 });
+        }
+
+        if (path === '/apple-touch-icon.png' && req.method === 'GET') {
+          const iconPath = new URL('../../icons/web/apple-touch-icon.png', import.meta.url).pathname;
+          const file = Bun.file(iconPath);
+          if (await file.exists()) {
+            return new Response(file, {
+              headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400' },
+            });
+          }
+          return new Response('Not found', { status: 404 });
+        }
+
         // GET / - Main page
         if (path === '/' && req.method === 'GET') {
           const file = loadTasks();

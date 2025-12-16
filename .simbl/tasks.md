@@ -61,7 +61,7 @@ task-log
 
 ## smb-25 Consolidate inline styles into CSS classes in web UI
 
-[depends-on-smb-24]
+[depends-on-smb-24][project:web]
 
 ### Description
 
@@ -88,7 +88,7 @@ smb-24 (template tag refactor should be done first)
 
 ## smb-26 Add automated XSS prevention tests for web UI
 
-[depends-on-smb-24]
+[depends-on-smb-24][project:web]
 
 ### Description
 
@@ -126,9 +126,44 @@ Add Task Log Feature
 - every time a task changes, a log entry is made
 - for small changes, log entries less than 30 minutes old can be appended. (tag changes, small content edits, status moves.)
 
+## smb-37 Add simbl sync command for pulling remote task changes
+
+[p4][depends-on-smb-36][project:mobile-capture]
+
+### Description
+
+#### Overview
+
+A command that pulls remote changes and reports what's new in tasks.md. Complements the GitHub workflow_dispatch quick-capture feature.
+
+#### Behavior
+
+```bash
+simbl sync
+### Pulling from origin...
+### 2 new tasks from remote: smb-37, smb-38
+### 1 task updated: smb-12
+```
+
+#### Implementation
+
+1. Run `git pull` (or `git fetch` + `git merge`)
+2. Compare tasks.md before/after
+3. Report: new tasks, updated tasks, deleted tasks
+4. Handle merge conflicts gracefully (show conflict, don't crash)
+
+#### Edge cases
+
+- No remote configured → skip with message
+- Conflicts in tasks.md → show warning, let user resolve
+- No changes → 'Already up to date'
+- Dirty working tree → warn but proceed (or require clean?)
+
+# Done
+
 ## smb-36 Add GitHub workflow_dispatch for mobile task capture
 
-[project:mobile-capture]
+[p4][project:mobile-capture]
 
 ### Description
 
@@ -167,41 +202,6 @@ Add a GitHub Actions workflow that allows quick task capture from the GitHub mob
 - Parse existing task IDs to find next available number
 - Consider adding a special tag to these tasks so, once imported, we can give it special consideration
 - Use the prefix from config.yaml if accessible, or derive from existing task IDs, or default to 'task'
-
-## smb-37 Add simbl sync command for pulling remote task changes
-
-[depends-on-smb-36][project:mobile-capture]
-
-### Description
-
-#### Overview
-
-A command that pulls remote changes and reports what's new in tasks.md. Complements the GitHub workflow_dispatch quick-capture feature.
-
-#### Behavior
-
-```bash
-simbl sync
-### Pulling from origin...
-### 2 new tasks from remote: smb-37, smb-38
-### 1 task updated: smb-12
-```
-
-#### Implementation
-
-1. Run `git pull` (or `git fetch` + `git merge`)
-2. Compare tasks.md before/after
-3. Report: new tasks, updated tasks, deleted tasks
-4. Handle merge conflicts gracefully (show conflict, don't crash)
-
-#### Edge cases
-
-- No remote configured → skip with message
-- Conflicts in tasks.md → show warning, let user resolve
-- No changes → 'Already up to date'
-- Dirty working tree → warn but proceed (or require clean?)
-
-# Done
 
 ## smb-44 Bug: missing icons
 

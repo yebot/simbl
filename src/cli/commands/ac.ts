@@ -14,10 +14,9 @@ interface AcceptanceCriterion {
 
 /**
  * Standard header for acceptance criteria section
- * Uses H5 (####) because task content headers start at H3 level,
- * and AC is typically nested under other sections
+ * Uses H3 as the default level for new AC sections
  */
-const AC_HEADER = '##### Acceptance Criteria';
+const AC_HEADER = '### Acceptance Criteria';
 
 /**
  * Find the acceptance criteria section in task content
@@ -27,10 +26,10 @@ function findACSection(content: string): { start: number; end: number } | null {
   const lines = content.split('\n');
   let headerIndex = -1;
 
-  // Find the AC header (H5 or H6)
+  // Find the AC header (H3-H6 all valid)
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trim();
-    if (trimmed === '##### Acceptance Criteria' || trimmed === '###### Acceptance Criteria') {
+    if (/^#{3,6} Acceptance Criteria$/i.test(trimmed)) {
       headerIndex = i;
       break;
     }

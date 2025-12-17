@@ -21,27 +21,8 @@ function validateAcceptanceCriteria(task: Task): Issue[] {
 
   if (!content) return issues;
 
-  // Check for non-standard AC headers (only H5 or H6 are valid)
-  const lines = content.split('\n');
-  for (const line of lines) {
-    const trimmed = line.trim();
-    // Look for AC headers that aren't H5 or H6
-    if (trimmed.toLowerCase().includes('acceptance') && trimmed.toLowerCase().includes('criter') && trimmed.startsWith('#')) {
-      // Valid: ##### Acceptance Criteria or ###### Acceptance Criteria
-      const isValidH5 = trimmed === '##### Acceptance Criteria';
-      const isValidH6 = trimmed === '###### Acceptance Criteria';
-      if (!isValidH5 && !isValidH6) {
-        issues.push({
-          level: 'warning',
-          message: `Non-standard AC header "${trimmed}" (expected "##### Acceptance Criteria" or "###### Acceptance Criteria")`,
-          taskId: task.id,
-        });
-      }
-    }
-  }
-
-  // Check for malformed checkbox items within AC section (H5 or H6)
-  const acSectionRegex = /#{5,6} Acceptance Criteria\n([\s\S]*?)(?=\n#{1,6} |\n\*\*\*|\n---|\n___|$)/i;
+  // Check for malformed checkbox items within AC section (H3-H6 all valid)
+  const acSectionRegex = /#{3,6} Acceptance Criteria\n([\s\S]*?)(?=\n#{1,6} |\n\*\*\*|\n---|\n___|$)/i;
   const acMatch = content.match(acSectionRegex);
 
   if (acMatch) {

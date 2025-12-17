@@ -1,5 +1,7 @@
 import html from "html-template-tag";
 import type { Task } from "../core/task.ts";
+import { parseTaskLog, stripTaskLog } from "../core/log.ts";
+import type { LogEntry } from "../core/log.ts";
 
 /**
  * Pico CSS CDN URLs
@@ -57,6 +59,45 @@ export function shiftHeadingsForStorage(content: string): string {
     }
     return "#".repeat(newLevel) + " " + text;
   });
+}
+
+/**
+ * Render the task log section (collapsible)
+ */
+function renderTaskLog(logEntries: LogEntry[]): string {
+  if (logEntries.length === 0) {
+    return html`
+      <details class="task-log-section">
+        <summary role="button" class="secondary outline">
+          Task Log <small>(no entries)</small>
+        </summary>
+        <div class="task-log-content">
+          <em>No log entries yet</em>
+        </div>
+      </details>
+    `;
+  }
+
+  const entriesHtml = logEntries.map(entry => {
+    const dateStr = entry.timestamp.toLocaleString();
+    return html`
+      <div class="task-log-entry">
+        <span class="task-log-timestamp">${dateStr}</span>
+        <span class="task-log-message">${entry.message}</span>
+      </div>
+    `;
+  }).join('');
+
+  return html`
+    <details class="task-log-section">
+      <summary role="button" class="secondary outline">
+        Task Log <small>(${String(logEntries.length)} ${logEntries.length === 1 ? 'entry' : 'entries'})</small>
+      </summary>
+      <div class="task-log-content">
+        $${entriesHtml}
+      </div>
+    </details>
+  `;
 }
 
 /**
@@ -620,8 +661,9 @@ export function renderTaskModal(
     <button type="submit" class="tag-btn" style="background: var(--simbl-project-bg-light); color: var(--simbl-project-text);">${task.reserved.project ? '↻' : '+'}</button>
   </form>`;
 
-  // Shift heading levels for display (H3 -> H1, etc.)
-  const displayContent = shiftHeadingsForDisplay(task.content);
+  // Parse log entries and strip from display content
+  const logEntries = parseTaskLog(task.content);
+  const displayContent = shiftHeadingsForDisplay(stripTaskLog(task.content));
 
   // Tag badges with remove buttons
   const tagBadgesHtml = displayTags.length > 0
@@ -822,6 +864,8 @@ export function renderTaskModal(
           hx-swap="outerHTML"
           class="content-textarea"
         >${displayContent}</textarea>
+
+        ${renderTaskLog(logEntries)}
       </article>
     </dialog>
   `;

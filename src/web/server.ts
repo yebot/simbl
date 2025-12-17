@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, watch } from 'fs';
 import { findSimblDir, getSimblPaths, loadConfig } from '../core/config.ts';
 import { parseSimblFile, getAllTasks, serializeSimblFile } from '../core/parser.ts';
 import { parseReservedTags, deriveStatus, type Task } from '../core/task.ts';
-import { appendLogEntry, appendOrBatchLogEntry } from '../core/log.ts';
+import { appendLogEntry, appendOrBatchLogEntry, stripTaskLog } from '../core/log.ts';
 import { generateNextId } from '../utils/id.ts';
 import { renderTaskTable, renderTagCloud, renderPriorityFilter, renderStatusFilter, renderProjectFilter, renderTaskModal, renderAddTaskForm, shiftHeadingsForStorage } from './templates.ts';
 import { renderPage } from './page.ts';
@@ -292,12 +292,18 @@ export async function startServer(options: ServerOptions): Promise<void> {
           }
 
           if (content !== null && typeof content === 'string') {
-            // Preserve log section when updating content
-            const userContent = shiftHeadingsForStorage(content);
-            const existingLogMatch = task.content.match(/\n\*\*\*\n\ntask-log\n[\s\S]*$/);
-            const logSection = existingLogMatch ? existingLogMatch[0] : '';
-            task.content = userContent + logSection;
-            // Batched log entry for content change
+            // Preserve existing log section when updating content
+            const existingLog = task.content.includes('\n***\n\ntask-log\n')
+              ? task.content.slice(task.content.indexOf('\n***\n\ntask-log\n'))
+              : '';
+
+            // Strip any log from the new content (user shouldn't edit log via textarea)
+            const newUserContent = stripTaskLog(shiftHeadingsForStorage(content));
+
+            // Combine user content with existing log
+            task.content = existingLog ? newUserContent + existingLog : newUserContent;
+
+            // Add batched log entry for content change
             task.content = appendOrBatchLogEntry(task.content, 'Content updated');
             updated = true;
           }

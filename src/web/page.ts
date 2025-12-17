@@ -343,6 +343,48 @@ export function renderPage(file: SimblFile, projectName?: string): string {
       text-decoration: underline;
     }
 
+    /* Task Log Section */
+    .task-log-section {
+      margin-top: var(--pico-spacing);
+    }
+    .task-log-section summary {
+      font-size: 0.9em;
+      padding: 0.5rem 1rem;
+    }
+    .task-log-section summary small {
+      color: var(--pico-muted-color);
+      margin-left: 0.5em;
+    }
+    .task-log-content {
+      background: var(--pico-color-slate-50);
+      border-left: 3px solid var(--pico-color-slate-300);
+      padding: var(--pico-spacing);
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 0.9em;
+      margin-top: calc(var(--pico-spacing) / 2);
+    }
+    .task-log-entry {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--pico-color-slate-200);
+      display: flex;
+      gap: 1rem;
+      align-items: baseline;
+    }
+    .task-log-entry:last-child {
+      border-bottom: none;
+    }
+    .task-log-timestamp {
+      font-family: monospace;
+      font-size: 0.8em;
+      color: var(--pico-muted-color);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .task-log-message {
+      color: var(--pico-color);
+    }
+
     /* Error toast */
     .error-toast {
       position: fixed;

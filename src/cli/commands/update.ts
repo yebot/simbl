@@ -2,6 +2,7 @@ import { defineCommand } from 'citty';
 import { readFileSync, writeFileSync } from 'fs';
 import { findSimblDir, getSimblPaths } from '../../core/config.ts';
 import { parseSimblFile, serializeSimblFile, findTaskById } from '../../core/parser.ts';
+import { appendOrBatchLogEntry, stripTaskLog } from '../../core/log.ts';
 
 /**
  * Normalize heading levels in content.
@@ -80,20 +81,33 @@ export const updateCommand = defineCommand({
     if (args.title) {
       task.title = args.title;
       changes.push('title');
+      // Add batched log entry for title change
+      task.content = appendOrBatchLogEntry(task.content, 'Title updated');
     }
 
     if (args.content) {
-      task.content = normalizeHeadings(args.content);
+      // Strip existing log before replacing content, then add log entry
+      const existingLog = task.content;
+      const userContent = normalizeHeadings(args.content);
+      // Preserve log section by stripping from old, adding to new
+      const logSection = existingLog.includes('\n***\n\ntask-log\n')
+        ? existingLog.slice(existingLog.indexOf('\n***\n\ntask-log\n'))
+        : '';
+      task.content = userContent + logSection;
+      task.content = appendOrBatchLogEntry(task.content, 'Content updated');
       changes.push('content');
     }
 
     if (args.append) {
       const normalizedAppend = normalizeHeadings(args.append);
-      if (task.content) {
-        task.content = task.content + '\n\n' + normalizedAppend;
+      const userContent = stripTaskLog(task.content);
+      if (userContent) {
+        task.content = userContent + '\n\n' + normalizedAppend;
       } else {
         task.content = normalizedAppend;
       }
+      // Restore log section and add entry
+      task.content = appendOrBatchLogEntry(task.content, 'Content updated');
       changes.push('content (appended)');
     }
 

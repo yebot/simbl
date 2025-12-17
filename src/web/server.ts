@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, watch } from 'fs';
 import { findSimblDir, getSimblPaths, loadConfig } from '../core/config.ts';
 import { parseSimblFile, getAllTasks, serializeSimblFile } from '../core/parser.ts';
 import { parseReservedTags, deriveStatus, type Task } from '../core/task.ts';
+import { appendLogEntry, appendOrBatchLogEntry } from '../core/log.ts';
 import { generateNextId } from '../utils/id.ts';
 import { renderTaskTable, renderTagCloud, renderPriorityFilter, renderStatusFilter, renderProjectFilter, renderTaskModal, renderAddTaskForm, shiftHeadingsForStorage } from './templates.ts';
 import { renderPage } from './page.ts';
@@ -285,12 +286,19 @@ export async function startServer(options: ServerOptions): Promise<void> {
 
           if (title !== null && typeof title === 'string') {
             task.title = title;
+            // Batched log entry for title change
+            task.content = appendOrBatchLogEntry(task.content, 'Title updated');
             updated = true;
           }
 
           if (content !== null && typeof content === 'string') {
-            // Shift headings back for storage (H1 in UI -> H3 in file)
-            task.content = shiftHeadingsForStorage(content);
+            // Preserve log section when updating content
+            const userContent = shiftHeadingsForStorage(content);
+            const existingLogMatch = task.content.match(/\n\*\*\*\n\ntask-log\n[\s\S]*$/);
+            const logSection = existingLogMatch ? existingLogMatch[0] : '';
+            task.content = userContent + logSection;
+            // Batched log entry for content change
+            task.content = appendOrBatchLogEntry(task.content, 'Content updated');
             updated = true;
           }
 
@@ -360,6 +368,9 @@ export async function startServer(options: ServerOptions): Promise<void> {
             content = shiftHeadingsForStorage(contentInput);
           }
 
+          // Add "Task created" log entry
+          content = appendLogEntry(content, 'Task created');
+
           // Create task
           const task: Task = {
             id,
@@ -397,6 +408,7 @@ export async function startServer(options: ServerOptions): Promise<void> {
           const task = file.backlog.splice(taskIndex, 1)[0];
           task.section = 'done';
           task.status = 'done';
+          task.content = appendLogEntry(task.content, 'Moved to Done');
           file.done.push(task);
           saveTasks(file);
 
@@ -432,6 +444,7 @@ export async function startServer(options: ServerOptions): Promise<void> {
             task.tags.push('canceled');
           }
           task.reserved = parseReservedTags(task.tags);
+          task.content = appendLogEntry(task.content, 'Marked as canceled');
           file.done.push(task);
           saveTasks(file);
 
@@ -455,6 +468,7 @@ export async function startServer(options: ServerOptions): Promise<void> {
               task.tags.push('in-progress');
               task.reserved = parseReservedTags(task.tags);
               task.status = deriveStatus('backlog', task.reserved);
+              task.content = appendLogEntry(task.content, 'Marked in-progress');
               saveTasks(file);
             }
           } else {
@@ -477,6 +491,7 @@ export async function startServer(options: ServerOptions): Promise<void> {
             }
             task.reserved = parseReservedTags(task.tags);
             task.status = deriveStatus('backlog', task.reserved);
+            task.content = appendLogEntry(task.content, 'Moved to In-Progress from Done');
             file.backlog.push(task);
             saveTasks(file);
           }
@@ -505,6 +520,7 @@ export async function startServer(options: ServerOptions): Promise<void> {
             task.tags.splice(tagIndex, 1);
             task.reserved = parseReservedTags(task.tags);
             task.status = deriveStatus('backlog', task.reserved);
+            task.content = appendLogEntry(task.content, 'Moved to Backlog');
             saveTasks(file);
           }
 
@@ -545,6 +561,7 @@ export async function startServer(options: ServerOptions): Promise<void> {
             task.tags.push(cleanTag);
             task.reserved = parseReservedTags(task.tags);
             task.status = deriveStatus(section, task.reserved);
+            task.content = appendLogEntry(task.content, `Added tag [${cleanTag}]`);
             saveTasks(file);
           }
 
@@ -575,13 +592,21 @@ export async function startServer(options: ServerOptions): Promise<void> {
             return new Response('Task not found', { status: 404 });
           }
 
-          // Remove any existing priority tag
+          // Remove any existing priority tag and track old priority
+          const oldPriority = task.tags.find((t) => /^p[1-9]$/.test(t));
           task.tags = task.tags.filter((t) => !/^p[1-9]$/.test(t));
 
           // Add new priority tag
           task.tags.unshift(`p${priority}`);
           task.reserved = parseReservedTags(task.tags);
           task.status = deriveStatus(section, task.reserved);
+
+          // Log priority change
+          if (oldPriority) {
+            task.content = appendLogEntry(task.content, `Priority changed from [${oldPriority}] to [p${priority}]`);
+          } else {
+            task.content = appendLogEntry(task.content, `Priority set to [p${priority}]`);
+          }
           saveTasks(file);
 
           // Return updated modal with saved indicator
@@ -609,10 +634,14 @@ export async function startServer(options: ServerOptions): Promise<void> {
             return new Response('Task not found', { status: 404 });
           }
 
-          // Remove priority tags
+          // Remove priority tags and track old priority
+          const oldPriority = task.tags.find((t) => /^p[1-9]$/.test(t));
           task.tags = task.tags.filter((t) => !/^p[1-9]$/.test(t));
           task.reserved = parseReservedTags(task.tags);
           task.status = deriveStatus(section, task.reserved);
+          if (oldPriority) {
+            task.content = appendLogEntry(task.content, `Removed priority [${oldPriority}]`);
+          }
           saveTasks(file);
 
           // Return updated modal with saved indicator
@@ -648,6 +677,7 @@ export async function startServer(options: ServerOptions): Promise<void> {
             task.tags.splice(tagIndex, 1);
             task.reserved = parseReservedTags(task.tags);
             task.status = deriveStatus(section, task.reserved);
+            task.content = appendLogEntry(task.content, `Removed tag [${tagToRemove}]`);
             saveTasks(file);
           }
 

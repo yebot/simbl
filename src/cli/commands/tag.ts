@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import { findSimblDir, getSimblPaths } from '../../core/config.ts';
 import { parseSimblFile, serializeSimblFile, findTaskById } from '../../core/parser.ts';
 import { parseReservedTags, deriveStatus } from '../../core/task.ts';
+import { appendLogEntry } from '../../core/log.ts';
 
 /**
  * Check if a tag is a priority tag (p1-p9)
@@ -82,6 +83,13 @@ const addTagCommand = defineCommand({
     task.reserved = parseReservedTags(task.tags);
     task.status = deriveStatus(task.section, task.reserved);
 
+    // Add log entry
+    if (removedPriority) {
+      task.content = appendLogEntry(task.content, `Priority changed from [${removedPriority}] to [${tag}]`);
+    } else {
+      task.content = appendLogEntry(task.content, `Added tag [${tag}]`);
+    }
+
     // Write back
     const newContent = serializeSimblFile(file);
     writeFileSync(paths.tasks, newContent, 'utf-8');
@@ -158,6 +166,9 @@ const removeTagCommand = defineCommand({
     // Reparse reserved tags and update status
     task.reserved = parseReservedTags(task.tags);
     task.status = deriveStatus(task.section, task.reserved);
+
+    // Add log entry
+    task.content = appendLogEntry(task.content, `Removed tag [${tag}]`);
 
     // Write back
     const newContent = serializeSimblFile(file);

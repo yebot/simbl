@@ -2,6 +2,7 @@ import { defineCommand } from 'citty';
 import { readFileSync, writeFileSync } from 'fs';
 import { findSimblDir, getSimblPaths } from '../../core/config.ts';
 import { parseSimblFile, serializeSimblFile } from '../../core/parser.ts';
+import { appendLogEntry } from '../../core/log.ts';
 
 export const cancelCommand = defineCommand({
   meta: {
@@ -62,6 +63,9 @@ export const cancelCommand = defineCommand({
     // Remove [in-progress] tag if present
     task.tags = task.tags.filter((t) => t !== 'in-progress');
     task.reserved.inProgress = false;
+
+    // Add log entry
+    task.content = appendLogEntry(task.content, 'Marked as canceled');
 
     // Add to beginning of done section (most recent first)
     file.done.unshift(task);

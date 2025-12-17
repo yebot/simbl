@@ -184,63 +184,6 @@ This task is split into 3 sub-tasks:
 
 - smb-28c depends on smb-24 (html-template-tag refactor) to avoid conflicts in templates.ts
 
-## smb-47 Task log: auto-generate on mutations
-
-[p2][project:core][child-of-smb-28][depends-on-smb-46]
-
-### Description
-
-##### Overview
-
-Hook into all task mutation points to automatically generate log entries using the parser from smb-46.
-
-##### Mutation Points to Hook
-
-| Change Type | Location | Log Message Format |
-|-------------|----------|-------------------|
-| Task created | add.ts, server.ts POST /task | "Task created" |
-| Status: done | done.ts, server.ts | "Moved to Done" |
-| Status: in-progress | server.ts | "Marked in-progress" |
-| Status: backlog | server.ts | "Moved to Backlog" |
-| Status: canceled | cancel.ts, server.ts | "Marked as canceled" |
-| Priority change | server.ts | "Priority changed from P{old} to P{new}" |
-| Tag added | tag.ts, server.ts | "Added tag [{tag}]" |
-| Tag removed | tag.ts, server.ts | "Removed tag [{tag}]" |
-| Title changed | update.ts, server.ts | "Title updated" (batch within 30 min) |
-| Content changed | update.ts, server.ts | "Content updated" (batch within 30 min) |
-
-##### CLI Command
-
-Add `simbl log <id>` command:
-
-- Displays log entries for a task
-- Supports `--json` flag for machine output
-- Shows newest entries first (or oldest first, TBD)
-
-Update `simbl usage` with log command documentation.
-
-##### Implementation Notes
-
-- Use `appendOrBatchLogEntry()` for title/content changes to batch within 30 min
-- Use `appendLogEntry()` for status/tag/priority changes (no batching)
-- Priority changes should capture before/after values
-
-##### Acceptance Criteria
-
-- [ ] Task creation generates "Task created" log entry
-- [ ] `simbl done` generates log entry
-- [ ] `simbl cancel` generates log entry
-- [ ] `simbl tag add` generates log entry with tag name
-- [ ] `simbl tag remove` generates log entry with tag name
-- [ ] `simbl update --title` generates log entry (batched)
-- [ ] `simbl update --content` generates log entry (batched)
-- [ ] Priority changes via web UI generate log entry with before/after
-- [ ] Status changes via web UI generate log entries
-- [ ] `simbl log <id>` displays log entries
-- [ ] `simbl log <id> --json` outputs JSON format
-- [ ] `simbl usage` documents log command
-- [ ] TypeScript compiles (`bun run typecheck`)
-
 ## smb-48 Task log: web UI toggle
 
 [p2][project:web][child-of-smb-28][depends-on-smb-47][depends-on-smb-24]
@@ -336,6 +279,76 @@ Muted, read-only appearance:
 - [ ] Binary builds (`bun run build`)
 
 # Done
+
+## smb-47 Task log: auto-generate on mutations
+
+[p2][project:core][child-of-smb-28][depends-on-smb-46]
+
+### Description
+
+##### Overview
+
+Hook into all task mutation points to automatically generate log entries using the parser from smb-46.
+
+##### Mutation Points to Hook
+
+| Change Type | Location | Log Message Format |
+|-------------|----------|-------------------|
+| Task created | add.ts, server.ts POST /task | "Task created" |
+| Status: done | done.ts, server.ts | "Moved to Done" |
+| Status: in-progress | server.ts | "Marked in-progress" |
+| Status: backlog | server.ts | "Moved to Backlog" |
+| Status: canceled | cancel.ts, server.ts | "Marked as canceled" |
+| Priority change | server.ts | "Priority changed from P{old} to P{new}" |
+| Tag added | tag.ts, server.ts | "Added tag [{tag}]" |
+| Tag removed | tag.ts, server.ts | "Removed tag [{tag}]" |
+| Title changed | update.ts, server.ts | "Title updated" (batch within 30 min) |
+| Content changed | update.ts, server.ts | "Content updated" (batch within 30 min) |
+
+##### CLI Command
+
+Add `simbl log <id>` command:
+
+- Displays log entries for a task
+- Supports `--json` flag for machine output
+- Shows newest entries first (or oldest first, TBD)
+
+Update `simbl usage` with log command documentation.
+
+##### Implementation Notes
+
+- Use `appendOrBatchLogEntry()` for title/content changes to batch within 30 min
+- Use `appendLogEntry()` for status/tag/priority changes (no batching)
+- Priority changes should capture before/after values
+
+##### Acceptance Criteria
+
+- [ ] Task creation generates "Task created" log entry
+- [ ] `simbl done` generates log entry
+- [ ] `simbl cancel` generates log entry
+- [ ] `simbl tag add` generates log entry with tag name
+- [ ] `simbl tag remove` generates log entry with tag name
+- [ ] `simbl update --title` generates log entry (batched)
+- [ ] `simbl update --content` generates log entry (batched)
+- [ ] Priority changes via web UI generate log entry with before/after
+- [ ] Status changes via web UI generate log entries
+- [ ] `simbl log <id>` displays log entries
+- [ ] `simbl log <id> --json` outputs JSON format
+- [ ] `simbl usage` documents log command
+- [ ] TypeScript compiles (`bun run typecheck`)
+
+## smb-49 Test task for logging
+
+[feature][p2]
+
+***
+
+task-log
+
+- 2025-12-17T22:38:32Z | Moved to Done
+- 2025-12-17T22:38:27Z | Priority changed from [p1] to [p2]
+- 2025-12-17T22:38:23Z | Added tag [feature]
+- 2025-12-17T22:37:51Z | Task created
 
 ## smb-46 Task log: markdown format and parser
 

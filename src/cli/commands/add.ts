@@ -4,6 +4,7 @@ import { findSimblDir, getSimblPaths, loadConfig } from '../../core/config.ts';
 import { parseSimblFile, serializeSimblFile } from '../../core/parser.ts';
 import { generateNextId } from '../../utils/id.ts';
 import { parseTagLine, parseReservedTags, deriveStatus, type Task } from '../../core/task.ts';
+import { appendLogEntry } from '../../core/log.ts';
 
 /**
  * Normalize heading levels in content.
@@ -103,6 +104,9 @@ export const addCommand = defineCommand({
       const normalizedContent = normalizeHeadings(args.content);
       taskContent = `### Description\n\n${normalizedContent}`;
     }
+
+    // Add "Task created" log entry
+    taskContent = appendLogEntry(taskContent, 'Task created');
 
     // Create task object
     const reserved = parseReservedTags(tags);

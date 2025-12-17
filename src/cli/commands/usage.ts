@@ -19,6 +19,7 @@ COMMANDS
   simbl relate <id>         Create task relationships
   simbl unrelate <id>       Remove task relationships
   simbl ac <subcommand>     Manage acceptance criteria
+  simbl log <id>            Display task log entries
   simbl serve               Start web UI (HTMX-powered browser interface)
   simbl sync                Pull remote changes and report new/updated tasks
   simbl doctor              Validate tasks.md structure
@@ -114,6 +115,20 @@ ACCEPTANCE CRITERIA
   simbl ac add smb-1 "Tests pass" "No lint errors" "Docs updated"
   simbl ac meets smb-1 1                        # mark "Tests pass" as met
   simbl ac list smb-1 --json                    # get JSON for automation
+
+TASK LOG
+
+  simbl log <id>                            # display task log entries
+  simbl log <id> --json                     # output as JSON
+
+  Tasks automatically log changes:
+  - Task creation
+  - Status changes (done, in-progress, backlog, canceled)
+  - Priority changes (with before/after values)
+  - Tag additions and removals
+  - Title and content edits (batched within 30 min)
+
+  Log entries are stored in task content and shown in the web UI.
 
 WEB UI
 

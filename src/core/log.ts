@@ -29,8 +29,9 @@ const LOG_SECTION_MARKER = '***\n\ntask-log\n';
 
 /**
  * Regex to find the log section marker
+ * Handles both with and without leading newline (for tasks with no user content)
  */
-const LOG_SECTION_REGEX = /\n\*\*\*\n\ntask-log\n/;
+const LOG_SECTION_REGEX = /(?:^|\n)\*\*\*\n\ntask-log\n/;
 
 /**
  * Regex to parse a single log entry line

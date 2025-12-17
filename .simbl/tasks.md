@@ -2,7 +2,7 @@
 
 ## smb-23 Add production building for Windows and Linux
 
-[p5][needs-refinement]
+[p5][needs-refinement][project:core]
 
 ## smb-24 Refactor web UI using html-template-tag
 
@@ -116,17 +116,301 @@ smb-24 (template tag refactor should be done first)
 
 ## smb-28 Add Task Log Feature
 
-[p2]
+[p2][project:core][refined]
 
-Add Task Log Feature
+##### Overview
 
-- Designate a section of task content were log entries can be stored
-- "Hide" the log-entry section from the User facing web view 'Content (markdown)' field
-- show/hide log toggle in task modal
-- every time a task changes, a log entry is made
-- for small changes, log entries less than 30 minutes old can be appended. (tag changes, small content edits, status moves.)
+Add an automatic changelog/audit trail for individual tasks that records all modifications. Log entries are stored in a designated section of task content, hidden from the user-facing Content textarea but viewable via a toggle in the task modal.
+
+##### Technical Approach
+
+###### Markdown Format
+
+Use horizontal rule + keyword pattern to delineate log section:
+
+```markdown
+##### Description
+User content here...
+
+***
+
+task-log
+
+- 2025-12-17T14:32:00Z | Priority changed from P2 to P1
+- 2025-12-17T14:30:00Z | Added tag [feature]
+- 2025-12-17T14:28:00Z | Task created
+```
+
+###### What Gets Logged
+
+- Task creation
+- Status changes (backlog, in-progress, done, canceled)
+- Priority changes (with before/after values)
+- Tag additions/removals
+- Title edits
+- Content edits (batched within 30 minutes)
+
+###### Batching Rule
+
+Small successive changes within 30 minutes are batched into a single log entry to reduce noise. For content/title edits, use simple message like "Content updated" rather than diffs.
+
+###### No Attribution
+
+Log entries do not track who/what made the change (no "via CLI" or "via web UI").
+
+###### No Log Size Limit
+
+All entries are kept indefinitely.
+
+##### Implementation Plan
+
+This task is split into 3 sub-tasks:
+
+1. **smb-28a: Task log markdown format and parser** - Core parsing functions, round-trip preservation
+2. **smb-28b: Auto-generate log entries on mutations** - Hook into CLI and server mutation points
+3. **smb-28c: Web UI log toggle** - Hide log from textarea, add collapsible toggle to view entries
+
+##### CLI Command
+
+`simbl log <id>` - Display log entries for a task (view only, no manual add)
+
+##### Web UI Behavior
+
+- Log section collapsed by default in task modal
+- Toggle button shows entry count badge
+- Log entries displayed in read-only scrollable section with muted styling
+
+##### Dependencies
+
+- smb-28c depends on smb-24 (html-template-tag refactor) to avoid conflicts in templates.ts
+
+## smb-47 Task log: auto-generate on mutations
+
+[p2][project:core][child-of-smb-28][depends-on-smb-46]
+
+### Description
+
+##### Overview
+
+Hook into all task mutation points to automatically generate log entries using the parser from smb-46.
+
+##### Mutation Points to Hook
+
+| Change Type | Location | Log Message Format |
+|-------------|----------|-------------------|
+| Task created | add.ts, server.ts POST /task | "Task created" |
+| Status: done | done.ts, server.ts | "Moved to Done" |
+| Status: in-progress | server.ts | "Marked in-progress" |
+| Status: backlog | server.ts | "Moved to Backlog" |
+| Status: canceled | cancel.ts, server.ts | "Marked as canceled" |
+| Priority change | server.ts | "Priority changed from P{old} to P{new}" |
+| Tag added | tag.ts, server.ts | "Added tag [{tag}]" |
+| Tag removed | tag.ts, server.ts | "Removed tag [{tag}]" |
+| Title changed | update.ts, server.ts | "Title updated" (batch within 30 min) |
+| Content changed | update.ts, server.ts | "Content updated" (batch within 30 min) |
+
+##### CLI Command
+
+Add `simbl log <id>` command:
+
+- Displays log entries for a task
+- Supports `--json` flag for machine output
+- Shows newest entries first (or oldest first, TBD)
+
+Update `simbl usage` with log command documentation.
+
+##### Implementation Notes
+
+- Use `appendOrBatchLogEntry()` for title/content changes to batch within 30 min
+- Use `appendLogEntry()` for status/tag/priority changes (no batching)
+- Priority changes should capture before/after values
+
+##### Acceptance Criteria
+
+- [ ] Task creation generates "Task created" log entry
+- [ ] `simbl done` generates log entry
+- [ ] `simbl cancel` generates log entry
+- [ ] `simbl tag add` generates log entry with tag name
+- [ ] `simbl tag remove` generates log entry with tag name
+- [ ] `simbl update --title` generates log entry (batched)
+- [ ] `simbl update --content` generates log entry (batched)
+- [ ] Priority changes via web UI generate log entry with before/after
+- [ ] Status changes via web UI generate log entries
+- [ ] `simbl log <id>` displays log entries
+- [ ] `simbl log <id> --json` outputs JSON format
+- [ ] `simbl usage` documents log command
+- [ ] TypeScript compiles (`bun run typecheck`)
+
+## smb-48 Task log: web UI toggle
+
+[p2][project:web][child-of-smb-28][depends-on-smb-47][depends-on-smb-24]
+
+### Description
+
+##### Overview
+
+Add the web UI components to hide log from content textarea and provide a collapsible toggle to view log entries.
+
+##### UI Components
+
+###### 1. Content Textarea Hiding
+
+- When rendering task modal, strip log section from content display using `stripTaskLog()`
+- When saving content, preserve existing log section (append user content + existing log)
+
+###### 2. Log Toggle Section
+
+Position after Content textarea, collapsible by default:
+
+```html
+<hr>
+<details class="task-log-section">
+  <summary role="button" class="secondary outline">
+    Task Log <small>(12 entries)</small>
+  </summary>
+  <div class="task-log-content">
+    <!-- Log entries rendered here -->
+  </div>
+</details>
+```
+
+###### 3. Log Entry Styling
+
+Muted, read-only appearance:
+
+- Background: `var(--pico-color-slate-50)`
+- Left border accent
+- Monospace timestamps
+- Max-height with scroll for many entries
+
+##### Template Changes (templates.ts)
+
+- Add `renderTaskLog(logEntries: LogEntry[])` helper
+- Modify `renderTaskModal()` to:
+  1. Strip log from content textarea value
+  2. Add log toggle section below content
+  3. Parse and display log entries
+
+##### CSS Additions (page.ts)
+
+```css
+.task-log-section { margin-top: var(--pico-spacing); }
+.task-log-content {
+  background: var(--pico-color-slate-50);
+  border-left: 3px solid var(--pico-color-slate-300);
+  padding: var(--pico-spacing);
+  max-height: 300px;
+  overflow-y: auto;
+  font-size: 0.9em;
+}
+.task-log-entry {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--pico-color-slate-200);
+}
+.task-log-entry:last-child { border-bottom: none; }
+.task-log-timestamp {
+  font-family: monospace;
+  font-size: 0.8em;
+  color: var(--pico-muted-color);
+}
+```
+
+##### Server Changes (server.ts)
+
+- Content PATCH handler must preserve log section when saving
+- Consider if log updates need WebSocket broadcast (probably not - only on explicit refresh)
+
+##### Acceptance Criteria
+
+- [ ] Content textarea does NOT show log section markdown
+- [ ] Task modal has "Task Log" toggle below content
+- [ ] Toggle shows entry count badge
+- [ ] Toggle is collapsed by default
+- [ ] Clicking toggle reveals log entries
+- [ ] Log entries display with timestamps and messages
+- [ ] Log section has scroll for tasks with many entries
+- [ ] Saving content preserves hidden log section
+- [ ] Log entries styled distinctly (muted background, left border)
+- [ ] Works on mobile (< 576px)
+- [ ] TypeScript compiles (`bun run typecheck`)
+- [ ] Binary builds (`bun run build`)
 
 # Done
+
+## smb-46 Task log: markdown format and parser
+
+[p2][project:core][child-of-smb-28]
+
+### Description
+
+##### Overview
+
+Implement the core parsing layer for task log sections. This is the foundation for the task log feature.
+
+##### Technical Requirements
+
+###### Log Section Format
+
+```markdown
+***
+
+task-log
+
+- 2025-12-17T14:32:00Z | Message here
+- 2025-12-17T14:30:00Z | Another message
+```
+
+###### Parser Functions (src/core/parser.ts or new src/core/log.ts)
+
+```typescript
+interface LogEntry {
+  timestamp: Date;
+  message: string;
+}
+
+// Extract log entries from task content
+function parseTaskLog(content: string): LogEntry[];
+
+// Get user content without log section
+function stripTaskLog(content: string): string;
+
+// Append a log entry to task content (creates section if needed)
+function appendLogEntry(content: string, message: string): string;
+
+// Append or batch entry if within 30 minutes of same type
+function appendOrBatchLogEntry(content: string, message: string, batchMinutes?: number): string;
+```
+
+###### Requirements
+
+- Log section must survive round-trip (parse -> serialize -> parse)
+- Log section always at end of content
+- Timestamps in ISO-8601 UTC format
+- Batching: if most recent entry is < 30 min old and message type matches, update instead of append
+
+##### Acceptance Criteria
+
+- [ ] `parseTaskLog()` extracts entries from content with log section
+- [ ] `parseTaskLog()` returns empty array for content without log section
+- [ ] `stripTaskLog()` returns content without log section
+- [ ] `appendLogEntry()` creates log section if none exists
+- [ ] `appendLogEntry()` appends to existing log section
+- [ ] `appendOrBatchLogEntry()` batches entries within 30 minutes
+- [ ] Round-trip test: content with log section survives parse/serialize cycle
+- [ ] Timestamps use ISO-8601 UTC format
+- [ ] TypeScript compiles (`bun run typecheck`)
+
+### Acceptance Criteria
+
+- [x] parseTaskLog() extracts entries from content with log section
+- [x] parseTaskLog() returns empty array for content without log section
+- [x] stripTaskLog() returns content without log section
+- [x] appendLogEntry() creates log section if none exists
+- [x] appendLogEntry() appends to existing log section
+- [x] appendOrBatchLogEntry() batches entries within 30 minutes
+- [x] Round-trip test: content with log section survives parse/serialize cycle
+- [x] Timestamps use ISO-8601 UTC format
+- [x] TypeScript compiles (bun run typecheck)
 
 ## smb-45 Acceptance Criteria CLI Additions
 
@@ -244,18 +528,6 @@ Add a GitHub Actions workflow that allows quick task capture from the GitHub mob
 [p1][bug][web][ui]
 
 both /apple-touch-icon.png and /favicon.ico are giving 404 in production build.
-
-## smb-13 Project CRUD operations in task modal
-
-[project][project:web]
-
-### Description
-
-In the web UI's task edit modal, user should be able to:
-
-- remove the task from a project
-- add the task to an existing project (drop-down or autocomplete)
-- add the task to a project that doesn't exist yet
 
 ## smb-18 Add auto-complete to new tag input field
 
@@ -848,52 +1120,6 @@ Add a dedicated project filter section to the web UI, similar to priority/status
 - [ ] URL reflects active project filter
 - [ ] "All Projects" or clear option to remove filter
 
-## smb-2 Display project tags as dedicated badges in web UI
-
-[p1][project][web][refined][p4]
-
-#### Summary
-
-Display `[project:xxx]` tags as dedicated violet/purple badges in task rows, separate from the tag cloud.
-
-#### Implementation Details
-
-##### Files to Modify
-
-- `src/web/templates.ts` - Add project badge rendering, update `isReservedTag()`
-- `src/web/page.ts` - Add CSS variables for project badge styling
-
-##### Technical Approach
-
-1. Ensure `isReservedTag()` includes `project:` prefix check (already done)
-2. Add `--simbl-project-*` CSS variables using violet color family
-3. Create `getProjectBadge()` helper function
-4. Insert project badge in `renderTaskRow()` after priority and status badges
-5. Ensure modal project display filters project tags from `displayTags`
-
-##### Badge Styling
-
-- Use violet/purple color family (distinct from priority/status/tags)
-- Order: Priority → Status → Project → Tags
-- Display just project name (e.g., `auth` not `project:auth`)
-- Add ARIA label for accessibility
-
-#### Acceptance Criteria
-
-- [ ] Project tags are hidden from the tag cloud
-- [ ] Project badge appears in task rows after priority/status badges
-- [ ] Project badge uses violet color with CSS variables
-- [ ] Badge displays just the project name (e.g., `auth`)
-- [ ] Task modal hides project tags from Tags section (shown separately)
-- [ ] Works correctly when task has no project (no empty badge)
-- [ ] Works in both backlog and done views
-- [ ] Clicking project badge filters list to that project
-
-#### Notes
-
-- Project filtering UI is a separate task
-- Single project per task (current data model limitation)
-
 ## smb-7 Fix simbl serve port handling - not auto-finding available port
 
 [p1][web][bug]
@@ -996,12 +1222,6 @@ Add a viewport maximization toggle button to the task edit modal.
 - [ ] Button has proper aria-label and aria-pressed attributes
 - [ ] Escape key still closes modal in maximized state
 - [ ] Works on all screen sizes (including mobile)
-
-## smb-1 Init Claude.md preservation
-
-[p1][init]
-
-the `smbbl init` command, whether forced or not, should check to see if the user added any additional content to the '<!-- SIMBL:BEGIN --><!-- SIMBL:END -->' section and make an effort to preserve it.
 
 ## smb-22 Simbl plugin: update all commands that accept a task-id argument
 

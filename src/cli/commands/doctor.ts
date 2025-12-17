@@ -5,7 +5,6 @@ import { parseSimblFile, getAllTasks } from '../../core/parser.ts';
 import { parseMarkdown } from '../../core/parser.ts';
 import type { Task } from '../../core/task.ts';
 import type { Heading } from 'mdast';
-import { AC_HEADER } from './ac.ts';
 
 interface Issue {
   level: 'error' | 'warning';
@@ -22,24 +21,27 @@ function validateAcceptanceCriteria(task: Task): Issue[] {
 
   if (!content) return issues;
 
-  // Check for non-standard AC headers
+  // Check for non-standard AC headers (only H5 or H6 are valid)
   const lines = content.split('\n');
   for (const line of lines) {
     const trimmed = line.trim();
-    // Look for variations of "Acceptance Criteria" header that don't match the standard
-    if (trimmed.startsWith('###') && trimmed.toLowerCase().includes('acceptance') && trimmed.toLowerCase().includes('criter')) {
-      if (trimmed !== AC_HEADER) {
+    // Look for AC headers that aren't H5 or H6
+    if (trimmed.toLowerCase().includes('acceptance') && trimmed.toLowerCase().includes('criter') && trimmed.startsWith('#')) {
+      // Valid: ##### Acceptance Criteria or ###### Acceptance Criteria
+      const isValidH5 = trimmed === '##### Acceptance Criteria';
+      const isValidH6 = trimmed === '###### Acceptance Criteria';
+      if (!isValidH5 && !isValidH6) {
         issues.push({
           level: 'warning',
-          message: `Non-standard AC header "${trimmed}" (expected "${AC_HEADER}")`,
+          message: `Non-standard AC header "${trimmed}" (expected "##### Acceptance Criteria" or "###### Acceptance Criteria")`,
           taskId: task.id,
         });
       }
     }
   }
 
-  // Check for malformed checkbox items within AC section
-  const acSectionRegex = /### Acceptance Criteria\n([\s\S]*?)(?=\n###|\n\*\*\*|\n---|\n___|$)/i;
+  // Check for malformed checkbox items within AC section (H5 or H6)
+  const acSectionRegex = /#{5,6} Acceptance Criteria\n([\s\S]*?)(?=\n#{1,6} |\n\*\*\*|\n---|\n___|$)/i;
   const acMatch = content.match(acSectionRegex);
 
   if (acMatch) {

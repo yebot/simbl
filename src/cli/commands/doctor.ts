@@ -5,11 +5,67 @@ import { parseSimblFile, getAllTasks } from '../../core/parser.ts';
 import { parseMarkdown } from '../../core/parser.ts';
 import type { Task } from '../../core/task.ts';
 import type { Heading } from 'mdast';
+import { AC_HEADER } from './ac.ts';
 
 interface Issue {
   level: 'error' | 'warning';
   message: string;
   taskId?: string;
+}
+
+/**
+ * Validate acceptance criteria format for a task
+ */
+function validateAcceptanceCriteria(task: Task): Issue[] {
+  const issues: Issue[] = [];
+  const content = task.content;
+
+  if (!content) return issues;
+
+  // Check for non-standard AC headers
+  const lines = content.split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // Look for variations of "Acceptance Criteria" header that don't match the standard
+    if (trimmed.startsWith('###') && trimmed.toLowerCase().includes('acceptance') && trimmed.toLowerCase().includes('criter')) {
+      if (trimmed !== AC_HEADER) {
+        issues.push({
+          level: 'warning',
+          message: `Non-standard AC header "${trimmed}" (expected "${AC_HEADER}")`,
+          taskId: task.id,
+        });
+      }
+    }
+  }
+
+  // Check for malformed checkbox items within AC section
+  const acSectionRegex = /### Acceptance Criteria\n([\s\S]*?)(?=\n###|\n\*\*\*|\n---|\n___|$)/i;
+  const acMatch = content.match(acSectionRegex);
+
+  if (acMatch) {
+    const acContent = acMatch[1];
+    const acLines = acContent.split('\n');
+
+    for (const line of acLines) {
+      const trimmed = line.trim();
+      // Skip empty lines
+      if (!trimmed) continue;
+
+      // Check for list items that might be malformed checkboxes
+      if (trimmed.startsWith('-') && !trimmed.match(/^- \[[ xX]\] /)) {
+        // It's a list item but not a valid checkbox
+        if (trimmed.match(/^-\s*\[/)) {
+          issues.push({
+            level: 'warning',
+            message: `Malformed checkbox "${trimmed.slice(0, 30)}..." (expected "- [ ]" or "- [x]")`,
+            taskId: task.id,
+          });
+        }
+      }
+    }
+  }
+
+  return issues;
 }
 
 /**
@@ -128,6 +184,10 @@ function validateTasksFile(content: string, prefix: string): Issue[] {
         });
       }
     }
+
+    // Validate acceptance criteria format
+    const acIssues = validateAcceptanceCriteria(task);
+    issues.push(...acIssues);
   }
 
   // Check for circular dependencies

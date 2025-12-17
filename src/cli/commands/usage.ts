@@ -18,7 +18,9 @@ COMMANDS
   simbl update <id>         Update task title or content
   simbl relate <id>         Create task relationships
   simbl unrelate <id>       Remove task relationships
+  simbl ac <subcommand>     Manage acceptance criteria
   simbl serve               Start web UI (HTMX-powered browser interface)
+  simbl sync                Pull remote changes and report new/updated tasks
   simbl doctor              Validate tasks.md structure
   simbl usage               Show this help
 
@@ -94,6 +96,24 @@ RELATIONSHIPS
 
   Note: Circular dependencies are automatically detected and prevented.
   Note: Use flag syntax (--parent, --depends-on), not positional args.
+
+ACCEPTANCE CRITERIA
+
+  simbl ac add <id> "<text>"                    # add one criterion
+  simbl ac add <id> "Crit 1" "Crit 2" "Crit 3"  # add multiple criteria
+  simbl ac list <id>                            # list all criteria
+  simbl ac meets <id> <n>                       # mark criterion #n as met
+  simbl ac fails <id> <n>                       # mark criterion #n as not met
+  simbl ac update <id> <n> "<text>"             # update criterion #n text
+  simbl ac delete <id> <n>                      # delete criterion #n
+
+  All commands output the updated criteria list on success.
+  All commands support --json for JSON output.
+
+  # Example workflow
+  simbl ac add smb-1 "Tests pass" "No lint errors" "Docs updated"
+  simbl ac meets smb-1 1                        # mark "Tests pass" as met
+  simbl ac list smb-1 --json                    # get JSON for automation
 
 WEB UI
 

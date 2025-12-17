@@ -128,6 +128,42 @@ Add Task Log Feature
 
 # Done
 
+## smb-45 Acceptance Criteria CLI Additions
+
+[p1][cli]
+
+as an AI user, I should be able to add an acceptance criterion to
+
+All acceptance criteria commands should have logic that looks for or creates a standard acceptance criteria header in the content of a task so it can always be found and be consistent.
+
+The doctor command should verify acceptance criteria headers and formatting.
+
+Example acceptance criteria commands
+
+- `simbl ac add task-1 "All tests pass" ` // adds one acceptance criterion to task-1
+
+- `simbl ac add task-1 "All tests pass" "Background is now red" "Test coverage > 80%" ` // adds multiple acceptance criterion to task-1 (Variadic positional arguments)
+
+- `simbl ac list task-1` // displays all acceptance criteria for task-1 as a numbered list
+
+- `simbl ac meets task-1 1` // updates task-1's acceptance criterion #1 by making it checked `- [x]`
+
+- `simbl ac update task-1 2 "Background is now blue"` // updates task-1's acceptance criterion #2 by changing its description
+
+- `simbl ac fails task-1 3` // updates task-1's acceptance criterion #3 by making it unchecked `- [ ]`
+
+- `simbl ac delete task-1 4` // deletes task-1's acceptance criterion #4
+
+ALL commands when successful should respond with the up-to-date entire list of acceptance criteria. All commands should support adding `--json` so the output is json.
+
+The `simbl usage` command should provide complete instructions on how to us `simbl ac` commands.
+
+### Acceptance Criteria
+
+- [x] All 6 ac subcommands work correctly
+- [x] Usage docs updated
+- [x] Doctor validates AC format
+
 ## smb-37 Add simbl sync command for pulling remote task changes
 
 [p4][depends-on-smb-36][project:mobile-capture]

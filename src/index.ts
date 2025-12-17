@@ -15,6 +15,7 @@ import { usageCommand } from './cli/commands/usage.ts';
 import { doctorCommand } from './cli/commands/doctor.ts';
 import { serveCommand } from './cli/commands/serve.ts';
 import { syncCommand } from './cli/commands/sync.ts';
+import { acCommand } from './cli/commands/ac.ts';
 import { runTuiMenu } from './cli/tui/menu.ts';
 
 const main = defineCommand({
@@ -38,6 +39,7 @@ const main = defineCommand({
     doctor: doctorCommand,
     serve: serveCommand,
     sync: syncCommand,
+    ac: acCommand,
   },
 });
 

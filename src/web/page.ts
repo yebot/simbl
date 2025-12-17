@@ -1,7 +1,7 @@
+import html from "html-template-tag";
 import type { SimblFile } from "../core/task.ts";
 import { getAllTasks } from "../core/parser.ts";
 import {
-  escapeHtml,
   renderTagCloud,
   renderPriorityFilter,
   renderStatusFilter,
@@ -21,12 +21,12 @@ export function renderPage(file: SimblFile, projectName?: string): string {
   const pageTitle = projectName ? `${projectName} - SIMBL` : "SIMBL";
   const headerTitle = projectName || "SIMBL";
 
-  return `<!DOCTYPE html>
+  return html`<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(pageTitle)}</title>
+  <title>${pageTitle}</title>
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="${PICO_CSS}">
@@ -190,39 +190,44 @@ export function renderPage(file: SimblFile, projectName?: string): string {
       cursor: wait;
     }
 
-    #modal-backdrop {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+    /* Native dialog element styling */
+    #modal-dialog {
+      border: none;
+      border-radius: var(--pico-border-radius);
+      padding: 0;
+      max-width: 1100px;
+      width: 95%;
+      max-height: 90vh;
+      overflow: visible;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    #modal-dialog::backdrop {
       background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
     }
 
     #modal-content {
       background: var(--pico-background-color);
       padding: calc(var(--pico-spacing) * 2);
       border-radius: var(--pico-border-radius);
-      max-width: 1100px;
-      width: 95%;
       max-height: 90vh;
       overflow-y: auto;
       position: relative;
       transition: max-width 200ms ease, width 200ms ease, max-height 200ms ease, height 200ms ease, border-radius 200ms ease;
     }
 
-    #modal-content.maximized {
+    #modal-dialog.maximized {
       max-width: 98vw;
       width: 98vw;
+      max-height: 98vh;
+    }
+
+    #modal-dialog.maximized #modal-content {
       max-height: 98vh;
       height: 98vh;
     }
 
-    #modal-content.maximized .content-textarea {
+    #modal-dialog.maximized .content-textarea {
       min-height: calc(98vh - 400px);
     }
 
@@ -394,7 +399,7 @@ export function renderPage(file: SimblFile, projectName?: string): string {
 <body>
   <main class="container">
     <header>
-      <h1>${escapeHtml(headerTitle)}</h1>
+      <h1>${headerTitle}</h1>
       <input
         type="search"
         id="search-input"
@@ -416,29 +421,29 @@ export function renderPage(file: SimblFile, projectName?: string): string {
     <section>
       <div style="margin-bottom: var(--pico-spacing);">
         <strong>Tags</strong>
-        ${renderTagCloud(allTasks)}
+        $${renderTagCloud(allTasks)}
       </div>
       <div style="margin-bottom: var(--pico-spacing); display: flex; gap: calc(var(--pico-spacing) * 2); flex-wrap: wrap;">
         <div>
           <strong>Priority</strong>
-          ${renderPriorityFilter(allTasks)}
+          $${renderPriorityFilter(allTasks)}
         </div>
         <div>
           <strong>Status</strong>
-          ${renderStatusFilter()}
+          $${renderStatusFilter()}
         </div>
         <div id="project-filter-section" style="${
           extractAllProjects(allTasks).length === 0 ? "display: none;" : ""
         }">
           <strong>Project</strong>
-          ${renderProjectFilter(allTasks)}
+          $${renderProjectFilter(allTasks)}
         </div>
       </div>
     </section>
 
     <section>
       <div id="tasks-container">
-        ${renderTaskTable(allTasks)}
+        $${renderTaskTable(allTasks)}
       </div>
     </section>
 
@@ -454,16 +459,26 @@ export function renderPage(file: SimblFile, projectName?: string): string {
   </footer>
 
   <script>
-    // Close modal on backdrop click or Escape key
+    // Close modal helper function
+    function closeModal() {
+      const dialog = document.getElementById('modal-dialog');
+      if (dialog) {
+        dialog.close();
+      }
+      document.getElementById('modal-container').innerHTML = '';
+    }
+
+    // Close modal on backdrop click (dialog element handles click outside content)
     document.addEventListener('click', function(e) {
-      if (e.target.id === 'modal-backdrop') {
-        document.getElementById('modal-container').innerHTML = '';
+      const dialog = document.getElementById('modal-dialog');
+      if (dialog && e.target === dialog) {
+        closeModal();
       }
     });
 
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
-        document.getElementById('modal-container').innerHTML = '';
+        closeModal();
         return;
       }
 
@@ -479,7 +494,7 @@ export function renderPage(file: SimblFile, projectName?: string): string {
         activeEl.hasAttribute('contenteditable')
       );
 
-      const modalOpen = document.getElementById('modal-backdrop') !== null;
+      const modalOpen = document.getElementById('modal-dialog') !== null;
       const key = e.key.toLowerCase();
 
       // 'w' - Toggle maximize on task detail modal only
@@ -544,11 +559,11 @@ export function renderPage(file: SimblFile, projectName?: string): string {
 
     // Modal maximize toggle
     function toggleModalMaximize() {
-      const modal = document.getElementById('modal-content');
+      const dialog = document.getElementById('modal-dialog');
       const btn = document.getElementById('modal-maximize-btn');
-      if (!modal || !btn) return;
+      if (!dialog || !btn) return;
 
-      const isMaximized = modal.classList.toggle('maximized');
+      const isMaximized = dialog.classList.toggle('maximized');
       btn.setAttribute('aria-pressed', isMaximized ? 'true' : 'false');
       btn.setAttribute('aria-label', isMaximized ? 'Restore modal' : 'Maximize modal');
       btn.setAttribute('title', isMaximized ? 'Restore' : 'Maximize');

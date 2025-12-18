@@ -1,4 +1,3 @@
-import html from "html-template-tag";
 import type { SimblFile } from "../core/task.ts";
 import { getAllTasks } from "../core/parser.ts";
 import {
@@ -8,9 +7,7 @@ import {
   renderProjectFilter,
   renderTaskTable,
   extractAllProjects,
-  PICO_CSS,
-  PICO_COLORS_CSS,
-  HTMX_JS,
+  escapeHtml,
 } from "./templates.ts";
 
 /**
@@ -21,17 +18,17 @@ export function renderPage(file: SimblFile, projectName?: string): string {
   const pageTitle = projectName ? `${projectName} - SIMBL` : "SIMBL";
   const headerTitle = projectName || "SIMBL";
 
-  return html`<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${pageTitle}</title>
+  <title>${escapeHtml(pageTitle)}</title>
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="${PICO_CSS}">
-  <link rel="stylesheet" href="${PICO_COLORS_CSS}">
-  <script src="${HTMX_JS}"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   <style>
     /* Pico CSS variable overrides */
     :root {
@@ -481,7 +478,7 @@ export function renderPage(file: SimblFile, projectName?: string): string {
 <body>
   <main class="container">
     <header>
-      <h1>${headerTitle}</h1>
+      <h1>${escapeHtml(headerTitle)}</h1>
       <input
         type="search"
         id="search-input"
@@ -503,29 +500,29 @@ export function renderPage(file: SimblFile, projectName?: string): string {
     <section>
       <div style="margin-bottom: var(--pico-spacing);">
         <strong>Tags</strong>
-        $${renderTagCloud(allTasks)}
+        ${renderTagCloud(allTasks)}
       </div>
       <div style="margin-bottom: var(--pico-spacing); display: flex; gap: calc(var(--pico-spacing) * 2); flex-wrap: wrap;">
         <div>
           <strong>Priority</strong>
-          $${renderPriorityFilter(allTasks)}
+          ${renderPriorityFilter(allTasks)}
         </div>
         <div>
           <strong>Status</strong>
-          $${renderStatusFilter()}
+          ${renderStatusFilter()}
         </div>
         <div id="project-filter-section" style="${
           extractAllProjects(allTasks).length === 0 ? "display: none;" : ""
         }">
           <strong>Project</strong>
-          $${renderProjectFilter(allTasks)}
+          ${renderProjectFilter(allTasks)}
         </div>
       </div>
     </section>
 
     <section>
       <div id="tasks-container">
-        $${renderTaskTable(allTasks)}
+        ${renderTaskTable(allTasks)}
       </div>
     </section>
 

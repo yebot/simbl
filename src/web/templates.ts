@@ -1,4 +1,3 @@
-import html from "html-template-tag";
 import type { Task } from "../core/task.ts";
 import { parseTaskLog, stripTaskLog } from "../core/log.ts";
 import type { LogEntry } from "../core/log.ts";
@@ -17,9 +16,8 @@ export const PICO_COLORS_CSS =
 export const HTMX_JS = "https://unpkg.com/htmx.org@2.0.4";
 
 /**
- * Escape HTML special characters
- * @deprecated Use html-template-tag's automatic escaping instead.
- * Kept for edge cases where manual escaping is needed outside of html`` templates.
+ * Escape HTML special characters to prevent XSS
+ * Use this for all user-provided content (task titles, content, tags, etc.)
  */
 export function escapeHtml(str: string): string {
   return str
@@ -66,7 +64,7 @@ export function shiftHeadingsForStorage(content: string): string {
  */
 function renderTaskLog(logEntries: LogEntry[]): string {
   if (logEntries.length === 0) {
-    return html`
+    return `
       <details class="task-log-section">
         <summary role="button" class="secondary outline">
           Task Log <small>(no entries)</small>
@@ -80,21 +78,21 @@ function renderTaskLog(logEntries: LogEntry[]): string {
 
   const entriesHtml = logEntries.map(entry => {
     const dateStr = entry.timestamp.toLocaleString();
-    return html`
+    return `
       <div class="task-log-entry">
-        <span class="task-log-timestamp">${dateStr}</span>
-        <span class="task-log-message">${entry.message}</span>
+        <span class="task-log-timestamp">${escapeHtml(dateStr)}</span>
+        <span class="task-log-message">${escapeHtml(entry.message)}</span>
       </div>
     `;
   }).join('');
 
-  return html`
+  return `
     <details class="task-log-section">
       <summary role="button" class="secondary outline">
-        Task Log <small>(${String(logEntries.length)} ${logEntries.length === 1 ? 'entry' : 'entries'})</small>
+        Task Log <small>(${logEntries.length} ${logEntries.length === 1 ? 'entry' : 'entries'})</small>
       </summary>
       <div class="task-log-content">
-        $${entriesHtml}
+        ${entriesHtml}
       </div>
     </details>
   `;
@@ -114,7 +112,8 @@ function getPriorityVarSuffix(priority: number): string {
 function getPriorityBadge(priority: number | undefined): string {
   if (!priority) return "";
   const suffix = getPriorityVarSuffix(priority);
-  return html`<span class="priority-badge" style="background: var(--simbl-${suffix}-bg-light); color: var(--simbl-${suffix}-text);">P${String(priority)}</span>`;
+  const style = `background: var(--simbl-${suffix}-bg-light); color: var(--simbl-${suffix}-text);`;
+  return `<span class="priority-badge" style="${style}">P${priority}</span>`;
 }
 
 /**
@@ -129,7 +128,8 @@ function getStatusBadge(status: string): string {
   };
   const color = colors[status];
   if (!color) return "";
-  return html`<span style="background: ${color}; color: var(--pico-color-slate-50); padding: 2px 8px; border-radius: var(--pico-border-radius); font-size: 0.8em;">${status}</span>`;
+  const style = `background: ${color}; color: var(--pico-color-slate-50); padding: 2px 8px; border-radius: var(--pico-border-radius); font-size: 0.8em;`;
+  return `<span style="${style}">${escapeHtml(status)}</span>`;
 }
 
 /**
@@ -144,7 +144,8 @@ function getRelationStatusBadge(status: string): string {
   };
   const color = colors[status];
   if (!color) return "";
-  return html`<span style="background: ${color}; color: var(--pico-color-slate-50); padding: 2px 6px; border-radius: var(--pico-border-radius); font-size: 0.75em; margin-left: 0.5em;" aria-label="${status} status">${status}</span>`;
+  const style = `background: ${color}; color: var(--pico-color-slate-50); padding: 2px 6px; border-radius: var(--pico-border-radius); font-size: 0.75em; margin-left: 0.5em;`;
+  return `<span style="${style}" aria-label="${escapeHtml(status)} status">${escapeHtml(status)}</span>`;
 }
 
 /**
@@ -153,10 +154,10 @@ function getRelationStatusBadge(status: string): string {
  */
 function getProjectBadge(project: string | undefined): string {
   if (!project) return "";
-  return html`<span
+  return `<span
     class="project-badge"
     style="background: var(--simbl-project-bg-light); color: var(--simbl-project-text); padding: 2px 8px; border-radius: var(--pico-border-radius); font-size: 0.8em;"
-  >${project}</span>`;
+  >${escapeHtml(project)}</span>`;
 }
 
 /**
@@ -170,13 +171,13 @@ export function renderTaskRow(task: Task): string {
     .filter(Boolean)
     .join(" ");
 
-  return html`
-    <tr hx-get="/task/${task.id}"
+  return `
+    <tr hx-get="/task/${escapeHtml(task.id)}"
         hx-target="#modal-container"
         hx-swap="innerHTML"
         style="cursor: pointer;">
-      <td style="white-space: nowrap;"><code class="task-id">${task.id}</code></td>
-      <td>${task.title}$${badges ? " " + badges : ""}</td>
+      <td style="white-space: nowrap;"><code class="task-id">${escapeHtml(task.id)}</code></td>
+      <td>${escapeHtml(task.title)}${badges ? " " + badges : ""}</td>
     </tr>
   `;
 }
@@ -230,19 +231,19 @@ export function renderPriorityFilter(
       // If active, clicking deselects (go to /tasks without priority filter)
       const targetUrl = isActive ? "/tasks" : `/tasks?priority=${p}`;
       // data-priority-filter always stores the priority number for keyboard cycling
-      return html`<button
+      return `<button
       class="tag-btn"
       style="${style}"
-      data-priority-filter="${String(p)}"
+      data-priority-filter="${p}"
       hx-get="${targetUrl}"
       hx-target="#tasks-container"
       hx-swap="innerHTML"
       hx-include="#search-input"
-    >P${String(p)}</button>`;
+    >P${p}</button>`;
     })
     .join("");
 
-  return html`<div id="priority-filter">$${priorityButtons}</div>`;
+  return `<div id="priority-filter">${priorityButtons}</div>`;
 }
 
 /**
@@ -282,7 +283,7 @@ export function renderStatusFilter(activeStatus?: string): string {
         : `background: var(${s.bgLightVar}); color: var(${s.textVar});`;
       // If active, clicking deselects (go to /tasks without status filter)
       const targetUrl = isActive ? "/tasks" : `/tasks?status=${s.value}`;
-      return html`<button
+      return `<button
       class="tag-btn"
       style="${style}"
       hx-get="${targetUrl}"
@@ -293,7 +294,7 @@ export function renderStatusFilter(activeStatus?: string): string {
     })
     .join("");
 
-  return html`<div id="status-filter">$${statusButtons}</div>`;
+  return `<div id="status-filter">${statusButtons}</div>`;
 }
 
 /**
@@ -320,18 +321,18 @@ export function renderProjectFilter(
       const targetUrl = isActive
         ? "/tasks"
         : `/tasks?project=${encodeURIComponent(project)}`;
-      return html`<button
+      return `<button
       class="tag-btn"
       style="${style}"
       hx-get="${targetUrl}"
       hx-target="#tasks-container"
       hx-swap="innerHTML"
       hx-include="#search-input"
-    >${project}</button>`;
+    >${escapeHtml(project)}</button>`;
     })
     .join("");
 
-  return html`<div id="project-filter">$${projectButtons}</div>`;
+  return `<div id="project-filter">${projectButtons}</div>`;
 }
 
 /**
@@ -397,27 +398,30 @@ export function renderTaskTable(
 
   const rows = sorted.map(renderTaskRow).join("");
 
-  return html`
+  const idSortUrl = buildSortUrl("id");
+  const titleSortUrl = buildSortUrl("title");
+
+  return `
     <table id="task-list">
       <thead>
         <tr>
-          <th hx-get="${buildSortUrl("id")}"
+          <th hx-get="${idSortUrl}"
               hx-target="#tasks-container"
               hx-swap="innerHTML"
               style="cursor: pointer;">
-            ID$${arrow("id")}
+            ID${arrow("id")}
           </th>
-          <th hx-get="${buildSortUrl("title")}"
+          <th hx-get="${titleSortUrl}"
               hx-target="#tasks-container"
               hx-swap="innerHTML"
               style="cursor: pointer;">
-            Task$${arrow("title")}
+            Task${arrow("title")}
           </th>
         </tr>
       </thead>
       <tbody>
-        $${rows}
-        $${sorted.length === 0
+        ${rows}
+        ${sorted.length === 0
           ? '<tr><td colspan="2">No tasks found</td></tr>'
           : ""}
       </tbody>
@@ -477,18 +481,18 @@ export function renderTagCloud(tasks: Task[], activeTag?: string): string {
       const targetUrl = isActive
         ? "/tasks"
         : `/tasks?tag=${encodeURIComponent(tag)}`;
-      return html`<button
+      return `<button
       class="tag-btn"
       style="${style}"
       hx-get="${targetUrl}"
       hx-target="#tasks-container"
       hx-swap="innerHTML"
       hx-include="#search-input"
-    >${tag}</button>`;
+    >${escapeHtml(tag)}</button>`;
     })
     .join("");
 
-  return html`<div id="tag-cloud">$${tagButtons}</div>`;
+  return `<div id="tag-cloud">${tagButtons}</div>`;
 }
 
 /**
@@ -539,20 +543,22 @@ export function renderTaskModal(
       const style = isActive
         ? `background: var(--simbl-${suffix}-bg); color: var(--simbl-${suffix}-text);`
         : `background: var(--simbl-${suffix}-bg-light); color: var(--simbl-${suffix}-text);`;
-      return html`<button
+      const priorityUrl = `/task/${escapeHtml(task.id)}/priority/${p}`;
+      return `<button
       class="tag-btn"
-      hx-post="/task/${task.id}/priority/${String(p)}"
+      hx-post="${priorityUrl}"
       hx-target="#modal-container"
       hx-swap="innerHTML"
       style="${style}"
       title="${isActive ? "Current priority" : `Set to P${p}`}"
-    >P${String(p)}</button>`;
+    >P${p}</button>`;
     })
     .join("");
+  const clearPriorityUrl = `/task/${escapeHtml(task.id)}/priority`;
   const clearPriorityBtn = currentPriority
-    ? html`<button
+    ? `<button
         class="tag-btn"
-        hx-delete="/task/${task.id}/priority"
+        hx-delete="${clearPriorityUrl}"
         hx-target="#modal-container"
         hx-swap="innerHTML"
         style="background: transparent; color: #6c757d;"
@@ -563,7 +569,8 @@ export function renderTaskModal(
 
   // Status display
   const statusColor = getStatusColor(task.status);
-  const statusHtml = html`<span style="background: ${statusColor}; color: var(--pico-color-slate-50); padding: 4px 12px; border-radius: var(--pico-border-radius);">${task.status}</span>`;
+  const statusStyle = `background: ${statusColor}; color: var(--pico-color-slate-50); padding: 4px 12px; border-radius: var(--pico-border-radius);`;
+  const statusHtml = `<span style="${statusStyle}">${escapeHtml(task.status)}</span>`;
 
   // Relations section
   const relationsHtml: string[] = [];
@@ -573,11 +580,12 @@ export function renderTaskModal(
     const parentTask = allTasks.find((t) => t.id === task.reserved.parentId);
     const parentTitle = parentTask ? parentTask.title : "";
     const parentStatusBadge = parentTask ? getRelationStatusBadge(parentTask.status) : "";
-    relationsHtml.push(html`
+    const parentUrl = `/task/${escapeHtml(task.reserved.parentId)}`;
+    relationsHtml.push(`
       <div style="margin-bottom: 0.5rem;">
         <strong>Parent:</strong>
-        <a href="#" class="relation-link" hx-get="/task/${task.reserved.parentId}" hx-target="#modal-container" hx-swap="innerHTML" style="text-decoration: none;">
-          <code>${task.reserved.parentId}</code><span class="relation-title">${parentTitle}</span>$${parentStatusBadge}
+        <a href="#" class="relation-link" hx-get="${parentUrl}" hx-target="#modal-container" hx-swap="innerHTML" style="text-decoration: none;">
+          <code>${escapeHtml(task.reserved.parentId)}</code><span class="relation-title">${escapeHtml(parentTitle)}</span>${parentStatusBadge}
         </a>
       </div>
     `);
@@ -590,13 +598,14 @@ export function renderTaskModal(
         const depTask = allTasks.find((t) => t.id === depId);
         const depTitle = depTask ? depTask.title : "";
         const depStatusBadge = depTask ? getRelationStatusBadge(depTask.status) : "";
-        return html`<a href="#" class="relation-link" hx-get="/task/${depId}" hx-target="#modal-container" hx-swap="innerHTML" style="text-decoration: none;"><code>${depId}</code><span class="relation-title">${depTitle}</span>$${depStatusBadge}</a>`;
+        const depUrl = `/task/${escapeHtml(depId)}`;
+        return `<a href="#" class="relation-link" hx-get="${depUrl}" hx-target="#modal-container" hx-swap="innerHTML" style="text-decoration: none;"><code>${escapeHtml(depId)}</code><span class="relation-title">${escapeHtml(depTitle)}</span>${depStatusBadge}</a>`;
       })
       .join("");
-    relationsHtml.push(html`
+    relationsHtml.push(`
       <div style="margin-bottom: 0.5rem;">
         <strong>Blocked by:</strong>
-        <div style="margin-left: var(--pico-spacing);">$${deps}</div>
+        <div style="margin-left: var(--pico-spacing);">${deps}</div>
       </div>
     `);
   }
@@ -607,13 +616,14 @@ export function renderTaskModal(
     const childLinks = children
       .map((child) => {
         const childStatusBadge = getRelationStatusBadge(child.status);
-        return html`<a href="#" class="relation-link" hx-get="/task/${child.id}" hx-target="#modal-container" hx-swap="innerHTML" style="text-decoration: none;"><code>${child.id}</code><span class="relation-title">${child.title}</span>$${childStatusBadge}</a>`;
+        const childUrl = `/task/${escapeHtml(child.id)}`;
+        return `<a href="#" class="relation-link" hx-get="${childUrl}" hx-target="#modal-container" hx-swap="innerHTML" style="text-decoration: none;"><code>${escapeHtml(child.id)}</code><span class="relation-title">${escapeHtml(child.title)}</span>${childStatusBadge}</a>`;
       })
       .join("");
-    relationsHtml.push(html`
+    relationsHtml.push(`
       <div style="margin-bottom: 0.5rem;">
         <strong>Children:</strong>
-        <div style="margin-left: var(--pico-spacing);">$${childLinks}</div>
+        <div style="margin-left: var(--pico-spacing);">${childLinks}</div>
       </div>
     `);
   }
@@ -626,11 +636,12 @@ export function renderTaskModal(
   const autocompleteProjects = Array.from(allProjectsSet).sort();
 
   // Project badge with CRUD controls
+  const projectDeleteUrl = `/task/${escapeHtml(task.id)}/project`;
   const projectHtml = task.reserved.project
-    ? html`<span class="tag-badge" style="background: var(--simbl-project-bg-light); color: var(--simbl-project-text);">
-        ${task.reserved.project}
+    ? `<span class="tag-badge" style="background: var(--simbl-project-bg-light); color: var(--simbl-project-text);">
+        ${escapeHtml(task.reserved.project)}
         <button
-          hx-delete="/task/${task.id}/project"
+          hx-delete="${projectDeleteUrl}"
           hx-target="#modal-container"
           hx-swap="innerHTML"
           style="background: none; border: none; padding: 0; cursor: pointer; font-size: 1em; line-height: 1; color: var(--simbl-project-text);"
@@ -640,9 +651,10 @@ export function renderTaskModal(
     : "";
 
   // Project input form (for adding/changing project)
-  const projectDatalistOptions = autocompleteProjects.map(p => html`<option value="${p}">`).join('');
-  const projectInputHtml = html`<form
-    hx-post="/task/${task.id}/project"
+  const projectDatalistOptions = autocompleteProjects.map(p => `<option value="${escapeHtml(p)}">`).join('');
+  const projectPostUrl = `/task/${escapeHtml(task.id)}/project`;
+  const projectInputHtml = `<form
+    hx-post="${projectPostUrl}"
     hx-target="#modal-container"
     hx-swap="innerHTML"
     style="display: inline-flex; gap: .2rem; margin: 0; align-items: center;"
@@ -651,12 +663,12 @@ export function renderTaskModal(
       type="text"
       name="project"
       placeholder="${task.reserved.project ? 'change project' : 'add to project'}"
-      list="project-suggestions-${task.id}"
+      list="project-suggestions-${escapeHtml(task.id)}"
       autocomplete="off"
       style="padding: .2rem .4rem; font-size: 0.85em; width: 8rem; margin: 0; height: auto;"
     >
-    <datalist id="project-suggestions-${task.id}">
-      $${projectDatalistOptions}
+    <datalist id="project-suggestions-${escapeHtml(task.id)}">
+      ${projectDatalistOptions}
     </datalist>
     <button type="submit" class="tag-btn" style="background: var(--simbl-project-bg-light); color: var(--simbl-project-text);">${task.reserved.project ? '↻' : '+'}</button>
   </form>`;
@@ -668,34 +680,43 @@ export function renderTaskModal(
   // Tag badges with remove buttons
   const tagBadgesHtml = displayTags.length > 0
     ? displayTags
-        .map((t) => html`<span class="tag-badge">
-                  ${t}
+        .map((t) => {
+          const tagDeleteUrl = `/task/${escapeHtml(task.id)}/tag/${encodeURIComponent(t)}`;
+          return `<span class="tag-badge">
+                  ${escapeHtml(t)}
                   <button
-                    hx-delete="/task/${task.id}/tag/${encodeURIComponent(t)}"
+                    hx-delete="${tagDeleteUrl}"
                     hx-target="#modal-container"
                     hx-swap="innerHTML"
                     style="background: none; border: none; padding: 0; cursor: pointer; font-size: 1em; line-height: 1; color: var(--simbl-tag-text);"
                     title="Remove tag"
                   >&times;</button>
-                </span>`)
+                </span>`;
+        })
         .join("")
     : '<em style="color: var(--pico-muted-color);">No tags</em>';
 
   // Tag autocomplete datalist
-  const tagDatalistOptions = autocompleteTags.map(t => html`<option value="${t}">`).join('');
+  const tagDatalistOptions = autocompleteTags.map(t => `<option value="${escapeHtml(t)}">`).join('');
 
   // Action buttons based on task state
+  const inProgressUrl = `/task/${escapeHtml(task.id)}/in-progress`;
+  const doneUrl = `/task/${escapeHtml(task.id)}/done`;
+  const backlogUrl = `/task/${escapeHtml(task.id)}/backlog`;
+  const cancelUrl = `/task/${escapeHtml(task.id)}/cancel`;
+  const archiveUrl = `/task/${escapeHtml(task.id)}`;
+
   let actionButtonsHtml: string;
   if (task.section === "done") {
-    actionButtonsHtml = html`<button
-                   hx-post="/task/${task.id}/in-progress"
+    actionButtonsHtml = `<button
+                   hx-post="${inProgressUrl}"
                    hx-target="#modal-container"
                    hx-swap="innerHTML"
                    class="tag-btn"
                    style="background: var(--simbl-in-progress-bg-light); color: var(--simbl-in-progress-text);"
                  >⬅ Back to In-Progress</button>
                  <button
-                   hx-delete="/task/${task.id}"
+                   hx-delete="${archiveUrl}"
                    hx-target="#modal-container"
                    hx-swap="innerHTML"
                    hx-confirm="This will permanently remove this task. This cannot be undone. Continue?"
@@ -703,22 +724,22 @@ export function renderTaskModal(
                    style="background: transparent; color: var(--pico-del-color); border: 1px solid var(--pico-del-color);"
                  >✖️ Archive</button>`;
   } else if (task.status === "in-progress") {
-    actionButtonsHtml = html`<button
-                   hx-post="/task/${task.id}/done"
+    actionButtonsHtml = `<button
+                   hx-post="${doneUrl}"
                    hx-target="#modal-container"
                    hx-swap="innerHTML"
                    class="tag-btn"
                    style="background: var(--simbl-done-bg-light); color: var(--simbl-done-text);"
                  >✔ Mark Done</button>
                  <button
-                   hx-post="/task/${task.id}/backlog"
+                   hx-post="${backlogUrl}"
                    hx-target="#modal-container"
                    hx-swap="innerHTML"
                    class="tag-btn"
                    style="background: var(--pico-color-slate-100); color: var(--pico-color-slate-600);"
                  >⬅ Back to Backlog</button>
                  <button
-                   hx-post="/task/${task.id}/cancel"
+                   hx-post="${cancelUrl}"
                    hx-target="#modal-container"
                    hx-swap="innerHTML"
                    hx-confirm="Mark this task as canceled and move it to Done?"
@@ -726,22 +747,22 @@ export function renderTaskModal(
                    style="background: transparent; color: var(--pico-del-color); border: 1px solid var(--pico-del-color);"
                  >✖ Cancel</button>`;
   } else {
-    actionButtonsHtml = html`<button
-                   hx-post="/task/${task.id}/in-progress"
+    actionButtonsHtml = `<button
+                   hx-post="${inProgressUrl}"
                    hx-target="#modal-container"
                    hx-swap="innerHTML"
                    class="tag-btn"
                    style="background: var(--simbl-in-progress-bg-light); color: var(--simbl-in-progress-text);"
                  >⮕ Move to In-Progress</button>
                  <button
-                   hx-post="/task/${task.id}/done"
+                   hx-post="${doneUrl}"
                    hx-target="#modal-container"
                    hx-swap="innerHTML"
                    class="tag-btn"
                    style="background: var(--simbl-done-bg-light); color: var(--simbl-done-text);"
                  >✔ Mark Done</button>
                  <button
-                   hx-post="/task/${task.id}/cancel"
+                   hx-post="${cancelUrl}"
                    hx-target="#modal-container"
                    hx-swap="innerHTML"
                    hx-confirm="Mark this task as canceled and move it to Done?"
@@ -752,30 +773,35 @@ export function renderTaskModal(
 
   // Relations section HTML
   const relationsSectionHtml = relationsHtml.length > 0
-    ? html`
+    ? `
           <hr style="margin: var(--pico-spacing) 0;">
           <h4 style="margin-bottom: 0.5rem;">Relations</h4>
-          $${relationsHtml.join("")}
+          ${relationsHtml.join("")}
         `
     : "";
 
-  return html`
+  // URL for task updates
+  const taskPatchUrl = `/task/${escapeHtml(task.id)}`;
+  const tagPostUrl = `/task/${escapeHtml(task.id)}/tag`;
+  const escapedTaskId = escapeHtml(task.id);
+
+  return `
     <dialog id="modal-dialog" open>
-      <article id="modal-content" data-task-id="${task.id}">
+      <article id="modal-content" data-task-id="${escapedTaskId}">
         <header style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--pico-spacing);">
           <div style="flex: 1;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
               <h2 style="margin: 0;">
                 <code
                   class="task-id task-id-clickable"
-                  onclick="copyTaskId('${task.id}', this)"
+                  onclick="copyTaskId('${escapedTaskId}', this)"
                   title="Click to copy task ID"
                   role="button"
                   tabindex="0"
-                  onkeydown="if(event.key==='Enter'||event.key===' '){copyTaskId('${task.id}', this);event.preventDefault();}"
-                >${task.id}</code>
+                  onkeydown="if(event.key==='Enter'||event.key===' '){copyTaskId('${escapedTaskId}', this);event.preventDefault();}"
+                >${escapedTaskId}</code>
               </h2>
-              <span id="save-indicator-${task.id}" class="save-indicator">$${savedIndicator
+              <span id="save-indicator-${escapedTaskId}" class="save-indicator">${savedIndicator
     ? `<span class="save-indicator">${savedIndicator}</span>`
     : ""}</span>
             </div>
@@ -783,11 +809,11 @@ export function renderTaskModal(
               <input
                 type="text"
                 name="title"
-                value="${task.title}"
+                value="${escapeHtml(task.title)}"
                 placeholder="Task title..."
-                hx-patch="/task/${task.id}"
+                hx-patch="${taskPatchUrl}"
                 hx-trigger="input changed delay:500ms, blur"
-                hx-target="#save-indicator-${task.id}"
+                hx-target="#save-indicator-${escapedTaskId}"
                 hx-swap="outerHTML"
                 class="modal-title-input"
               >
@@ -811,24 +837,24 @@ export function renderTaskModal(
         </header>
 
         <div style="display: flex; align-items: center; gap: calc(var(--pico-spacing) / 2); margin-bottom: var(--pico-spacing); flex-wrap: wrap;">
-          $${statusHtml}
+          ${statusHtml}
           <div style="margin-left: auto; display: flex; gap: calc(var(--pico-spacing) / 2); flex-wrap: wrap;">
-            $${actionButtonsHtml}
+            ${actionButtonsHtml}
           </div>
         </div>
 
         <div style="display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--pico-spacing) / 2); margin-bottom: var(--pico-spacing);">
           <strong style="margin-right: 4px;">Priority</strong>
-          $${priorityHtml}
+          ${priorityHtml}
           <span style="margin-left: calc(var(--pico-spacing) / 2);"></span>
           <strong style="margin-right: 4px;">Project</strong>
-          $${projectHtml}
-          $${projectInputHtml}
+          ${projectHtml}
+          ${projectInputHtml}
           <span style="margin-left: calc(var(--pico-spacing) / 2);"></span>
           <strong style="margin-right: 4px;">Tags</strong>
-          $${tagBadgesHtml}
+          ${tagBadgesHtml}
           <form
-            hx-post="/task/${task.id}/tag"
+            hx-post="${tagPostUrl}"
             hx-target="#modal-container"
             hx-swap="innerHTML"
             style="display: inline-flex; gap: .2rem; margin: 0; align-items: center;"
@@ -837,33 +863,33 @@ export function renderTaskModal(
               type="text"
               name="tag"
               placeholder="add tag"
-              list="tag-suggestions-${task.id}"
+              list="tag-suggestions-${escapedTaskId}"
               autocomplete="off"
               style="padding: .2rem .4rem; font-size: 0.85em; width: 7rem; margin: 0; height: auto;"
             >
-            <datalist id="tag-suggestions-${task.id}">
-              $${tagDatalistOptions}
+            <datalist id="tag-suggestions-${escapedTaskId}">
+              ${tagDatalistOptions}
             </datalist>
             <button type="submit" class="tag-btn" style="background: var(--simbl-tag-bg-light); color: var(--simbl-tag-text);">+</button>
           </form>
         </div>
 
-        $${relationsSectionHtml}
+        ${relationsSectionHtml}
 
         <hr style="margin: var(--pico-spacing) 0;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
           <h4 style="margin: 0;">Content</h4>
-          <span id="content-save-indicator-${task.id}" class="save-indicator"></span>
+          <span id="content-save-indicator-${escapedTaskId}" class="save-indicator"></span>
         </div>
         <textarea
           name="content"
           placeholder="Task content (markdown)..."
-          hx-patch="/task/${task.id}"
+          hx-patch="${taskPatchUrl}"
           hx-trigger="input changed delay:500ms, blur"
-          hx-target="#content-save-indicator-${task.id}"
+          hx-target="#content-save-indicator-${escapedTaskId}"
           hx-swap="outerHTML"
           class="content-textarea"
-        >${displayContent}</textarea>
+        >${escapeHtml(displayContent)}</textarea>
 
         ${renderTaskLog(logEntries)}
       </article>
@@ -892,14 +918,15 @@ export function renderAddTaskForm(): string {
   const priorityButtons = [1, 2, 3]
     .map((p) => {
       const suffix = getPriorityVarSuffix(p);
-      return html`<button
+      const style = `background: var(--simbl-${suffix}-bg-light); color: var(--simbl-${suffix}-text);`;
+      return `<button
         type="button"
         class="tag-btn add-task-priority-btn"
-        data-priority="${String(p)}"
-        style="background: var(--simbl-${suffix}-bg-light); color: var(--simbl-${suffix}-text);"
-        title="Set priority P${String(p)}"
-        onclick="selectAddTaskPriority(${String(p)})"
-      >P${String(p)}</button>`;
+        data-priority="${p}"
+        style="${style}"
+        title="Set priority P${p}"
+        onclick="selectAddTaskPriority(${p})"
+      >P${p}</button>`;
     })
     .join("");
 
@@ -935,7 +962,7 @@ export function renderAddTaskForm(): string {
       }
     `;
 
-  return html`
+  return `
     <dialog id="modal-dialog" open>
       <article id="modal-content" style="max-width: 700px;">
         <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--pico-spacing);">
@@ -956,7 +983,7 @@ export function renderAddTaskForm(): string {
             <label style="margin-bottom: calc(var(--pico-spacing) / 2);">Priority <small style="color: var(--pico-muted-color);">(optional)</small></label>
             <input type="hidden" name="priority" id="add-task-priority" value="">
             <div style="display: flex; gap: calc(var(--pico-spacing) / 4); align-items: center;">
-              $${priorityButtons}
+              ${priorityButtons}
               <button
                 type="button"
                 class="tag-btn"
@@ -982,6 +1009,6 @@ export function renderAddTaskForm(): string {
         </form>
       </article>
     </dialog>
-    <script>$${scriptContent}</script>
+    <script>${scriptContent}</script>
   `;
 }

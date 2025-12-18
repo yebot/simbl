@@ -274,6 +274,46 @@ export function renderPage(file: SimblFile, projectName?: string): string {
       line-height: 1.5;
     }
 
+    /* Task log section */
+    .task-log-section {
+      margin-top: var(--pico-spacing);
+    }
+    .task-log-section summary {
+      font-size: 0.9em;
+      padding: 0.5rem 0.75rem;
+    }
+    .task-log-section summary small {
+      color: var(--pico-muted-color);
+      margin-left: 0.5rem;
+    }
+    .task-log-content {
+      background: var(--pico-card-background-color);
+      border-left: 3px solid var(--pico-muted-border-color);
+      padding: var(--pico-spacing);
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 0.9em;
+    }
+    .task-log-entry {
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--pico-muted-border-color);
+      display: flex;
+      gap: 1rem;
+      align-items: baseline;
+    }
+    .task-log-entry:last-child {
+      border-bottom: none;
+    }
+    .task-log-timestamp {
+      font-family: monospace;
+      font-size: 0.85em;
+      color: var(--pico-muted-color);
+      white-space: nowrap;
+    }
+    .task-log-message {
+      flex: 1;
+    }
+
     /* Tag badges */
     .tag-badge, .tag-btn {
       background: var(--simbl-tag-bg-light);

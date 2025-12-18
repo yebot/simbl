@@ -600,18 +600,28 @@ export async function startServer(options: ServerOptions): Promise<void> {
 
           // Remove any existing priority tag and track old priority
           const oldPriority = task.tags.find((t) => /^p[1-9]$/.test(t));
+          const newPriority = `p${priority}`;
+
+          // Skip if priority unchanged
+          if (oldPriority === newPriority) {
+            const allTasks = getAllTasks(file);
+            return new Response(renderTaskModal(task, allTasks, false), {
+              headers: { 'Content-Type': 'text/html' },
+            });
+          }
+
           task.tags = task.tags.filter((t) => !/^p[1-9]$/.test(t));
 
           // Add new priority tag
-          task.tags.unshift(`p${priority}`);
+          task.tags.unshift(newPriority);
           task.reserved = parseReservedTags(task.tags);
           task.status = deriveStatus(section, task.reserved);
 
           // Log priority change
           if (oldPriority) {
-            task.content = appendLogEntry(task.content, `Priority changed from [${oldPriority}] to [p${priority}]`);
+            task.content = appendLogEntry(task.content, `Priority changed from [${oldPriority}] to [${newPriority}]`);
           } else {
-            task.content = appendLogEntry(task.content, `Priority set to [p${priority}]`);
+            task.content = appendLogEntry(task.content, `Priority set to [${newPriority}]`);
           }
           saveTasks(file);
 

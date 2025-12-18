@@ -713,6 +713,7 @@ export async function startServer(options: ServerOptions): Promise<void> {
           }
 
           // Remove any existing project tag
+          const oldProject = task.tags.find((t) => t.startsWith('project:'));
           task.tags = task.tags.filter((t) => !t.startsWith('project:'));
 
           // Add new project tag
@@ -720,6 +721,13 @@ export async function startServer(options: ServerOptions): Promise<void> {
           task.tags.push(projectTag);
           task.reserved = parseReservedTags(task.tags);
           task.status = deriveStatus(section, task.reserved);
+
+          // Log project change
+          if (oldProject) {
+            task.content = appendLogEntry(task.content, `Project changed from [${oldProject}] to [${projectTag}]`);
+          } else {
+            task.content = appendLogEntry(task.content, `Added to project [${projectTag}]`);
+          }
           saveTasks(file);
 
           // Return updated modal with saved indicator
@@ -747,9 +755,13 @@ export async function startServer(options: ServerOptions): Promise<void> {
           }
 
           // Remove project tag
+          const oldProject = task.tags.find((t) => t.startsWith('project:'));
           task.tags = task.tags.filter((t) => !t.startsWith('project:'));
           task.reserved = parseReservedTags(task.tags);
           task.status = deriveStatus(section, task.reserved);
+          if (oldProject) {
+            task.content = appendLogEntry(task.content, `Removed from project [${oldProject}]`);
+          }
           saveTasks(file);
 
           // Return updated modal with saved indicator

@@ -4,61 +4,6 @@
 
 [p5][needs-refinement][project:core]
 
-## smb-24 Refactor web UI using html-template-tag
-
-[p1][web][refactor][project:web][refined][in-progress]
-
-#### Overview
-
-Refactor src/web/templates.ts and src/web/page.ts to use `html-template-tag` for automatic HTML escaping.
-
-#### Technical Approach
-
-1. Install `html-template-tag` with `bun add html-template-tag`
-2. Replace manual `escapeHtml(value)` calls with auto-escaping `${value}`
-3. Use `$${value}` for trusted HTML that should NOT be escaped (nested template results)
-4. Migrate custom modal backdrop to native `<dialog>` element
-5. Keep `escapeHtml()` function as utility for edge cases (mark with deprecation comment)
-
-#### Key Patterns
-
-- **User data**: `html\`<td>${task.title}</td>`` (auto-escaped)
-- **Nested HTML**: `html\`<td>$${priorityBadge}</td>`` (double $ to skip escaping)
-- **Static content**: CSS/JS blocks use `$${}` since they're static
-
-#### Files to Modify
-
-- src/web/templates.ts (789 lines)
-- src/web/page.ts (767 lines)
-
-#### Acceptance Criteria
-
-- [ ] `html-template-tag` installed and imported in both files
-- [ ] All `escapeHtml()` calls on user data replaced with auto-escaping
-- [ ] HTML-returning helpers marked with `$${}` where consumed
-- [ ] Custom modal replaced with native `<dialog>` element
-- [ ] Modal open/close JS updated for `<dialog>` API
-- [ ] `escapeHtml()` kept but marked with deprecation comment
-- [ ] No double-escaping (visual inspection + manual testing)
-- [ ] No XSS vulnerabilities (audit all `$${}` usages)
-- [ ] All existing functionality works (manual smoke test)
-- [ ] TypeScript compiles (`bun run typecheck`)
-- [ ] Binary builds (`bun run build`)
-
-#### Risks
-
-- Double-escaping if `escapeHtml()` calls left behind
-- XSS if `$${}` used incorrectly on user input
-- Dialog element requires JS changes for open/close behavior
-
-#### Reference
-
-https://www.npmjs.com/package/html-template-tag
-
-***
-
-task-log
-
 ## smb-25 Consolidate inline styles into CSS classes in web UI
 
 [depends-on-smb-24][project:web]
@@ -128,61 +73,19 @@ Add an automatic changelog/audit trail for individual tasks that records all mod
 
 Use horizontal rule + keyword pattern to delineate log section:
 
-```markdown
+````markdown
 ##### Description
 User content here...
-
 ***
 
 task-log
 
+- 2025-12-17T23:55:08Z | Title updated
 - 2025-12-17T14:32:00Z | Priority changed from P2 to P1
 - 2025-12-17T14:30:00Z | Added tag [feature]
 - 2025-12-17T14:28:00Z | Task created
-```
 
-###### What Gets Logged
-
-- Task creation
-- Status changes (backlog, in-progress, done, canceled)
-- Priority changes (with before/after values)
-- Tag additions/removals
-- Title edits
-- Content edits (batched within 30 minutes)
-
-###### Batching Rule
-
-Small successive changes within 30 minutes are batched into a single log entry to reduce noise. For content/title edits, use simple message like "Content updated" rather than diffs.
-
-###### No Attribution
-
-Log entries do not track who/what made the change (no "via CLI" or "via web UI").
-
-###### No Log Size Limit
-
-All entries are kept indefinitely.
-
-##### Implementation Plan
-
-This task is split into 3 sub-tasks:
-
-1. **smb-28a: Task log markdown format and parser** - Core parsing functions, round-trip preservation
-2. **smb-28b: Auto-generate log entries on mutations** - Hook into CLI and server mutation points
-3. **smb-28c: Web UI log toggle** - Hide log from textarea, add collapsible toggle to view entries
-
-##### CLI Command
-
-`simbl log <id>` - Display log entries for a task (view only, no manual add)
-
-##### Web UI Behavior
-
-- Log section collapsed by default in task modal
-- Toggle button shows entry count badge
-- Log entries displayed in read-only scrollable section with muted styling
-
-##### Dependencies
-
-- smb-28c depends on smb-24 (html-template-tag refactor) to avoid conflicts in templates.ts
+# Done
 
 ## smb-48 Task log: web UI toggle
 
@@ -215,7 +118,7 @@ Position after Content textarea, collapsible by default:
     <!-- Log entries rendered here -->
   </div>
 </details>
-```
+````
 
 ###### 3. Log Entry Styling
 
@@ -278,7 +181,70 @@ Muted, read-only appearance:
 - [ ] TypeScript compiles (`bun run typecheck`)
 - [ ] Binary builds (`bun run build`)
 
-# Done
+***
+
+task-log
+
+- 2025-12-17T23:18:47Z | Moved to Done
+
+## smb-24 Refactor web UI using html-template-tag
+
+[p1][web][refactor][project:web][refined]
+
+#### Overview
+
+Refactor src/web/templates.ts and src/web/page.ts to use `html-template-tag` for automatic HTML escaping.
+
+#### Technical Approach
+
+1. Install `html-template-tag` with `bun add html-template-tag`
+2. Replace manual `escapeHtml(value)` calls with auto-escaping `${value}`
+3. Use `$${value}` for trusted HTML that should NOT be escaped (nested template results)
+4. Migrate custom modal backdrop to native `<dialog>` element
+5. Keep `escapeHtml()` function as utility for edge cases (mark with deprecation comment)
+
+#### Key Patterns
+
+- **User data**: `html\`<td>${task.title}</td>`` (auto-escaped)
+- **Nested HTML**: `html\`<td>$${priorityBadge}</td>`` (double $ to skip escaping)
+- **Static content**: CSS/JS blocks use `$${}` since they're static
+
+#### Files to Modify
+
+- src/web/templates.ts (789 lines)
+- src/web/page.ts (767 lines)
+
+#### Acceptance Criteria
+
+- [ ] `html-template-tag` installed and imported in both files
+- [ ] All `escapeHtml()` calls on user data replaced with auto-escaping
+- [ ] HTML-returning helpers marked with `$${}` where consumed
+- [ ] Custom modal replaced with native `<dialog>` element
+- [ ] Modal open/close JS updated for `<dialog>` API
+- [ ] `escapeHtml()` kept but marked with deprecation comment
+- [ ] No double-escaping (visual inspection + manual testing)
+- [ ] No XSS vulnerabilities (audit all `$${}` usages)
+- [ ] All existing functionality works (manual smoke test)
+- [ ] TypeScript compiles (`bun run typecheck`)
+- [ ] Binary builds (`bun run build`)
+
+#### Risks
+
+- Double-escaping if `escapeHtml()` calls left behind
+- XSS if `$${}` used incorrectly on user input
+- Dialog element requires JS changes for open/close behavior
+
+#### Reference
+
+https://www.npmjs.com/package/html-template-tag
+
+***
+
+task-log
+
+- 2025-12-17T23:54:13Z | Content updated
+- 2025-12-17T23:11:50Z | Content updated
+- 2025-12-17T23:11:50Z | Content updated
 
 ## smb-47 Task log: auto-generate on mutations
 
@@ -1102,7 +1068,7 @@ Clicking project badge in the task list should NOT go to project view. Clicking 
 
 ## smb-10 Add project filter section to web UI
 
-[p2][project:web][depends-on-smb-2]
+[p3][project:web][depends-on-smb-2]
 
 #### Summary
 
@@ -1132,6 +1098,13 @@ Add a dedicated project filter section to the web UI, similar to priority/status
 - [ ] Project filter combines with priority/status/tag filters (AND logic)
 - [ ] URL reflects active project filter
 - [ ] "All Projects" or clear option to remove filter
+
+***
+
+task-log
+
+- 2025-12-17T23:59:57Z | Priority changed from [p4] to [p3]
+- 2025-12-17T23:59:48Z | Priority changed from [p2] to [p4]
 
 ## smb-7 Fix simbl serve port handling - not auto-finding available port
 
@@ -1191,6 +1164,8 @@ async function startServerWithRetry(options: ServerOptions, maxAttempts = 100) {
 
 ## smb-3 Add a viewport maximization toggle button in the task edit modal
 
+[project:web]
+
 Add a viewport maximization toggle button to the task edit modal.
 
 #### Implementation
@@ -1235,6 +1210,14 @@ Add a viewport maximization toggle button to the task edit modal.
 - [ ] Button has proper aria-label and aria-pressed attributes
 - [ ] Escape key still closes modal in maximized state
 - [ ] Works on all screen sizes (including mobile)
+***
+
+task-log
+
+- 2025-12-18T00:04:40Z | Removed tag [fooey]
+- 2025-12-18T00:04:29Z | Added tag [fooey]
+- 2025-12-17T23:59:05Z | Removed tag [test-tag]
+- 2025-12-17T23:58:53Z | Added tag [test-tag]
 
 ## smb-22 Simbl plugin: update all commands that accept a task-id argument
 
@@ -1253,3 +1236,5 @@ For any commands that expects a task ID (task-##) as its argument. If the user s
 ### Description
 
 The filter section above the table should have a button that only shows tasks that do not belong to a project.
+
+# Done

@@ -245,6 +245,51 @@ export function renderPage(file: SimblFile, projectName?: string): string {
       color: #333;
     }
 
+    /* Confirmation dialog styling */
+    #confirm-dialog {
+      border: none;
+      border-radius: var(--pico-border-radius);
+      padding: 0;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    #confirm-dialog::backdrop {
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    #confirm-dialog article {
+      margin: 0;
+      padding: 0;
+    }
+
+    #confirm-dialog header {
+      padding: var(--pico-spacing);
+      border-bottom: 1px solid var(--pico-muted-border-color);
+    }
+
+    #confirm-dialog header p {
+      margin: 0;
+    }
+
+    #confirm-dialog .confirm-body {
+      padding: var(--pico-spacing);
+    }
+
+    #confirm-dialog footer {
+      padding: var(--pico-spacing);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      border-top: 1px solid var(--pico-muted-border-color);
+    }
+
+    #confirm-dialog footer button {
+      margin: 0;
+      padding: 0.5rem 1rem;
+    }
+
     /* Modal title input */
     .modal-title-input {
       font-size: 1.25rem;
@@ -527,6 +572,18 @@ export function renderPage(file: SimblFile, projectName?: string): string {
     </section>
 
     <div id="modal-container"></div>
+    <dialog id="confirm-dialog">
+      <article>
+        <header>
+          <p><strong id="confirm-title">Confirm</strong></p>
+        </header>
+        <p class="confirm-body" id="confirm-message"></p>
+        <footer>
+          <button class="secondary" onclick="closeConfirmDialog()">Cancel</button>
+          <button id="confirm-action-btn">Confirm</button>
+        </footer>
+      </article>
+    </dialog>
   </main>
 
   <footer class="keyboard-hints" aria-label="Keyboard shortcuts">
@@ -546,6 +603,48 @@ export function renderPage(file: SimblFile, projectName?: string): string {
       }
       document.getElementById('modal-container').innerHTML = '';
     }
+
+    // Confirmation dialog functions
+    function showConfirmDialog(title, message, actionUrl, actionMethod, isDangerous) {
+      const dialog = document.getElementById('confirm-dialog');
+      const titleEl = document.getElementById('confirm-title');
+      const messageEl = document.getElementById('confirm-message');
+      const actionBtn = document.getElementById('confirm-action-btn');
+
+      titleEl.textContent = title;
+      messageEl.textContent = message;
+
+      // Style the confirm button based on action type
+      if (isDangerous) {
+        actionBtn.style.background = 'var(--pico-del-color)';
+        actionBtn.style.borderColor = 'var(--pico-del-color)';
+      } else {
+        actionBtn.style.background = '';
+        actionBtn.style.borderColor = '';
+      }
+
+      // Set up the action button to perform the HTMX request
+      actionBtn.onclick = function() {
+        closeConfirmDialog();
+        htmx.ajax(actionMethod, actionUrl, {target: '#modal-container', swap: 'innerHTML'});
+      };
+
+      dialog.showModal();
+    }
+
+    function closeConfirmDialog() {
+      const dialog = document.getElementById('confirm-dialog');
+      if (dialog) {
+        dialog.close();
+      }
+    }
+
+    // Close confirm dialog on backdrop click
+    document.getElementById('confirm-dialog').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeConfirmDialog();
+      }
+    });
 
     // Close modal on backdrop click (dialog element handles click outside content)
     document.addEventListener('click', function(e) {

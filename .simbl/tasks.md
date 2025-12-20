@@ -2,11 +2,18 @@
 
 ## smb-23 Add production building for Windows and Linux
 
-[p5][needs-refinement][project:core]
+[needs-refinement][project:core][on-ice]
+
+***
+
+task-log
+
+- 2025-12-20T17:41:00Z | Added tag [on-ice]
+- 2025-12-20T17:40:56Z | Removed priority [p5]
 
 ## smb-25 Consolidate inline styles into CSS classes in web UI
 
-[depends-on-smb-24][project:web]
+[depends-on-smb-24][project:web][on-ice]
 
 ### Description
 
@@ -31,9 +38,17 @@ Extract ~50 inline style attributes from templates.ts and page.ts into proper CS
 
 smb-24 (template tag refactor should be done first)
 
+***
+
+task-log
+
+- 2025-12-20T17:41:14Z | Added tag [on-ice]
+- 2025-12-20T17:41:07Z | Removed priority [p3]
+- 2025-12-20T03:17:10Z | Priority set to [p3]
+
 ## smb-26 Add automated XSS prevention tests for web UI
 
-[depends-on-smb-24][project:web]
+[depends-on-smb-24][project:web][on-ice]
 
 ### Description
 
@@ -59,133 +74,320 @@ Add tests to verify XSS prevention in web UI templates.
 
 smb-24 (template tag refactor should be done first)
 
-## smb-28 Add Task Log Feature
-
-[p2][project:core][refined]
-
-##### Overview
-
-Add an automatic changelog/audit trail for individual tasks that records all modifications. Log entries are stored in a designated section of task content, hidden from the user-facing Content textarea but viewable via a toggle in the task modal.
-
-##### Technical Approach
-
-###### Markdown Format
-
-Use horizontal rule + keyword pattern to delineate log section:
-
-````markdown
-##### Description
-User content here...
 ***
 
 task-log
 
-- 2025-12-17T23:55:08Z | Title updated
-- 2025-12-17T14:32:00Z | Priority changed from P2 to P1
-- 2025-12-17T14:30:00Z | Added tag [feature]
-- 2025-12-17T14:28:00Z | Task created
+- 2025-12-20T17:41:27Z | Added tag [on-ice]
+- 2025-12-20T17:41:23Z | Removed priority [p3]
+- 2025-12-20T03:17:14Z | Priority set to [p3]
 
-# Done
+## smb-37 Add simbl sync command for pulling remote task changes
 
-## smb-48 Task log: web UI toggle
-
-[p2][project:web][child-of-smb-28][depends-on-smb-47][depends-on-smb-24]
+[depends-on-smb-36][project:mobile-capture][on-ice]
 
 ### Description
 
-##### Overview
+#### Overview
 
-Add the web UI components to hide log from content textarea and provide a collapsible toggle to view log entries.
+A command that pulls remote changes and reports what's new in tasks.md. Complements the GitHub workflow_dispatch quick-capture feature.
 
-##### UI Components
+#### Behavior
 
-###### 1. Content Textarea Hiding
-
-- When rendering task modal, strip log section from content display using `stripTaskLog()`
-- When saving content, preserve existing log section (append user content + existing log)
-
-###### 2. Log Toggle Section
-
-Position after Content textarea, collapsible by default:
-
-```html
-<hr>
-<details class="task-log-section">
-  <summary role="button" class="secondary outline">
-    Task Log <small>(12 entries)</small>
-  </summary>
-  <div class="task-log-content">
-    <!-- Log entries rendered here -->
-  </div>
-</details>
-````
-
-###### 3. Log Entry Styling
-
-Muted, read-only appearance:
-
-- Background: `var(--pico-color-slate-50)`
-- Left border accent
-- Monospace timestamps
-- Max-height with scroll for many entries
-
-##### Template Changes (templates.ts)
-
-- Add `renderTaskLog(logEntries: LogEntry[])` helper
-- Modify `renderTaskModal()` to:
-  1. Strip log from content textarea value
-  2. Add log toggle section below content
-  3. Parse and display log entries
-
-##### CSS Additions (page.ts)
-
-```css
-.task-log-section { margin-top: var(--pico-spacing); }
-.task-log-content {
-  background: var(--pico-color-slate-50);
-  border-left: 3px solid var(--pico-color-slate-300);
-  padding: var(--pico-spacing);
-  max-height: 300px;
-  overflow-y: auto;
-  font-size: 0.9em;
-}
-.task-log-entry {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--pico-color-slate-200);
-}
-.task-log-entry:last-child { border-bottom: none; }
-.task-log-timestamp {
-  font-family: monospace;
-  font-size: 0.8em;
-  color: var(--pico-muted-color);
-}
+```bash
+simbl sync
+### Pulling from origin...
+### 2 new tasks from remote: smb-37, smb-38
+### 1 task updated: smb-12
 ```
 
-##### Server Changes (server.ts)
+#### Implementation
 
-- Content PATCH handler must preserve log section when saving
-- Consider if log updates need WebSocket broadcast (probably not - only on explicit refresh)
+1. Run `git pull` (or `git fetch` + `git merge`)
+2. Compare tasks.md before/after
+3. Report: new tasks, updated tasks, deleted tasks
+4. Handle merge conflicts gracefully (show conflict, don't crash)
 
-##### Acceptance Criteria
+#### Edge cases
 
-- [ ] Content textarea does NOT show log section markdown
-- [ ] Task modal has "Task Log" toggle below content
-- [ ] Toggle shows entry count badge
-- [ ] Toggle is collapsed by default
-- [ ] Clicking toggle reveals log entries
-- [ ] Log entries display with timestamps and messages
-- [ ] Log section has scroll for tasks with many entries
-- [ ] Saving content preserves hidden log section
-- [ ] Log entries styled distinctly (muted background, left border)
-- [ ] Works on mobile (< 576px)
-- [ ] TypeScript compiles (`bun run typecheck`)
-- [ ] Binary builds (`bun run build`)
+- No remote configured → skip with message
+- Conflicts in tasks.md → show warning, let user resolve
+- No changes → 'Already up to date'
+- Dirty working tree → warn but proceed (or require clean?)
 
 ***
 
 task-log
 
-- 2025-12-17T23:18:47Z | Moved to Done
+- 2025-12-20T17:40:44Z | Added tag [on-ice]
+- 2025-12-20T17:40:33Z | Removed priority [p4]
+
+## smb-36 Add GitHub workflow_dispatch for mobile task capture
+
+[project:mobile-capture][on-ice]
+
+### Description
+
+#### Overview
+
+Add a GitHub Actions workflow that allows quick task capture from the GitHub mobile app via workflow_dispatch. User triggers the workflow manually, enters task title, and it commits directly to tasks.md.
+
+#### Implementation
+
+1. Create `.github/workflows/simbl-quick-add.yml` workflow file
+2. Use workflow_dispatch with text input for task title
+3. Parse tasks.md, add new task to Backlog section
+4. Auto-increment task ID based on existing tasks
+5. Commit and push the change
+
+#### Workflow inputs
+
+- `title` (required): Task title
+- `priority` (optional): p1-p9
+- `project` (optional): project name
+- `content` (optional): task description
+
+#### Mobile UX
+
+1. Open GitHub mobile app
+2. Go to repo → Actions → Quick Add Task
+3. Tap 'Run workflow'
+4. Enter task title (and optional fields)
+5. Tap 'Run'
+6. Task appears in tasks.md on next pull
+
+#### Technical notes
+
+- Workflow needs write permissions to commit
+- Must handle concurrent runs (use git pull before push)
+- Parse existing task IDs to find next available number
+- Consider adding a special tag to these tasks so, once imported, we can give it special consideration
+- Use the prefix from config.yaml if accessible, or derive from existing task IDs, or default to 'task'
+
+***
+
+task-log
+
+- 2025-12-20T17:41:37Z | Added tag [on-ice]
+- 2025-12-20T17:41:32Z | Removed priority [p4]
+
+# Done
+
+## smb-54 Disable GIthub Actions
+
+[p1][cicd]
+
+***
+
+task-log
+
+- 2025-12-20T17:42:28Z | Moved to Done
+- 2025-12-20T04:02:48Z | Task created
+
+## smb-53 Confirmations should use PicoCSS Modal
+
+[p1][web]
+
+Clicking 'Archive' should use PicoCSS modal
+
+Clicking 'Cancel' should use PicoCSS modal
+
+https://picocss.com/docs/modal
+
+***
+
+task-log
+
+- 2025-12-20T03:34:32Z | Moved to Done
+- 2025-12-20T03:23:35Z | Task created
+
+## smb-39 Show status badges for all relation links in task modal
+
+[p2][web][ui][refined]
+
+In the task modal Relations section, show status badges (in-progress, done, canceled) next to all relation links:
+
+- **Children** - tasks with `[child-of-smb-39]`
+- **Parent** - the parent task if this task has `[child-of-X]`
+- **Dependencies** - tasks listed in `[depends-on-X]`
+
+##### Implementation
+
+1. Create `getChildStatusBadge(status)` helper in `templates.ts` (smaller variant of existing `getStatusBadge()`)
+
+2. Modify `renderTaskModal()` to append badge after each relation link:
+
+   - Children loop (~line 543)
+   - Parent link (~line 510)
+   - Dependencies loop (~line 530)
+
+3. Use existing CSS variables:
+
+   - `var(--simbl-in-progress-bg)` - blue/cyan
+   - `var(--simbl-done-bg)` - green
+   - `var(--pico-color-red-550)` - red for canceled
+
+4. Badge styling: `font-size: 0.75em`, `padding: 2px 6px`, `margin-left: 0.5em`
+
+##### Files to Modify
+
+- `src/web/templates.ts`
+
+##### Acceptance Criteria
+
+- [ ] Children with `[in-progress]` tag show "in-progress" badge
+- [ ] Children in Done section show "done" badge
+- [ ] Children with `[canceled]` tag show "canceled" badge
+- [ ] Backlog children show no badge
+- [ ] Parent link shows status badge
+- [ ] Dependency links show status badges
+- [ ] Badge uses same color scheme as task row badges
+- [ ] Badge has `aria-label` for accessibility
+- [ ] Badge does not break layout on mobile
+- [ ] Clicking relation link still opens that task's modal
+
+***
+
+task-log
+
+- 2025-12-20T03:21:03Z | Moved to Done
+
+## smb-52 Bug: Canceling a task in both CLI and Web should also move it to Done
+
+[p1][bug]
+
+***
+
+task-log
+
+- 2025-12-20T03:19:01Z | Moved to Done
+- 2025-12-20T03:16:00Z | Task created
+
+## smb-51 Task IDs in Archive duplication prevention
+
+[p1]
+
+When a task is moved to archive, its task ID no longer appears in the Backlog or Done sections. Because of this, newly added tasks can be assigned a task ID that already exists in the archive which can lead to a collision of IDs.
+
+When a new tasks is created, there should be a check on all IDs in BOTH files to ensure no duplicate IDs are created.
+
+***
+
+task-log
+
+- 2025-12-20T03:18:29Z | Moved to Done
+- 2025-12-20T03:04:44Z | Task created
+
+## smb-15 Add 'No Project' filter to web UI
+
+[p2][feature][canceled][canceled]
+
+### Description
+
+The filter section above the table should have a button that only shows tasks that do not belong to a project.
+
+***
+
+task-log
+
+- 2025-12-20T03:16:14Z | Marked as canceled
+
+## smb-8 Fix CLI cancel to move task to Done section
+
+[p1][cli][refined]
+
+The CLI cancel command exists but does not move tasks to the Done section. Fix this behavior.
+
+#### Requirements
+
+- `simbl cancel <id>` should add `[canceled]` tag (already works)
+- `simbl cancel <id>` should move task from Backlog to Done section (needs fix)
+- `simbl cancel <id>` should remove `[in-progress]` tag if present (already works)
+- Only backlog and in-progress tasks can be canceled (done tasks cannot)
+
+#### Acceptance Criteria
+
+- [ ] Running `simbl cancel <id>` on a backlog task moves it to Done section
+- [ ] Running `simbl cancel <id>` on an in-progress task moves it to Done section
+- [ ] Running `simbl cancel <id>` on a done task returns an error
+- [ ] The `[canceled]` tag is added to the task
+- [ ] The `[in-progress]` tag is removed if present
+- [ ] Exit code 0 on success, exit code 1 on error
+
+#### Implementation Notes
+
+Mirror the pattern from `done.ts` (lines 45-57) for moving tasks between sections. Also add validation to reject canceling already-done tasks.
+
+***
+
+task-log
+
+- 2025-12-20T03:13:12Z | Moved to Done
+
+## smb-40 Updates to CLAUDE.md snippet
+
+[p1][claude.md]
+
+update `const CLAUDE_MD_SECTION`:
+
+1. give it knowledge of the file path location of `tasks.md`, `config.yaml`, `tasks-archive.md`
+2. add an IMPORTANT instruction to always proactively update task descriptions when new information, surprises, course-corrections or architectural decisions are made. And, provide an example CLI command that does this.
+
+***
+
+task-log
+
+- 2025-12-20T03:09:40Z | Moved to Done
+
+## smb-41 the CLAUDE.md init update should mention task ID format
+
+[p2][init]
+
+if the config has a custom prefix, CLAUDE.md should inform accordingly, if no prefix specified in config, default 'task-' prefix should be mentioned.
+
+***
+
+task-log
+
+- 2025-12-20T03:09:39Z | Moved to Done
+
+## smb-42 inti wizard should ask if the user wants to specify a custom port
+
+[p1][init]
+
+***
+
+task-log
+
+- 2025-12-20T03:09:39Z | Moved to Done
+
+## smb-43 Expand implementation of json output flag
+
+[p1][cli][json]
+
+For every CLI command that an agentic AI tool might run on SIMBL, there should be an option to have SIMBL respond with JSON.
+
+##### Implementation Notes\nAdded --json flag to: done, cancel, update, relate, unrelate, tag add, tag remove
+
+***
+
+task-log
+
+- 2025-12-20T03:09:39Z | Moved to Done
+
+## smb-49 Test task for logging
+
+[feature][p2]
+
+***
+
+task-log
+
+- 2025-12-20T03:09:39Z | Moved to Done
+- 2025-12-17T22:38:32Z | Moved to Done
+- 2025-12-17T22:38:27Z | Priority changed from [p1] to [p2]
+- 2025-12-17T22:38:23Z | Added tag [feature]
+- 2025-12-17T22:37:51Z | Task created
 
 ## smb-47 Task log: auto-generate on mutations
 
@@ -244,18 +446,11 @@ Update `simbl usage` with log command documentation.
 - [ ] `simbl usage` documents log command
 - [ ] TypeScript compiles (`bun run typecheck`)
 
-## smb-49 Test task for logging
-
-[feature][p2]
-
 ***
 
 task-log
 
-- 2025-12-17T22:38:32Z | Moved to Done
-- 2025-12-17T22:38:27Z | Priority changed from [p1] to [p2]
-- 2025-12-17T22:38:23Z | Added tag [feature]
-- 2025-12-17T22:37:51Z | Task created
+- 2025-12-20T03:09:39Z | Moved to Done
 
 ## smb-46 Task log: markdown format and parser
 
@@ -271,66 +466,14 @@ Implement the core parsing layer for task log sections. This is the foundation f
 
 ###### Log Section Format
 
-```markdown
+`````markdown
 ***
 
 task-log
 
+- 2025-12-20T03:09:39Z | Moved to Done
 - 2025-12-17T14:32:00Z | Message here
 - 2025-12-17T14:30:00Z | Another message
-```
-
-###### Parser Functions (src/core/parser.ts or new src/core/log.ts)
-
-```typescript
-interface LogEntry {
-  timestamp: Date;
-  message: string;
-}
-
-// Extract log entries from task content
-function parseTaskLog(content: string): LogEntry[];
-
-// Get user content without log section
-function stripTaskLog(content: string): string;
-
-// Append a log entry to task content (creates section if needed)
-function appendLogEntry(content: string, message: string): string;
-
-// Append or batch entry if within 30 minutes of same type
-function appendOrBatchLogEntry(content: string, message: string, batchMinutes?: number): string;
-```
-
-###### Requirements
-
-- Log section must survive round-trip (parse -> serialize -> parse)
-- Log section always at end of content
-- Timestamps in ISO-8601 UTC format
-- Batching: if most recent entry is < 30 min old and message type matches, update instead of append
-
-##### Acceptance Criteria
-
-- [ ] `parseTaskLog()` extracts entries from content with log section
-- [ ] `parseTaskLog()` returns empty array for content without log section
-- [ ] `stripTaskLog()` returns content without log section
-- [ ] `appendLogEntry()` creates log section if none exists
-- [ ] `appendLogEntry()` appends to existing log section
-- [ ] `appendOrBatchLogEntry()` batches entries within 30 minutes
-- [ ] Round-trip test: content with log section survives parse/serialize cycle
-- [ ] Timestamps use ISO-8601 UTC format
-- [ ] TypeScript compiles (`bun run typecheck`)
-
-### Acceptance Criteria
-
-- [x] parseTaskLog() extracts entries from content with log section
-- [x] parseTaskLog() returns empty array for content without log section
-- [x] stripTaskLog() returns content without log section
-- [x] appendLogEntry() creates log section if none exists
-- [x] appendLogEntry() appends to existing log section
-- [x] appendOrBatchLogEntry() batches entries within 30 minutes
-- [x] Round-trip test: content with log section survives parse/serialize cycle
-- [x] Timestamps use ISO-8601 UTC format
-- [x] TypeScript compiles (bun run typecheck)
 
 ## smb-45 Acceptance Criteria CLI Additions
 
@@ -368,183 +511,25 @@ The `simbl usage` command should provide complete instructions on how to us `sim
 - [x] Usage docs updated
 - [x] Doctor validates AC format
 
-## smb-37 Add simbl sync command for pulling remote task changes
+***
 
-[p4][depends-on-smb-36][project:mobile-capture]
+task-log
 
-### Description
+- 2025-12-20T03:09:39Z | Moved to Done
 
-#### Overview
+## smb-34 Improve *.bun-build file handling
 
-A command that pulls remote changes and reports what's new in tasks.md. Complements the GitHub workflow_dispatch quick-capture feature.
+[p1][bun]
 
-#### Behavior
+1. Config Bun to NOT put *.bun-build files in the root
 
-```bash
-simbl sync
-### Pulling from origin...
-### 2 new tasks from remote: smb-37, smb-38
-### 1 task updated: smb-12
-```
-
-#### Implementation
-
-1. Run `git pull` (or `git fetch` + `git merge`)
-2. Compare tasks.md before/after
-3. Report: new tasks, updated tasks, deleted tasks
-4. Handle merge conflicts gracefully (show conflict, don't crash)
-
-#### Edge cases
-
-- No remote configured → skip with message
-- Conflicts in tasks.md → show warning, let user resolve
-- No changes → 'Already up to date'
-- Dirty working tree → warn but proceed (or require clean?)
-
-## smb-36 Add GitHub workflow_dispatch for mobile task capture
-
-[p4][project:mobile-capture]
-
-### Description
-
-#### Overview
-
-Add a GitHub Actions workflow that allows quick task capture from the GitHub mobile app via workflow_dispatch. User triggers the workflow manually, enters task title, and it commits directly to tasks.md.
-
-#### Implementation
-
-1. Create `.github/workflows/simbl-quick-add.yml` workflow file
-2. Use workflow_dispatch with text input for task title
-3. Parse tasks.md, add new task to Backlog section
-4. Auto-increment task ID based on existing tasks
-5. Commit and push the change
-
-#### Workflow inputs
-
-- `title` (required): Task title
-- `priority` (optional): p1-p9
-- `project` (optional): project name
-- `content` (optional): task description
-
-#### Mobile UX
-
-1. Open GitHub mobile app
-2. Go to repo → Actions → Quick Add Task
-3. Tap 'Run workflow'
-4. Enter task title (and optional fields)
-5. Tap 'Run'
-6. Task appears in tasks.md on next pull
-
-#### Technical notes
-
-- Workflow needs write permissions to commit
-- Must handle concurrent runs (use git pull before push)
-- Parse existing task IDs to find next available number
-- Consider adding a special tag to these tasks so, once imported, we can give it special consideration
-- Use the prefix from config.yaml if accessible, or derive from existing task IDs, or default to 'task'
-
-## smb-44 Bug: missing icons
-
-[p1][bug][web][ui]
-
-both /apple-touch-icon.png and /favicon.ico are giving 404 in production build.
-
-## smb-18 Add auto-complete to new tag input field
-
-[feature][p3][project:web]
-
-Wherever there exists a tag input field, auto-complete functionality should exist where the auto-complete has knowledge of all existing tags in tasks.md as well as reserved special tags so its easier to add tags to a task w/o making mistakes.
-
-## smb-35 Add app icons & favicons
-
-[p2][design]
-
-Add supplied files in `icons` directory to give this app icons and favicons.
-
-## smb-9 Update 'Send to...' action buttons
-
-[p3][ui][project:web]
-
-Replace all 'Send to...' action buttons with 'Move to...'.
-
-## smb-39 Show status badges for all relation links in task modal
-
-[p2][web][ui][refined]
-
-In the task modal Relations section, show status badges (in-progress, done, canceled) next to all relation links:
-
-- **Children** - tasks with `[child-of-smb-39]`
-- **Parent** - the parent task if this task has `[child-of-X]`
-- **Dependencies** - tasks listed in `[depends-on-X]`
-
-##### Implementation
-
-1. Create `getChildStatusBadge(status)` helper in `templates.ts` (smaller variant of existing `getStatusBadge()`)
-
-2. Modify `renderTaskModal()` to append badge after each relation link:
-
-   - Children loop (~line 543)
-   - Parent link (~line 510)
-   - Dependencies loop (~line 530)
-
-3. Use existing CSS variables:
-
-   - `var(--simbl-in-progress-bg)` - blue/cyan
-   - `var(--simbl-done-bg)` - green
-   - `var(--pico-color-red-550)` - red for canceled
-
-4. Badge styling: `font-size: 0.75em`, `padding: 2px 6px`, `margin-left: 0.5em`
-
-##### Files to Modify
-
-- `src/web/templates.ts`
-
-##### Acceptance Criteria
-
-- [ ] Children with `[in-progress]` tag show "in-progress" badge
-- [ ] Children in Done section show "done" badge
-- [ ] Children with `[canceled]` tag show "canceled" badge
-- [ ] Backlog children show no badge
-- [ ] Parent link shows status badge
-- [ ] Dependency links show status badges
-- [ ] Badge uses same color scheme as task row badges
-- [ ] Badge has `aria-label` for accessibility
-- [ ] Badge does not break layout on mobile
-- [ ] Clicking relation link still opens that task's modal
-
-## smb-5 CLI tag add should be graceful when tag already exists
-
-[cli]
-
-### Description
-
-The CLI response when attempting to add an 'in-progress' tag to a task that already has it should not be an error, but a graceful informational reply that the tag is already there. Same for priority tags.
-
-Currently returns exit code 1 with error message. Should return exit code 0 with informational message like:
-
-- 'Task already has tag [in-progress]'
-- 'Task already has priority [p2]'
-
-## smb-17 Add priority selection UI to the 'Add Task' modal
-
-[p1][feature][web][project:web]
-
-Allow the user to specify which Priority tag to add to a task in the 'Add Task' modal.
-
-This field is optional.
+2. Make sure *.bun-build files are gitignore'd.
 
 ***
 
 task-log
 
-- 2025-12-18T01:00:56Z | Priority changed from [p3] to [p1]
-- 2025-12-18T01:00:54Z | Priority changed from [p2] to [p3]
-
-## smb-41 the CLAUDE.md init update should mention task ID format
-
-[p2][init]
-
-if the config has a custom prefix, CLAUDE.md should inform accordingly, if no prefix specified in config, default 'task-' prefix should be mentioned.
+- 2025-12-20T03:09:39Z | Moved to Done
 
 ## smb-30 Update sorting for the HTMX table of tasks
 
@@ -573,9 +558,39 @@ Sort by header DESC, then by Task Title ASC
 
 FOLLOW UP! There's still default behavior on initial page load that omits [done] tasks
 
-## smb-42 inti wizard should ask if the user wants to specify a custom port
+***
 
-[p1][init]
+task-log
+
+- 2025-12-20T03:09:38Z | Moved to Done
+
+## smb-28 Add Task Log Feature
+
+[p2][project:core][refined]
+
+##### Overview
+
+Add an automatic changelog/audit trail for individual tasks that records all modifications. Log entries are stored in a designated section of task content, hidden from the user-facing Content textarea but viewable via a toggle in the task modal.
+
+##### Technical Approach
+
+###### Markdown Format
+
+Use horizontal rule + keyword pattern to delineate log section:
+
+````markdown
+##### Description
+User content here...
+***
+
+task-log
+
+- 2025-12-20T03:09:38Z | Moved to Done
+- 2025-12-17T23:55:08Z | Title updated
+- 2025-12-17T14:32:00Z | Priority changed from P2 to P1
+- 2025-12-17T14:30:00Z | Added tag [feature]
+- 2025-12-17T14:28:00Z | Task created
+- 2025-12-17T23:18:47Z | Moved to Done
 
 ## smb-27 Add 'Backlog' Status filter button
 
@@ -598,42 +613,136 @@ Add a "Backlog" status filter button alongside the existing "In-Progress" and "D
 - [ ] Clicking "Backlog" clears any active project filter
 - [ ] Button uses consistent styling with other status filters
 
-## smb-43 Expand implementation of json output flag
+***
 
-[p1][cli][json]
+task-log
 
-For every CLI command that an agentic AI tool might run on SIMBL, there should be an option to have SIMBL respond with JSON.
+- 2025-12-20T03:09:38Z | Moved to Done
 
-##### Implementation Notes\nAdded --json flag to: done, cancel, update, relate, unrelate, tag add, tag remove
+## smb-22 Simbl plugin: update all commands that accept a task-id argument
 
-## smb-40 Updates to CLAUDE.md snippet
+[plugin]
 
-[p1][claude.md]
+For any commands that expects a task ID (task-##) as its argument. If the user supplies only digits, (Ex. "9"), assume they want you to refer to "task-9" (or "abc-9" if the config task prefix is "abc")
 
-update `const CLAUDE_MD_SECTION`:
+***
 
-1. give it knowledge of the file path location of `tasks.md`, `config.yaml`, `tasks-archive.md`
-2. add an IMPORTANT instruction to always proactively update task descriptions when new information, surprises, course-corrections or architectural decisions are made. And, provide an example CLI command that does this.
+task-log
 
-## smb-33 Bug: why does 'refined' tag not show up in the tag cloud?
+- 2025-12-20T03:09:38Z | Moved to Done
 
-[bug][p1]
+## smb-21 Web UI Task modal: make entire Task ID clickable (to clipboard)
 
-Why does 'refined' tag not show up in the tag cloud even though there are tasks in the backlog that have it?
+[web][p3][project:web][p5]
 
-## smb-34 Improve *.bun-build file handling
+- remove the clipboard icon.
+- make the entire "badge" clickable.
+- inform user it was copied to clipboard.
 
-[p1][bun]
+***
 
-1. Config Bun to NOT put *.bun-build files in the root
+task-log
 
-2. Make sure *.bun-build files are gitignore'd.
+- 2025-12-20T03:09:38Z | Moved to Done
 
-## smb-38 Update the web app title tag
+## smb-20 Add 'Mark Canceled' button to Web UI task modal
 
-[p1][web]
+[p1][web][ui][depends-on-smb-8][refined][project:web]
 
-make the title tag, `<title>{config.name} - Simbl</title>`
+Add a cancel button to the Web UI task modal for backlog and in-progress tasks.
+
+#### Requirements
+
+- Add "Mark Canceled" button in task modal for backlog and in-progress tasks
+- Button should use red outline style (matches "Send to Archive" pattern)
+- Show confirmation dialog before canceling
+- After cancel, task moves to Done section with [canceled] tag
+- Canceled tasks appear under "done" filter (no separate filter needed)
+- When sending a canceled task back to in-progress, auto-remove the [canceled] tag
+
+#### Acceptance Criteria
+
+- [ ] "Mark Canceled" button appears in task modal for backlog tasks
+- [ ] "Mark Canceled" button appears in task modal for in-progress tasks
+- [ ] "Mark Canceled" button does NOT appear for done tasks
+- [ ] Clicking button shows confirmation: "Mark this task as canceled and move it to Done?"
+- [ ] After confirming, task moves to Done section with [canceled] tag
+- [ ] Task modal updates to show "canceled" status with red badge
+- [ ] Task list updates via WebSocket broadcast
+- [ ] Sending canceled task to in-progress removes the [canceled] tag automatically
+
+#### Implementation Notes
+
+##### New endpoint in server.ts
+
+Add POST /task/:id/cancel following the pattern of /task/:id/done (lines 354-376):
+
+```typescript
+if (path.match(/^\/task\/[^/]+\/cancel$/) && req.method === "POST") {
+  const id = path.split("/")[2];
+  // Find task in backlog, add [canceled] tag, move to done
+  // Return updated modal HTML
+}
+`````
+
+##### Button in templates.ts
+
+Add to renderTaskModal() status action row (around line 627-652):
+
+```html
+<button
+  hx-post="/task/${taskId}/cancel"
+  hx-target="#modal-container"
+  hx-swap="innerHTML"
+  hx-confirm="Mark this task as canceled and move it to Done?"
+  class="outline"
+  style="padding: 4px 12px; font-size: 0.8em; color: var(--pico-del-color); border-color: var(--pico-del-color);"
+>
+  Mark Canceled
+</button>
+```
+
+##### Auto-remove [canceled] on send to in-progress
+
+Modify the /task/:id/in-progress handler to remove the [canceled] tag when present.
+
+##### user reminders
+
+remind them to use this feat on smb-6 and smb-15
+
+***
+
+task-log
+
+- 2025-12-20T03:09:38Z | Moved to Done
+
+## smb-18 Add auto-complete to new tag input field
+
+[feature][p3][project:web]
+
+Wherever there exists a tag input field, auto-complete functionality should exist where the auto-complete has knowledge of all existing tags in tasks.md as well as reserved special tags so its easier to add tags to a task w/o making mistakes.
+
+***
+
+task-log
+
+- 2025-12-20T03:09:38Z | Moved to Done
+
+## smb-17 Add priority selection UI to the 'Add Task' modal
+
+[p1][feature][web][project:web]
+
+Allow the user to specify which Priority tag to add to a task in the 'Add Task' modal.
+
+This field is optional.
+
+***
+
+task-log
+
+- 2025-12-20T03:09:38Z | Moved to Done
+- 2025-12-18T01:00:56Z | Priority changed from [p3] to [p1]
+- 2025-12-18T01:00:54Z | Priority changed from [p2] to [p3]
 
 ## smb-16 Add webPort config option with serve command warning
 
@@ -675,74 +784,11 @@ Add a `webPort` config option to `.simbl/config.yaml` that specifies the preferr
 - [ ] Warning includes both preferred and actual port numbers
 - [ ] Default port remains 3497 when not configured
 
-## smb-32 Change Colors of Priority badges & buttons
+***
 
-[p1][ui]
+task-log
 
-Values come from https://picocss.com/docs/colors.
-
-```
-  --simbl-p1-bg: var(--pico-color-red-400);
-  --simbl-p1-bg-light: var(--pico-color-red-100);
-  --simbl-p1-text: var(--pico-color-red-600);
-```
-
-- For P1
-  - bg-light use orange-400 `var(--pico-color-orange-400)`
-  - foreground use orange-800
-- For P2
-  - background use orange-300
-  - foreground use orange-700
-- For P3
-  - background use orange-200
-  - foreground use orange-600
-- For P4
-  - background use orange-100
-  - foreground use orange-500
-- For P5-P9
-  - background use orange-50
-  - foreground use orange-400
-
-## smb-31 Change Emoji to Unicode
-
-[p1][ui]
-
-from ➡️ to ⮕
-from ⬅️ to ⬅
-from ➕ to ＋
-from ✅ to ✔
-from ❌ to ✖
-
-## smb-29 Emoji-fy all Icons and rename buttons
-
-[p1][ui][web]
-
-- The button that adds [done] tag is '✅ Mark Done'
-
-- '+ Add Task' button becomes '➕ Add Task'
-
-- 'Mark Canceled' button becomes '❌ Cancel'
-
-- 'x Send to Archive' button becomes '✖️ Archive'
-
-- If a task does not have [in-progress] or [done] tags,
-
-  - The button to add [in-progress] tag is '➡️ Send to In-Progress'
-
-- If a task has [done] tag,
-
-  - The button to add [in-progress] and remove [done] is '⬅️ Back to In-Progress'
-
-- If a task has [in-progress] tag,
-  - The button to remove the [in-progress] tag is '⬅️ Back to Backlog'
-
-## smb-21 Web UI Task modal: make entire Task ID clickable (to clipboard)
-
-[web][p3][project:web][p5]
-
-- remove the clipboard icon.
-- make the entire "badge" clickable.
-- inform user it was copied to clipboard.
+- 2025-12-20T03:09:37Z | Moved to Done
 
 ## smb-14 Project UX Refinements
 
@@ -815,190 +861,23 @@ if (projects.length === 0) return "";
 - [ ] Editing priority still shows "Saved ✓" notification (regression)
 - [ ] Editing tags still shows "Saved ✓" notification (regression)
 
-## smb-20 Add 'Mark Canceled' button to Web UI task modal
+***
 
-[p1][web][ui][depends-on-smb-8][refined][project:web]
+task-log
 
-Add a cancel button to the Web UI task modal for backlog and in-progress tasks.
+- 2025-12-20T03:09:37Z | Moved to Done
 
-#### Requirements
+## smb-12 Task list project badge should not navigate to project view
 
-- Add "Mark Canceled" button in task modal for backlog and in-progress tasks
-- Button should use red outline style (matches "Send to Archive" pattern)
-- Show confirmation dialog before canceling
-- After cancel, task moves to Done section with [canceled] tag
-- Canceled tasks appear under "done" filter (no separate filter needed)
-- When sending a canceled task back to in-progress, auto-remove the [canceled] tag
+### Description
 
-#### Acceptance Criteria
+Clicking project badge in the task list should NOT go to project view. Clicking the row always opens the modal. Follow-up to smb-2.
 
-- [ ] "Mark Canceled" button appears in task modal for backlog tasks
-- [ ] "Mark Canceled" button appears in task modal for in-progress tasks
-- [ ] "Mark Canceled" button does NOT appear for done tasks
-- [ ] Clicking button shows confirmation: "Mark this task as canceled and move it to Done?"
-- [ ] After confirming, task moves to Done section with [canceled] tag
-- [ ] Task modal updates to show "canceled" status with red badge
-- [ ] Task list updates via WebSocket broadcast
-- [ ] Sending canceled task to in-progress removes the [canceled] tag automatically
+***
 
-#### Implementation Notes
+task-log
 
-##### New endpoint in server.ts
-
-Add POST /task/:id/cancel following the pattern of /task/:id/done (lines 354-376):
-
-```typescript
-if (path.match(/^\/task\/[^/]+\/cancel$/) && req.method === "POST") {
-  const id = path.split("/")[2];
-  // Find task in backlog, add [canceled] tag, move to done
-  // Return updated modal HTML
-}
-```
-
-##### Button in templates.ts
-
-Add to renderTaskModal() status action row (around line 627-652):
-
-```html
-<button
-  hx-post="/task/${taskId}/cancel"
-  hx-target="#modal-container"
-  hx-swap="innerHTML"
-  hx-confirm="Mark this task as canceled and move it to Done?"
-  class="outline"
-  style="padding: 4px 12px; font-size: 0.8em; color: var(--pico-del-color); border-color: var(--pico-del-color);"
->
-  Mark Canceled
-</button>
-```
-
-##### Auto-remove [canceled] on send to in-progress
-
-Modify the /task/:id/in-progress handler to remove the [canceled] tag when present.
-
-##### user reminders
-
-remind them to use this feat on smb-6 and smb-15
-
-## smb-8 Fix CLI cancel to move task to Done section
-
-[p1][cli][refined]
-
-The CLI cancel command exists but does not move tasks to the Done section. Fix this behavior.
-
-#### Requirements
-
-- `simbl cancel <id>` should add `[canceled]` tag (already works)
-- `simbl cancel <id>` should move task from Backlog to Done section (needs fix)
-- `simbl cancel <id>` should remove `[in-progress]` tag if present (already works)
-- Only backlog and in-progress tasks can be canceled (done tasks cannot)
-
-#### Acceptance Criteria
-
-- [ ] Running `simbl cancel <id>` on a backlog task moves it to Done section
-- [ ] Running `simbl cancel <id>` on an in-progress task moves it to Done section
-- [ ] Running `simbl cancel <id>` on a done task returns an error
-- [ ] The `[canceled]` tag is added to the task
-- [ ] The `[in-progress]` tag is removed if present
-- [ ] Exit code 0 on success, exit code 1 on error
-
-#### Implementation Notes
-
-Mirror the pattern from `done.ts` (lines 45-57) for moving tasks between sections. Also add validation to reject canceling already-done tasks.
-
-## smb-4 Add keyboard shortcuts to web UI (n, p, w, /, j/k)
-
-[p1][feature][web][refined]
-
-#### Overview
-
-Add keyboard shortcuts to the HTMX web UI for power-user productivity. Implementation should be in vanilla JS, added to the existing `<script>` block in `src/web/page.ts`.
-
-#### Shortcuts to Implement
-
-| Key             | Context                                  | Action                                                              |
-| --------------- | ---------------------------------------- | ------------------------------------------------------------------- |
-| `n`             | No modal open, no input focused          | Open Add Task modal                                                 |
-| `p`             | No modal open, no input focused          | Cycle through priority filters (all existing priorities in backlog) |
-| `w`             | Task detail modal open, no input focused | Toggle maximize/restore                                             |
-| `/`             | No modal open                            | Focus search input                                                  |
-| `j`/`k`         | No modal open, no input focused          | Navigate up/down through task list                                  |
-| `Enter`/`Space` | Task selected via j/k, no input focused  | Open selected task's detail modal                                   |
-
-#### Discoverability
-
-Add a persistent footer hint bar at the bottom of the page showing common shortcuts:
-
-```html
-<footer class="keyboard-hints">
-  <kbd>n</kbd> New task | <kbd>p</kbd> Priority | <kbd>/</kbd> Search |
-  <kbd>j</kbd>/<kbd>k</kbd> Navigate
-</footer>
-```
-
-Use PicoCSS's `<kbd>` styling. Keep it subtle and unobtrusive.
-
-#### Technical Implementation
-
-1. Add `keydown` event listener in `page.ts` (around line 390, near existing Escape handler)
-2. Check for modifier keys (`ctrlKey`, `metaKey`, `altKey`) - skip if pressed
-3. Check `document.activeElement` - skip if focused on `input`, `textarea`, `select`, or `[contenteditable]`
-4. Detect modal state via `document.getElementById('modal-backdrop') !== null`
-5. For 'p': Read current filter from DOM (check which priority button has active style), cycle to next
-6. For 'w': Only apply to task detail modal (not add task modal) - check for `#task-modal` or similar identifier
-7. For j/k navigation: Track selected row index in JS variable, add `.selected` class to highlight row
-8. For Enter/Space: If a task row is selected, trigger click on that row (or use htmx.ajax to fetch modal)
-
-#### Acceptance Criteria
-
-##### Functional
-
-- [ ] `n` opens Add Task modal when no modal open and no input focused
-- [ ] `p` cycles through priority filters (none -> P1 -> P2 -> ... -> none) dynamically based on priorities in backlog
-- [ ] `w` toggles maximize/restore on task detail modal only (not add task modal)
-- [ ] `/` focuses the search input
-- [ ] `j` moves selection down to next task row (wraps to top at end)
-- [ ] `k` moves selection up to previous task row (wraps to bottom at start)
-- [ ] Selected task row has visible highlight (e.g., background color or outline)
-- [ ] `Enter` opens the selected task's detail modal
-- [ ] `Space` opens the selected task's detail modal
-- [ ] All shortcuts disabled when typing in any input/textarea
-
-##### Accessibility
-
-- [ ] Footer hint bar displays available shortcuts using `<kbd>` elements
-- [ ] Shortcuts announced to screen readers via `aria-live` region
-- [ ] Visual feedback when priority cycles (brief pulse animation)
-- [ ] Selected row is visually distinct (sufficient contrast)
-
-##### Technical
-
-- [ ] No external JS libraries required
-- [ ] Uses HTMX `htmx.ajax()` for triggering requests from JS
-- [ ] Works in Chrome, Firefox, Safari
-- [ ] Does not conflict with browser native shortcuts
-- [ ] Selection state persists across HTMX partial page updates (or resets gracefully)
-
-#### Notes
-
-- Priority cycling reads existing priorities from the DOM dynamically
-- The `w` shortcut only works on task detail modal because the add task modal is intentionally compact
-- j/k selection index stored in JS variable; `.selected` CSS class applied to current row
-- Enter/Space trigger the same action as clicking the task row
-
-#### Follow up changes from HITL
-
-- The 'p' command need to cycle through all existing priority levels in the project AND a "no selection" state.
-  - A mouse click on a task should also trigger the vim-style selection.
-- Also, I don't like 'j/k'. replace these keys with up and down arrow keys.
-
-## smb-19 Update the /refine custom command in this repo
-
-[p1]
-
-Update the /refine custom command in this repo.
-
-Look for evidence of a tag added by the user indicating that this task needs refinement. When asking clarifying questions to the user, ask if the tag in question should be removed when the refinement is complete.
+- 2025-12-20T03:09:37Z | Moved to Done
 
 ## smb-11 Add copy-to-clipboard button for task ID in modal
 
@@ -1008,11 +887,11 @@ Look for evidence of a tag added by the user indicating that this task needs ref
 
 When viewing a task in the modal, there should be a small icon next to the task ID that, when clicked or tapped, copies the task ID to the clipboard.
 
-## smb-12 Task list project badge should not navigate to project view
+***
 
-### Description
+task-log
 
-Clicking project badge in the task list should NOT go to project view. Clicking the row always opens the modal. Follow-up to smb-2.
+- 2025-12-20T03:09:37Z | Moved to Done
 
 ## smb-10 Add project filter section to web UI
 
@@ -1051,84 +930,9 @@ Add a dedicated project filter section to the web UI, similar to priority/status
 
 task-log
 
+- 2025-12-20T03:09:37Z | Moved to Done
 - 2025-12-17T23:59:57Z | Priority changed from [p4] to [p3]
 - 2025-12-17T23:59:48Z | Priority changed from [p2] to [p4]
-
-## smb-7 Fix simbl serve port handling - not auto-finding available port
-
-[p1][web][bug]
-
-#### Problem
-
-Race condition (TOCTOU - Time of Check to Time of Use) in port handling:
-
-1. `isPortAvailable(port)` creates a temporary server, then **stops it** - releasing the port
-2. `Bun.serve()` later attempts to bind, but port may be claimed by another process
-3. No try-catch around final `Bun.serve()` call, so Bun's error propagates unhandled
-
-#### Solution
-
-Replace "check then bind" with atomic "bind with retry" pattern:
-
-```typescript
-async function startServerWithRetry(options: ServerOptions, maxAttempts = 100) {
-  let port = options.port;
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    try {
-      const server = Bun.serve({ port, ... });
-      return { server, port };
-    } catch (error) {
-      if (isPortInUseError(error)) {
-        port++;
-      } else {
-        throw error;
-      }
-    }
-  }
-  throw new Error(`Could not find available port after ${maxAttempts} attempts`);
-}
-```
-
-#### Decisions Made
-
-- **Port fallback**: Increment ports (try port+1, port+2, etc. up to 100 attempts)
-- **Logging**: Silent retry - only announce final bound port
-
-#### Implementation Notes
-
-- Remove unused `isPortAvailable()` and `findAvailablePort()` functions
-- Initialize file watcher AFTER successful server bind (avoid leaking watchers on retry)
-- Extract server config to be reusable in retry loop
-- Detect port-in-use via error message containing 'EADDRINUSE' or similar
-
-#### Acceptance Criteria
-
-- [ ] When default port 3497 is in use, server automatically binds to next available port
-- [ ] When user-specified port is in use, server finds alternative and logs final port
-- [ ] No race condition: port binding is atomic
-- [ ] Server startup logs clearly show final bound port
-- [ ] If no port available within 100 attempts, exit with clear error
-- [ ] Remove unused isPortAvailable() and findAvailablePort() functions
-
-## smb-22 Simbl plugin: update all commands that accept a task-id argument
-
-[plugin][in-progress]
-
-For any commands that expects a task ID (task-##) as its argument. If the user supplies only digits, (Ex. "9"), assume they want you to refer to "task-9" (or "abc-9" if the config task prefix is "abc")
-
-## smb-6 Bug: simbl serve port handling not working - fails with 'port in use' error
-
-[canceled]
-
-## smb-15 Add 'No Project' filter to web UI
-
-[p2][feature][canceled]
-
-### Description
-
-The filter section above the table should have a button that only shows tasks that do not belong to a project.
-
-# Done
 
 ## smb-24 Refactor web UI using html-template-tag
 
@@ -1180,6 +984,7 @@ Refactor src/web/templates.ts and src/web/page.ts to use `html-template-tag` for
 #### Reference
 
 https://www.npmjs.com/package/html-template-tag
+
 ***
 
 task-log
@@ -1188,70 +993,6 @@ task-log
 - 2025-12-17T23:54:13Z | Content updated
 - 2025-12-17T23:11:50Z | Content updated
 - 2025-12-17T23:11:50Z | Content updated
-
-## smb-3 Add a viewport maximization toggle button in the task edit modal
-
-[project:web]
-
-Add a viewport maximization toggle button to the task edit modal.
-
-#### Implementation
-
-**Approach:** CSS class toggle with vanilla JavaScript (no HTMX round-trip)
-
-**Files to modify:**
-
-- `src/web/page.ts` - Add CSS for `.maximized` state and transitions
-- `src/web/templates.ts` - Add toggle button to `renderTaskModal()` header
-
-**Button Design:**
-
-- Placement: Left of the close button in modal header
-- Icon: Unicode symbols (⛶ for expand, ✖ for restore - matches existing × close button)
-- Styling: Match existing close button style
-
-**CSS States:**
-
-- Normal: `max-width: 1100px; width: 95%; max-height: 90vh`
-- Maximized: `max-width: 98vw; width: 98vw; max-height: 98vh; height: 98vh; border-radius: 0`
-- Transition: 200ms ease for smooth animation
-
-**JavaScript:**
-
-- Toggle `.maximized` class on `#modal-content`
-- Update button icon and aria-pressed state
-- No persistence needed (resets on modal close)
-
-**Mobile:**
-
-- Keep button visible on all screen sizes (consistent UI)
-
-#### Acceptance Criteria
-
-- [ ] Toggle button visible in modal header, left of close button
-- [ ] Clicking expands modal to ~98% viewport
-- [ ] Clicking again restores to default size
-- [ ] Button icon updates to reflect state (expand ↔ restore)
-- [ ] Smooth 200ms transition between states
-- [ ] Content textarea grows proportionally when maximized
-- [ ] Button has proper aria-label and aria-pressed attributes
-- [ ] Escape key still closes modal in maximized state
-- [ ] Works on all screen sizes (including mobile)
-
-***
-
-task-log
-
-- 2025-12-18T09:58:36Z | Moved to Done
-- 2025-12-18T00:05:32Z | Content updated
-- 2025-12-18T00:04:40Z | Removed tag [fooey]
-- 2025-12-18T00:04:29Z | Added tag [fooey]
-- 2025-12-17T23:59:05Z | Removed tag [test-tag]
-- 2025-12-17T23:58:53Z | Added tag [test-tag]
-- 2025-12-18T00:04:40Z | Removed tag [fooey]
-- 2025-12-18T00:04:29Z | Added tag [fooey]
-- 2025-12-17T23:59:05Z | Removed tag [test-tag]
-- 2025-12-17T23:58:53Z | Added tag [test-tag]
 
 ## smb-50 A task's task-log web show/hide behavior
 
@@ -2347,3 +2088,159 @@ task-log
 - 2025-12-18T00:06:02Z | Task created
 - 2025-12-18T00:06:38Z | Content updated
 - 2025-12-18T00:06:02Z | Task created
+
+## smb-9 Update 'Send to...' action buttons
+
+[p3][ui][project:web][canceled]
+
+Replace all 'Send to...' action buttons with 'Move to...'.
+
+***
+
+task-log
+
+- 2025-12-20T02:57:43Z | Marked as canceled
+
+## smb-29 Emoji-fy all Icons and rename buttons
+
+[p1][ui][web]
+
+- The button that adds [done] tag is '✅ Mark Done'
+
+- '+ Add Task' button becomes '➕ Add Task'
+
+- 'Mark Canceled' button becomes '❌ Cancel'
+
+- 'x Send to Archive' button becomes '✖️ Archive'
+
+- If a task does not have [in-progress] or [done] tags,
+
+  - The button to add [in-progress] tag is '➡️ Send to In-Progress'
+
+- If a task has [done] tag,
+
+  - The button to add [in-progress] and remove [done] is '⬅️ Back to In-Progress'
+
+- If a task has [in-progress] tag,
+  - The button to remove the [in-progress] tag is '⬅️ Back to Backlog'
+
+***
+
+task-log
+
+- 2025-12-20T03:05:54Z | Moved to Done
+
+## smb-31 Change Emoji to Unicode
+
+[p1][ui]
+
+from ➡️ to ⮕
+from ⬅️ to ⬅
+from ➕ to ＋
+from ✅ to ✔
+from ❌ to ✖
+
+***
+
+task-log
+
+- 2025-12-20T03:06:30Z | Moved to Done
+
+## smb-32 Change Colors of Priority badges & buttons
+
+[p1][ui]
+
+Values come from https://picocss.com/docs/colors.
+
+```
+  --simbl-p1-bg: var(--pico-color-red-400);
+  --simbl-p1-bg-light: var(--pico-color-red-100);
+  --simbl-p1-text: var(--pico-color-red-600);
+```
+
+- For P1
+  - bg-light use orange-400 `var(--pico-color-orange-400)`
+  - foreground use orange-800
+- For P2
+  - background use orange-300
+  - foreground use orange-700
+- For P3
+  - background use orange-200
+  - foreground use orange-600
+- For P4
+  - background use orange-100
+  - foreground use orange-500
+- For P5-P9
+  - background use orange-50
+  - foreground use orange-400
+
+***
+
+task-log
+
+- 2025-12-20T03:06:43Z | Moved to Done
+
+## smb-33 Bug: why does 'refined' tag not show up in the tag cloud?
+
+[bug][p1]
+
+Why does 'refined' tag not show up in the tag cloud even though there are tasks in the backlog that have it?
+
+***
+
+task-log
+
+- 2025-12-20T03:06:58Z | Moved to Done
+
+## smb-35 Add app icons & favicons
+
+[p2][design]
+
+Add supplied files in `icons` directory to give this app icons and favicons.
+
+***
+
+task-log
+
+- 2025-12-20T03:07:21Z | Moved to Done
+
+```
+```
+
+## smb-38 Update the web app title tag
+
+[p1][web]
+
+make the title tag, `<title>{config.name} - Simbl</title>`
+
+***
+
+task-log
+
+- 2025-12-20T03:10:17Z | Moved to Done
+
+## smb-44 Bug: missing icons
+
+[p1][bug][web][ui]
+
+both /apple-touch-icon.png and /favicon.ico are giving 404 in production build.
+
+***
+
+task-log
+
+- 2025-12-20T03:10:22Z | Moved to Done
+
+## smb-19 Update the /refine custom command in this repo
+
+[p1][canceled]
+
+Update the /refine custom command in this repo.
+
+Look for evidence of a tag added by the user indicating that this task needs refinement. When asking clarifying questions to the user, ask if the tag in question should be removed when the refinement is complete.
+
+***
+
+task-log
+
+- 2025-12-20T03:15:22Z | Marked as canceled

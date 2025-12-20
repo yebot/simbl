@@ -716,10 +716,7 @@ export function renderTaskModal(
                    style="background: var(--simbl-in-progress-bg-light); color: var(--simbl-in-progress-text);"
                  >⬅ Back to In-Progress</button>
                  <button
-                   hx-delete="${archiveUrl}"
-                   hx-target="#modal-container"
-                   hx-swap="innerHTML"
-                   hx-confirm="This will permanently remove this task. This cannot be undone. Continue?"
+                   onclick="showConfirmDialog('Archive Task', 'This will permanently remove this task. This cannot be undone. Continue?', '${archiveUrl}', 'DELETE', true)"
                    class="tag-btn"
                    style="background: transparent; color: var(--pico-del-color); border: 1px solid var(--pico-del-color);"
                  >✖️ Archive</button>`;
@@ -739,10 +736,7 @@ export function renderTaskModal(
                    style="background: var(--pico-color-slate-100); color: var(--pico-color-slate-600);"
                  >⬅ Back to Backlog</button>
                  <button
-                   hx-post="${cancelUrl}"
-                   hx-target="#modal-container"
-                   hx-swap="innerHTML"
-                   hx-confirm="Mark this task as canceled and move it to Done?"
+                   onclick="showConfirmDialog('Cancel Task', 'Mark this task as canceled and move it to Done?', '${cancelUrl}', 'POST', false)"
                    class="tag-btn"
                    style="background: transparent; color: var(--pico-del-color); border: 1px solid var(--pico-del-color);"
                  >✖ Cancel</button>`;
@@ -762,10 +756,7 @@ export function renderTaskModal(
                    style="background: var(--simbl-done-bg-light); color: var(--simbl-done-text);"
                  >✔ Mark Done</button>
                  <button
-                   hx-post="${cancelUrl}"
-                   hx-target="#modal-container"
-                   hx-swap="innerHTML"
-                   hx-confirm="Mark this task as canceled and move it to Done?"
+                   onclick="showConfirmDialog('Cancel Task', 'Mark this task as canceled and move it to Done?', '${cancelUrl}', 'POST', false)"
                    class="tag-btn"
                    style="background: transparent; color: var(--pico-del-color); border: 1px solid var(--pico-del-color);"
                  >✖ Cancel</button>`;

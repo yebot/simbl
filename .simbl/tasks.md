@@ -189,6 +189,520 @@ task-log
 
 - 2025-12-21T19:45:55Z | Task created
 
+## smb-59 Define centralized log format and types
+
+[p2][child-of-smb-55][logging]
+
+### Description
+
+##### Description
+
+Define TypeScript types and interfaces for the new centralized log format.
+
+##### Tasks
+
+- Create LogEntry interface with taskId, timestamp, event, and optional metadata fields
+- Define LogEvent enum/type for all event types (created, done, canceled, tag_added, tag_removed, priority_changed, title_updated, content_updated, etc.)
+- Add JSDoc documentation for the log format
+- Export from core/log.ts
+
+##### Acceptance Criteria
+
+- All event types from current system are mapped
+- Type definitions support future extensibility
+- Clear documentation of JSON schema
+
+***
+
+task-log
+
+- 2025-12-22T20:18:29Z | Added tag [logging]
+- 2025-12-22T15:58:43Z | Task created
+
+## smb-60 Add log file path and version to config
+
+[p2][child-of-smb-55][logging]
+
+### Description
+
+##### Description
+
+Extend config.ts to support the new centralized logging system.
+
+##### Tasks
+
+- Add logVersion field (default: 1 for old, 2 for new)
+- Add logFilePath field (default: '.simbl/log.ndjson')
+- Update SimblConfig type definition
+- Update default config initialization
+- Ensure backward compatibility
+
+##### Acceptance Criteria
+
+- Config type includes new fields
+- Default values set correctly
+- Existing configs still load without errors
+
+***
+
+task-log
+
+- 2025-12-22T20:18:29Z | Added tag [logging]
+- 2025-12-22T15:58:43Z | Task created
+
+## smb-61 Implement centralized log file operations
+
+[p1][child-of-smb-55][logging]
+
+### Description
+
+##### Description
+
+Rewrite core/log.ts to use append-only NDJSON file instead of embedding in task content.
+
+##### Tasks
+
+- Implement appendLogToFile(entry: LogEntry) - append single NDJSON line
+- Implement readLogFile(): LogEntry[] - parse entire log file
+- Implement getTaskLog(taskId: string): LogEntry[] - filter logs for one task
+- Remove old parseTaskLog() and stripTaskLog() functions
+- Update appendLogEntry() to use new file-based approach
+- Update appendOrBatchLogEntry() to use new file-based approach
+- Handle missing log file gracefully (create on first write)
+
+##### Acceptance Criteria
+
+- Atomic append operations (use fs.appendFileSync or equivalent)
+- Parse NDJSON correctly (one JSON object per line)
+- No file rewrites for single appends
+- Backward compatible with logVersion check
+
+***
+
+task-log
+
+- 2025-12-22T20:18:29Z | Added tag [logging]
+- 2025-12-22T15:58:43Z | Task created
+
+## smb-62 Build migration utility for existing logs
+
+[p1][child-of-smb-55][logging]
+
+### Description
+
+##### Description
+
+Create migration function to extract embedded logs from tasks.md and convert to centralized format.
+
+##### Tasks
+
+- Detect if migration needed (check for '***\n\ntask-log\n' in any task content)
+- Parse existing embedded logs from all tasks
+- Convert to new LogEntry format with proper timestamps
+- Write to log.ndjson file
+- Strip log sections from tasks.md
+- Update config.yaml with logVersion: 2
+- Add migration command: 'simbl migrate-logs' for manual trigger
+- Auto-migrate on first command with logVersion: 1
+
+##### Acceptance Criteria
+
+- No data loss during migration
+- Preserves all timestamps and event history
+- Tasks.md cleaned of log markers
+- Idempotent (safe to run multiple times)
+- Migration logged/reported to user
+
+***
+
+task-log
+
+- 2025-12-22T20:18:30Z | Added tag [logging]
+- 2025-12-22T15:58:44Z | Task created
+
+## smb-63 Update add command to use centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Migrate add.ts from embedded logging to centralized log file.
+
+##### Tasks
+
+- Replace appendLogEntry() call to use new log file approach
+- Remove any task content manipulation for logs
+- Ensure 'created' event is logged with proper metadata
+- Update tests if any exist
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- 'simbl add' writes to log.ndjson
+- No log markers in tasks.md
+- Task creation timestamp preserved
+
+***
+
+task-log
+
+- 2025-12-22T20:18:30Z | Added tag [logging]
+- 2025-12-22T15:59:22Z | Task created
+
+## smb-64 Update done command to use centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Migrate done.ts from embedded logging to centralized log file.
+
+##### Tasks
+
+- Replace appendLogEntry() call to use new log file approach
+- Remove any task content manipulation for logs
+- Ensure 'done' event is logged with proper metadata
+- Update tests if any exist
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- 'simbl done' writes to log.ndjson
+- No log markers in tasks.md
+- Completion timestamp preserved
+
+***
+
+task-log
+
+- 2025-12-22T20:18:30Z | Added tag [logging]
+- 2025-12-22T15:59:22Z | Task created
+
+## smb-65 Update cancel command to use centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Migrate cancel.ts from embedded logging to centralized log file.
+
+##### Tasks
+
+- Replace appendLogEntry() call to use new log file approach
+- Remove any task content manipulation for logs
+- Ensure 'canceled' event is logged with proper metadata
+- Update tests if any exist
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- 'simbl cancel' writes to log.ndjson
+- No log markers in tasks.md
+- Cancellation timestamp preserved
+
+***
+
+task-log
+
+- 2025-12-22T20:18:30Z | Added tag [logging]
+- 2025-12-22T15:59:23Z | Task created
+
+## smb-66 Update tag command to use centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Migrate tag.ts from embedded logging to centralized log file.
+
+##### Tasks
+
+- Replace appendLogEntry() calls for tag operations
+- Support logging: tag_added, tag_removed, priority_changed events
+- Remove any task content manipulation for logs
+- Ensure proper event metadata (which tag, old/new values)
+- Update tests if any exist
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- 'simbl tag' operations write to log.ndjson
+- All tag change types properly logged
+- No log markers in tasks.md
+
+***
+
+task-log
+
+- 2025-12-22T20:18:31Z | Added tag [logging]
+- 2025-12-22T15:59:23Z | Task created
+
+## smb-67 Update update command to use centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Migrate update.ts from embedded logging to centralized log file.
+
+##### Tasks
+
+- Replace appendOrBatchLogEntry() call to use new approach
+- Support logging: title_updated, content_updated, content_appended events
+- Handle batching logic for multiple updates
+- Remove any task content manipulation for logs
+- Capture old/new values in metadata
+- Update tests if any exist
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- 'simbl update' operations write to log.ndjson
+- Batched updates still create single log entry where appropriate
+- No log markers in tasks.md
+- Metadata includes what changed
+
+***
+
+task-log
+
+- 2025-12-22T20:18:31Z | Added tag [logging]
+- 2025-12-22T15:59:23Z | Task created
+
+## smb-68 Enhance log command with new capabilities
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Rewrite log.ts to read from centralized log file and add new features.
+
+##### Tasks
+
+- Replace parseTaskLog() with getTaskLog() from new API
+- Add filtering options: --event, --since, --until
+- Add format options: --json for machine-readable output
+- Add --all flag to show logs for all tasks (not just one)
+- Add stats summary: 'X events over Y days'
+- Improve output formatting with color/grouping
+- Update help text and examples
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- 'simbl log <task-id>' shows task history
+- 'simbl log --all' shows global activity
+- Filtering and formatting work as documented
+- Performance acceptable for large log files (stream if needed)
+
+***
+
+task-log
+
+- 2025-12-22T20:18:31Z | Added tag [logging]
+- 2025-12-22T15:59:24Z | Task created
+
+## smb-69 Update web server to use centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Migrate web/server.ts from embedded logging to centralized log file for all web UI mutations.
+
+##### Tasks
+
+- Replace all appendLogEntry() calls with new approach
+- Update WebSocket change detection to watch log.ndjson
+- Ensure all web mutations (task create, update, done, etc.) are logged
+- Test live reload still works after log file changes
+- Update tests if any exist
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- All web UI actions write to log.ndjson
+- Browser UI refreshes on log changes
+- No log markers in tasks.md
+- Performance acceptable (file watch not too heavy)
+
+***
+
+task-log
+
+- 2025-12-22T20:18:31Z | Added tag [logging]
+- 2025-12-22T15:59:24Z | Task created
+
+## smb-70 Update web templates to display centralized logs
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Migrate web/templates.ts from parseTaskLog() to new getTaskLog() API.
+
+##### Tasks
+
+- Replace parseTaskLog() calls with getTaskLog()
+- Update task detail modal to render log entries from new format
+- Ensure proper formatting of timestamps and events
+- Add any new event types to display logic
+- Test log rendering in browser UI
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- Task detail modal shows complete history
+- All event types display correctly
+- Timestamps formatted properly
+- UI matches or improves on old design
+
+***
+
+task-log
+
+- 2025-12-22T20:18:31Z | Added tag [logging]
+- 2025-12-22T15:59:25Z | Task created
+
+## smb-71 Integration testing for centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-68][logging]
+
+### Description
+
+##### Description
+
+Test the complete logging system across CLI and web interfaces.
+
+##### Tasks
+
+- Test migration on sample project with existing logs
+- Test all CLI commands write correct log entries
+- Test web UI mutations write correct log entries
+- Test 'simbl log' command with various filters
+- Verify no log markers in tasks.md after operations
+- Test concurrent writes (multiple commands)
+- Test large log files (performance)
+- Document any gotchas or limitations
+
+##### Dependencies
+
+- Requires all command updates (smb-63 through smb-69) completed
+- Requires migration utility (smb-62) completed
+
+##### Acceptance Criteria
+
+- All commands properly log events
+- No regression in functionality
+- Migration works on real SIMBL projects
+- Documentation updated with testing results
+
+***
+
+task-log
+
+- 2025-12-22T20:18:32Z | Added tag [logging]
+- 2025-12-22T15:59:25Z | Task created
+
+## smb-72 Update documentation for centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-71][logging]
+
+### Description
+
+##### Description
+
+Document the new centralized logging system for users and contributors.
+
+##### Tasks
+
+- Update SPEC.md with new log format details
+- Update CLAUDE.md with architecture changes
+- Add migration guide to docs/ or README
+- Document new 'simbl log' command options
+- Add troubleshooting section for log issues
+- Update CHANGELOG.md with this milestone
+- Add example log.ndjson snippets
+
+##### Dependencies
+
+- Requires integration testing (smb-70) completed
+
+##### Acceptance Criteria
+
+- All public documentation reflects new system
+- Migration path clearly explained
+- New features documented with examples
+- CHANGELOG updated
+***
+
+task-log
+
+- 2025-12-22T20:18:32Z | Added tag [logging]
+- 2025-12-22T15:59:25Z | Task created
+
+## smb-73 Create a one-shot command to set parent relationship
+
+[p2][cli]
+
+right now the only way to establish a parent relationship is
+
+`simbl relate smb-56 --parent smb-55`
+
+make is so this command support multiple children args.
+
+perhaps its like this:
+
+`simbl relate smb-55 --children smb-56 smb-57 smb-58 smb-63`
+
+... so we can establish multiple children in one shot
+
+***
+
+task-log
+
+- 2025-12-22T16:11:19Z | Task created
+
 # Done
 
 ## smb-55 Discovery: moving logging to a separate file
@@ -325,10 +839,12 @@ With centralized logs we could add:
 3. Foundation for richer activity features
 
 **Next step:** Create implementation subtasks for this work.
+
 ***
 
 task-log
 
+- 2025-12-22T15:57:04Z | Content updated
 - 2025-12-22T08:56:38Z | Moved to Done
 - 2025-12-22T08:56:33Z | Added tag [refined]
 - 2025-12-22T08:56:24Z | Content updated

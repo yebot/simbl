@@ -171,24 +171,6 @@ task-log
 - 2025-12-20T17:41:37Z | Added tag [on-ice]
 - 2025-12-20T17:41:32Z | Removed priority [p4]
 
-## smb-57 Discovery:
-
-[p2][web]
-
-How would we go about adding URL scheme to SIMBL web? how difficult would it be?
-
-example:
-
-http://localhost:3277/ -> shows the main list
-http://localhost:3277/task-34 -> shows the main list with task-34 modal open
-http://localhost:3277/new -> shows the main list with new task creation modal open
-
-***
-
-task-log
-
-- 2025-12-21T19:45:55Z | Task created
-
 ## smb-59 Define centralized log format and types
 
 [p2][child-of-smb-55][logging]
@@ -674,6 +656,7 @@ Document the new centralized logging system for users and contributors.
 - Migration path clearly explained
 - New features documented with examples
 - CHANGELOG updated
+
 ***
 
 task-log
@@ -705,9 +688,220 @@ task-log
 
 # Done
 
+## smb-57 Discovery: web URLs
+
+[p2][web][project:discovery][refined]
+
+How would we go about adding URL scheme to SIMBL web? how difficult would it be?
+
+example:
+
+http://localhost:3277/ -> shows the main list
+http://localhost:3277/task-34 -> shows the main list with task-34 modal open
+http://localhost:3277/new -> shows the main list with new task creation modal open
+
+***
+
+#### Discovery Findings
+
+##### Current Architecture
+
+**Server Routes (src/web/server.ts):**
+
+- `GET /` - Main page (full HTML)
+- `GET /tasks` - Task list partial (HTMX)
+- `GET /task/:id` - Task modal partial (HTMX)
+- `GET /add` - Add task form partial (HTMX)
+- Various POST/PATCH/DELETE for mutations
+
+**Client-Side (src/web/page.ts):**
+
+- No client-side routing (SPA patterns)
+- No history manipulation (pushState/popstate)
+- Modals open via HTMX `hx-get` to `#modal-container`
+- Keyboard shortcuts: `n` opens add modal, `Enter` opens task
+
+##### Current Behavior
+
+1. All pages serve from `/` only
+2. Task modals load via HTMX into `#modal-container`
+3. No URL change when opening/closing modals
+4. Refreshing page always returns to base list view
+
+***
+
+#### Implementation Approach
+
+##### Option A: Server-Side Rendering (Recommended)
+
+**Approach:** Server renders full page with modal pre-opened based on URL path.
+
+| URL | Server Behavior |
+|-----|-----------------|
+| `/` | Render page, no modal |
+| `/<task-id>` | Render page + task modal HTML |
+| `/new` | Render page + add form modal HTML |
+
+**Pros:**
+
+- Deep links work immediately (shareable)
+- No JavaScript required for initial render
+- SEO-friendly (if ever needed)
+- Simple implementation
+
+**Cons:**
+
+- Requires server changes
+
+**Changes Required:**
+
+1. **server.ts**: Add route handlers for `/<task-id>` and `/new`
+2. **page.ts**: Modify `renderPage()` to accept optional `openModal` parameter
+3. **Client JS**: Add `history.pushState()` when opening modals, `popstate` listener
+
+##### Option B: Client-Side Routing Only
+
+**Approach:** Use hash routes (`/#/task-34`) or pushState with client-side handling.
+
+**Pros:**
+
+- Server remains unchanged
+
+**Cons:**
+
+- Initial page load shows flash (load page → parse URL → open modal)
+- More complex client JS
+- Hash routes less clean
+
+***
+
+#### Recommended Implementation
+
+##### Phase 1: Server-Side Deep Links
+
+```typescript
+// server.ts - Add new routes
+
+// GET /:taskId - Deep link to task modal
+if (path.match(/^\/[a-z]+-\d+$/) && req.method === 'GET') {
+  const taskId = path.slice(1);
+  const file = loadTasks();
+  const allTasks = getAllTasks(file);
+  const task = allTasks.find(t => t.id === taskId);
+  
+  if (!task) {
+    return new Response('Task not found', { status: 404 });
+  }
+  
+  // Render full page with modal pre-opened
+  return new Response(
+    renderPage(file, config.name, { modal: 'task', taskId }),
+    { headers: { 'Content-Type': 'text/html' } }
+  );
+}
+
+// GET /new - Deep link to add task modal
+if (path === '/new' && req.method === 'GET') {
+  const file = loadTasks();
+  return new Response(
+    renderPage(file, config.name, { modal: 'add' }),
+    { headers: { 'Content-Type': 'text/html' } }
+  );
+}
+```
+
+##### Phase 2: URL Sync (pushState)
+
+```javascript
+// page.ts - Add to client JS
+
+// Update URL when opening task modal
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+  if (evt.detail.target.id === 'modal-container') {
+    const taskModal = document.querySelector('#modal-content[data-task-id]');
+    if (taskModal) {
+      const taskId = taskModal.getAttribute('data-task-id');
+      history.pushState({ modal: 'task', taskId }, '', '/' + taskId);
+    } else if (document.querySelector('#modal-content form[action="/task"]')) {
+      history.pushState({ modal: 'add' }, '', '/new');
+    }
+  }
+});
+
+// Update URL when closing modal
+const originalCloseModal = closeModal;
+closeModal = function() {
+  originalCloseModal();
+  if (window.location.pathname !== '/') {
+    history.pushState({}, '', '/');
+  }
+};
+
+// Handle back/forward navigation
+window.addEventListener('popstate', function(e) {
+  if (e.state && e.state.modal === 'task') {
+    htmx.ajax('GET', '/task/' + e.state.taskId, {target: '#modal-container'});
+  } else if (e.state && e.state.modal === 'add') {
+    htmx.ajax('GET', '/add', {target: '#modal-container'});
+  } else {
+    closeModal();
+  }
+});
+```
+
+***
+
+#### Effort Estimate
+
+| Task | Effort |
+|------|--------|
+| Server route for `/<task-id>` | Low |
+| Server route for `/new` | Low |
+| Modify `renderPage()` for pre-opened modal | Medium |
+| Client-side pushState/popstate | Medium |
+| Testing edge cases | Low |
+| **Total** | ~3-4 subtasks |
+
+***
+
+#### Edge Cases to Handle
+
+1. **Invalid task ID in URL**: Return 404 page
+2. **Task ID exists but task not found**: Show "task not found" modal
+3. **Refresh while modal open**: Should reopen same modal
+4. **Back button behavior**: Should close modal, not navigate away
+5. **Forward after back**: Should reopen modal
+
+***
+
+#### Recommendation
+
+**Proceed with server-side rendering approach (Option A).**
+
+Difficulty: **Medium** (3-4 subtasks)
+
+The implementation is straightforward because:
+
+- Route matching is simple (regex for task ID format)
+- `renderPage()` already generates modal HTML
+- HTMX handles dynamic loading after initial render
+- pushState integration is well-documented
+
+**Next step:** Create implementation subtasks if desired.
+***
+
+task-log
+
+- 2025-12-22T21:53:51Z | Moved to Done
+- 2025-12-22T21:53:51Z | Added tag [refined]
+- 2025-12-22T21:53:44Z | Content updated
+- 2025-12-22T21:51:08Z | Added to project [project:discovery]
+- 2025-12-22T21:46:42Z | Title updated
+- 2025-12-21T19:45:55Z | Task created
+
 ## smb-55 Discovery: moving logging to a separate file
 
-[p1][core][logging][refined]
+[p1][core][logging][refined][project:discovery]
 
 my initial idea of adding log entries to the content of every task is problematic I think. file bloat and accidental corruption are concerns.
 
@@ -844,6 +1038,7 @@ With centralized logs we could add:
 
 task-log
 
+- 2025-12-22T21:51:20Z | Added to project [project:discovery]
 - 2025-12-22T15:57:04Z | Content updated
 - 2025-12-22T08:56:38Z | Moved to Done
 - 2025-12-22T08:56:33Z | Added tag [refined]

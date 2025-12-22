@@ -171,28 +171,6 @@ task-log
 - 2025-12-20T17:41:37Z | Added tag [on-ice]
 - 2025-12-20T17:41:32Z | Removed priority [p4]
 
-## smb-55 Discovery: moving logging to a separate file
-
-[p1][core][logging]
-
-my initial idea of adding log entries to the content of every task is problematic I think. file bloat and accidental corruption are concerns.
-
-moving the logs to a unified, .simbl/log.md file might be a better overall design.
-
-Discover what it would take to make this change.
-
-- we have many log cli commands that would need to change.
-- we have many instances of SIMBL in production. we would need something that detects if the old logging system is in place and do a one-time data migration to the new logging system.
-- i think the dedicated log.md file gives us the ability to have more information rich logs.
-- does .md make sense or another text format?
-
-***
-
-task-log
-
-- 2025-12-20T18:49:44Z | Content updated
-- 2025-12-20T18:47:00Z | Task created
-
 ## smb-57 Discovery:
 
 [p2][web]
@@ -213,6 +191,150 @@ task-log
 
 # Done
 
+## smb-55 Discovery: moving logging to a separate file
+
+[p1][core][logging][refined]
+
+my initial idea of adding log entries to the content of every task is problematic I think. file bloat and accidental corruption are concerns.
+
+moving the logs to a unified, .simbl/log.md file might be a better overall design.
+
+Discover what it would take to make this change.
+
+***
+
+#### Discovery Findings
+
+##### Current Implementation Analysis
+
+**Where logs are stored:** Embedded in task content (`task.content`) after a `***\n\ntask-log\n` marker.
+
+**Core log module:** `src/core/log.ts` (241 lines)
+
+- `parseTaskLog()` - extracts log entries from task content
+- `appendLogEntry()` - adds new entry to task content
+- `appendOrBatchLogEntry()` - batches identical messages within 30 min window
+- `stripTaskLog()` - removes log section from content
+
+**Files that call logging functions:**
+| File | Functions Used | Purpose |
+|------|----------------|---------|
+| `src/cli/commands/add.ts` | `appendLogEntry` | Task created |
+| `src/cli/commands/done.ts` | `appendLogEntry` | Moved to Done |
+| `src/cli/commands/cancel.ts` | `appendLogEntry` | Marked canceled |
+| `src/cli/commands/tag.ts` | `appendLogEntry` | Tag add/remove, priority changes |
+| `src/cli/commands/update.ts` | `appendOrBatchLogEntry` | Title/content changes |
+| `src/cli/commands/log.ts` | `parseTaskLog` | Display log entries |
+| `src/web/server.ts` | Both | All web UI mutations |
+| `src/web/templates.ts` | `parseTaskLog` | Render log in modal |
+
+##### Current Scale
+
+- **tasks.md**: 2,321 lines
+- **Tasks with logs**: ~52 task-log sections
+- **Total tasks**: 49 tasks
+
+##### Pros/Cons of Current Approach
+
+**Pros:**
+
+- Simple - logs live with their task
+- Self-contained - task + history in one place
+- No additional files to manage
+
+**Cons:**
+
+- File bloat over time
+- Corruption risk - parsing task content is fragile
+- Can't query logs across tasks easily
+- Log section interferes with task content editing
+
+***
+
+#### Proposed Design: Centralized Log File
+
+##### File Format Options
+
+| Format | Pros | Cons |
+|--------|------|------|
+| **Markdown (.md)** | Human-readable, git-diffable | Parsing complexity |
+| **NDJSON (.ndjson)** | Easy parsing, append-only | Less human-readable |
+| **YAML** | Readable, structured | Harder to append |
+
+**Recommendation:** NDJSON (`.simbl/log.ndjson`)
+
+```json
+{"taskId":"smb-55","timestamp":"2025-12-20T18:49:44Z","event":"content_updated"}
+{"taskId":"smb-55","timestamp":"2025-12-20T18:47:00Z","event":"task_created"}
+```
+
+**Why NDJSON:**
+
+- Append-only writes (no file rewrite)
+- Fast parsing (line-by-line)
+- Can add rich metadata (user, before/after values)
+- Easy filtering with grep/jq
+
+##### Migration Strategy
+
+1. **Detection**: Check if task content contains `***\n\ntask-log\n`
+2. **One-time migration**:
+   - Scan all tasks on first log operation
+   - Extract log entries from each task
+   - Write to `.simbl/log.ndjson`
+   - Strip log sections from tasks
+   - Write updated tasks.md
+3. **Version flag**: Add `logVersion: 2` to config.yaml after migration
+
+##### Changes Required
+
+| Component | Changes |
+|-----------|---------|
+| `src/core/log.ts` | Rewrite to use external file |
+| `src/core/config.ts` | Add log file path, version detection |
+| CLI commands (6 files) | Update imports, remove content manipulation |
+| `src/web/server.ts` | Update to new log API |
+| `src/web/templates.ts` | Read from log file instead of task content |
+| New: `src/core/migrate.ts` | Migration logic |
+
+##### Effort Estimate
+
+- **Core log rewrite**: Medium (new file I/O, queries)
+- **CLI updates**: Low (just change function calls)
+- **Web updates**: Medium (server + templates)
+- **Migration**: Medium (need careful testing)
+- **Total**: ~8-12 subtasks
+
+##### New Capabilities
+
+With centralized logs we could add:
+
+- `simbl log` (no ID) - show all recent activity
+- `simbl log --since "2d"` - filter by time
+- Structured events (not just messages)
+- Before/after values for changes
+
+***
+
+#### Recommendation
+
+**Proceed with centralized NDJSON logging.** The migration is manageable and provides:
+
+1. Cleaner task content
+2. Better performance at scale
+3. Foundation for richer activity features
+
+**Next step:** Create implementation subtasks for this work.
+***
+
+task-log
+
+- 2025-12-22T08:56:38Z | Moved to Done
+- 2025-12-22T08:56:33Z | Added tag [refined]
+- 2025-12-22T08:56:24Z | Content updated
+- 2025-12-20T18:49:44Z | Content updated
+- 2025-12-20T18:47:00Z | Task created
+
 ## smb-58 add help command flag
 
 [p1][cli]
@@ -226,6 +348,7 @@ Does it make sense to have `simbl -h` and `simbl usage` show the same result?
 Fixed in src/index.ts by adding detection for help/version flags (`-h`, `--help`, `--version`) before the TUI check. These flags now correctly route to citty's runMain() instead of launching the TUI.
 
 Note: `-v` is not supported by citty as a short form of `--version` (shows help with error instead). Only `--version` works.
+
 ***
 
 task-log

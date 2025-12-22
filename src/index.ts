@@ -45,13 +45,15 @@ const main = defineCommand({
   },
 });
 
-// Check if we have a subcommand or not
+// Check if we have a subcommand or help/version flags
 const args = process.argv.slice(2);
+const helpFlags = ['-h', '--help', '-v', '--version'];
 const hasSubCommand = args.length > 0 && !args[0].startsWith('-');
+const hasHelpOrVersion = args.length > 0 && helpFlags.includes(args[0]);
 
-if (!hasSubCommand) {
+if (hasSubCommand || hasHelpOrVersion) {
+  runMain(main);
+} else {
   // No subcommand - launch interactive TUI menu
   runTuiMenu();
-} else {
-  runMain(main);
 }

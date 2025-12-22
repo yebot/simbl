@@ -171,7 +171,67 @@ task-log
 - 2025-12-20T17:41:37Z | Added tag [on-ice]
 - 2025-12-20T17:41:32Z | Removed priority [p4]
 
+## smb-55 Discovery: moving logging to a separate file
+
+[p1][core][logging]
+
+my initial idea of adding log entries to the content of every task is problematic I think. file bloat and accidental corruption are concerns.
+
+moving the logs to a unified, .simbl/log.md file might be a better overall design.
+
+Discover what it would take to make this change.
+
+- we have many log cli commands that would need to change.
+- we have many instances of SIMBL in production. we would need something that detects if the old logging system is in place and do a one-time data migration to the new logging system.
+- i think the dedicated log.md file gives us the ability to have more information rich logs.
+- does .md make sense or another text format?
+
+***
+
+task-log
+
+- 2025-12-20T18:49:44Z | Content updated
+- 2025-12-20T18:47:00Z | Task created
+
+## smb-57 Discovery:
+
+[p2][web]
+
+How would we go about adding URL scheme to SIMBL web? how difficult would it be?
+
+example:
+
+http://localhost:3277/ -> shows the main list
+http://localhost:3277/task-34 -> shows the main list with task-34 modal open
+http://localhost:3277/new -> shows the main list with new task creation modal open
+
+***
+
+task-log
+
+- 2025-12-21T19:45:55Z | Task created
+
 # Done
+
+## smb-58 add help command flag
+
+[p1][cli]
+
+adding `-h` or `--help` to a command should make simbl cli explain itself.
+
+Does it make sense to have `simbl -h` and `simbl usage` show the same result?
+
+##### Implementation Notes
+
+Fixed in src/index.ts by adding detection for help/version flags (`-h`, `--help`, `--version`) before the TUI check. These flags now correctly route to citty's runMain() instead of launching the TUI.
+
+Note: `-v` is not supported by citty as a short form of `--version` (shows help with error instead). Only `--version` works.
+***
+
+task-log
+
+- 2025-12-22T08:39:58Z | Moved to Done
+- 2025-12-22T08:39:58Z | Content updated
 
 ## smb-54 Disable GIthub Actions
 
@@ -2244,3 +2304,18 @@ Look for evidence of a tag added by the user indicating that this task needs ref
 task-log
 
 - 2025-12-20T03:15:22Z | Marked as canceled
+
+## smb-56 bug: init bug
+
+[p1][canceled]
+
+I just ran simbl init in '~/code/Juce/little-heater' and it claimed to have NOT found a CLAUDE.md file even though there is definitly one there. and it offered to create one with SIMBL addition. I didn't add the SIMBL addition.
+
+update: canceling this. false alarm. i ran simbl init in the wrong directory.
+
+***
+
+task-log
+
+- 2025-12-21T00:00:30Z | Marked as canceled
+- 2025-12-21T00:00:28Z | Content updated

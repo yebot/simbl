@@ -92,16 +92,18 @@ This project uses SIMBL for task management. Run `simbl usage` for all commands.
 - `tasks-archive.md` - archived tasks
 - `config.yaml` - project configuration
 
-**Common commands:**
+**Common commands** (use `--json` for structured output):
 
-- `simbl list` - view all tasks
-- `simbl add "title"` - add a task
-- `simbl done <id>` - mark task complete
+- `simbl list --json` - list all tasks
+- `simbl show <id> --json` - get task details
+- `simbl add "title" --json` - add a task
+- `simbl done <id> --json` - mark task complete
+- `simbl update <id> --append "..." --json` - update task
 
-**IMPORTANT:** When working on a task, proactively update its description with discoveries, surprises, course-corrections, or architectural decisions. Example:
+**IMPORTANT:** Always use `--json` flag for reliable parsing. When working on a task, proactively update its description with discoveries, surprises, course-corrections, or architectural decisions. Example:
 
 ```bash
-simbl update <id> --append "### Notes\nDiscovered that X requires Y..."
+simbl update smb-1 --append "### Notes\nDiscovered that X requires Y..." --json
 ```
 
 <!-- SIMBL:END -->

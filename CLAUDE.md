@@ -66,6 +66,32 @@ Uses remark (unified ecosystem) for parsing. The parser must:
 
 TDD is decided per task. Ask before each implementation whether to use TDD.
 
+## Test Environment
+
+**Location:** `../simbl-test-env/.simbl/`
+
+A dedicated test environment exists for manual testing of SIMBL features. Use this environment to:
+
+- Test new commands before committing
+- Verify migrations don't destroy data
+- Test edge cases with mock backlogs
+- Validate CLI output formats
+
+**Running commands in test env:**
+
+```bash
+cd ../simbl-test-env && bun run /Users/space/code/simbl/src/index.ts <command>
+```
+
+**Mock backlog scenarios** (create as needed in `../simbl-test-env/.simbl/`):
+
+- `tasks.md` - active test backlog
+- `tasks-v1-logs.md` - backlog with embedded v1-style logs for migration testing
+- `tasks-large.md` - 100+ tasks for performance testing
+- `tasks-edge-cases.md` - malformed tags, special characters, deep nesting
+
+**IMPORTANT:** Always test destructive operations (migrations, bulk updates, archive) in the test environment first. You have free reign over this directory.
+
 ## Key Patterns
 
 - Commands are agentic-coding-first: pure one-shot CLI with all args, no interactive prompts in commands

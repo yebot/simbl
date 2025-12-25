@@ -162,6 +162,8 @@ task-log
 - 2025-12-25T08:26:14Z | Added tag [mytag]
 - 2025-12-25T08:26:14Z | Task created
 
+# Done
+
 ## smb-84 Bug: migrate-logs should create backup before modifying tasks.md
 
 ##### Description
@@ -177,6 +179,7 @@ The `migrate-logs` command modifies `tasks.md` by stripping embedded log section
 ##### Fix
 
 Before modifying tasks.md:
+
 1. Create a timestamped backup: `tasks.md.backup.YYYY-MM-DD-HHMMSS`
 2. Only delete backup after successful migration (or keep it)
 3. Log the backup location to the user
@@ -186,8 +189,6 @@ Before modifying tasks.md:
 - [ ] Backup created before any file modification
 - [ ] Backup location logged to user
 - [ ] Backup preserved after migration (user can delete manually)
-
-# Done
 
 ## smb-73 Create a one-shot command to set parent relationship
 

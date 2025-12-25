@@ -1,6 +1,5 @@
 import type { Task } from "../core/task.ts";
-import { parseTaskLog, stripTaskLog } from "../core/log.ts";
-import type { LogEntry } from "../core/log.ts";
+import { stripTaskLog, getTaskLog, type FileLogEntry } from "../core/log.ts";
 
 /**
  * Pico CSS CDN URLs
@@ -62,7 +61,7 @@ export function shiftHeadingsForStorage(content: string): string {
 /**
  * Render the task log section (collapsible)
  */
-function renderTaskLog(logEntries: LogEntry[]): string {
+function renderTaskLog(logEntries: FileLogEntry[]): string {
   if (logEntries.length === 0) {
     return `
       <details class="task-log-section">
@@ -498,11 +497,12 @@ export function renderTagCloud(tasks: Task[], activeTag?: string): string {
 /**
  * Render the task detail modal (editable version)
  */
-export function renderTaskModal(
+export async function renderTaskModal(
   task: Task,
   allTasks: Task[],
-  showSaved = false
-): string {
+  showSaved = false,
+  simblDir?: string
+): Promise<string> {
   const savedIndicator = showSaved ? "Saved ✓" : "";
   // Tags display (excluding priority, in-progress, and project which are shown separately)
   const displayTags = task.tags.filter(
@@ -673,8 +673,8 @@ export function renderTaskModal(
     <button type="submit" class="tag-btn" style="background: var(--simbl-project-bg-light); color: var(--simbl-project-text);">${task.reserved.project ? '↻' : '+'}</button>
   </form>`;
 
-  // Parse log entries and strip from display content
-  const logEntries = parseTaskLog(task.content);
+  // Get log entries from centralized log file and strip embedded log from content
+  const logEntries = simblDir ? await getTaskLog(simblDir, task.id) : [];
   const displayContent = shiftHeadingsForDisplay(stripTaskLog(task.content));
 
   // Tag badges with remove buttons

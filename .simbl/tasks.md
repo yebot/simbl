@@ -181,64 +181,6 @@ Extend config.ts to support the new centralized logging system.
 - Default values set correctly
 - Existing configs still load without errors
 
-## smb-69 Update web server to use centralized logging
-
-[p2][child-of-smb-55][depends-on-smb-61][logging]
-
-### Description
-
-##### Description
-
-Migrate web/server.ts from embedded logging to centralized log file for all web UI mutations.
-
-##### Tasks
-
-- Replace all appendLogEntry() calls with new approach
-- Update WebSocket change detection to watch log.ndjson
-- Ensure all web mutations (task create, update, done, etc.) are logged
-- Test live reload still works after log file changes
-- Update tests if any exist
-
-##### Dependencies
-
-- Requires smb-61 (log operations) completed
-
-##### Acceptance Criteria
-
-- All web UI actions write to log.ndjson
-- Browser UI refreshes on log changes
-- No log markers in tasks.md
-- Performance acceptable (file watch not too heavy)
-
-## smb-70 Update web templates to display centralized logs
-
-[p2][child-of-smb-55][depends-on-smb-61][logging]
-
-### Description
-
-##### Description
-
-Migrate web/templates.ts from parseTaskLog() to new getTaskLog() API.
-
-##### Tasks
-
-- Replace parseTaskLog() calls with getTaskLog()
-- Update task detail modal to render log entries from new format
-- Ensure proper formatting of timestamps and events
-- Add any new event types to display logic
-- Test log rendering in browser UI
-
-##### Dependencies
-
-- Requires smb-61 (log operations) completed
-
-##### Acceptance Criteria
-
-- Task detail modal shows complete history
-- All event types display correctly
-- Timestamps formatted properly
-- UI matches or improves on old design
-
 ## smb-71 Integration testing for centralized logging
 
 [p2][child-of-smb-55][depends-on-smb-68][logging]
@@ -349,6 +291,107 @@ task-log
 
 # Done
 
+## smb-70 Update web templates to display centralized logs
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Migrate web/templates.ts from parseTaskLog() to new getTaskLog() API.
+
+##### Tasks
+
+- Replace parseTaskLog() calls with getTaskLog()
+- Update task detail modal to render log entries from new format
+- Ensure proper formatting of timestamps and events
+- Add any new event types to display logic
+- Test log rendering in browser UI
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- Task detail modal shows complete history
+- All event types display correctly
+- Timestamps formatted properly
+- UI matches or improves on old design
+
+##### Implementation Notes
+
+Migrated web templates to use centralized log file:
+
+- Changed renderTaskModal() to async function
+- Added simblDir parameter to renderTaskModal()
+- Replaced parseTaskLog() with getTaskLog() for log retrieval
+- Updated all 12 renderTaskModal() calls in server.ts to await and pass simblDir
+- Changed LogEntry to FileLogEntry type
+- Logs are now fetched from log.ndjson, not embedded in task.content
+
+Files changed:
+
+- src/web/templates.ts - async renderTaskModal, uses getTaskLog()
+- src/web/server.ts - await renderTaskModal with simblDir parameter
+***
+
+task-log
+
+- 2025-12-25T08:48:31Z | Moved to Done
+- 2025-12-25T08:48:25Z | Content updated
+
+## smb-69 Update web server to use centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Migrate web/server.ts from embedded logging to centralized log file for all web UI mutations.
+
+##### Tasks
+
+- Replace all appendLogEntry() calls with new approach
+- Update WebSocket change detection to watch log.ndjson
+- Ensure all web mutations (task create, update, done, etc.) are logged
+- Test live reload still works after log file changes
+- Update tests if any exist
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- All web UI actions write to log.ndjson
+- Browser UI refreshes on log changes
+- No log markers in tasks.md
+- Performance acceptable (file watch not too heavy)
+
+##### Implementation Notes
+
+Migrated all web server logging to centralized log file:
+
+- Replaced 16 appendLogEntry/appendOrBatchLogEntry calls with logTaskEvent()
+- Added logTaskEvent() helper function for cleaner code
+- Added FSWatcher for log.ndjson to trigger WebSocket broadcasts
+- All web mutations now write to log.ndjson instead of embedding in task.content
+- Content updates now use stripTaskLog() to clean up embedded logs
+
+Files changed:
+
+- src/web/server.ts - complete logging migration
+
+***
+
+task-log
+
+- 2025-12-25T08:44:58Z | Moved to Done
+- 2025-12-25T08:44:53Z | Content updated
+
 ## smb-68 Enhance log command with new capabilities
 
 [p2][child-of-smb-55][depends-on-smb-61][logging]
@@ -405,6 +448,7 @@ Log for "smb-68"
   11:30:00 - Added tag [in-progress]
   11:00:00 - Task created
 ```
+
 ***
 
 task-log

@@ -1,8 +1,9 @@
-import { readFileSync, writeFileSync, watch } from 'fs';
+import { readFileSync, writeFileSync, watch, type FSWatcher } from 'fs';
+import { join } from 'path';
 import { findSimblDir, getSimblPaths, loadConfig } from '../core/config.ts';
 import { parseSimblFile, getAllTasks, serializeSimblFile } from '../core/parser.ts';
 import { parseReservedTags, deriveStatus, type Task } from '../core/task.ts';
-import { appendLogEntry, appendOrBatchLogEntry, stripTaskLog } from '../core/log.ts';
+import { appendLogToFile, stripTaskLog } from '../core/log.ts';
 import { generateNextId } from '../utils/id.ts';
 import { renderTaskTable, renderTagCloud, renderPriorityFilter, renderStatusFilter, renderProjectFilter, renderTaskModal, renderAddTaskForm, shiftHeadingsForStorage } from './templates.ts';
 import { renderPage } from './page.ts';
@@ -44,14 +45,34 @@ function openBrowser(url: string): void {
 }
 
 /**
- * Get the simbl paths
+ * Get the simbl directory or throw
  */
-function getPathsOrThrow() {
+function getSimblDirOrThrow(): string {
   const simblDir = findSimblDir();
   if (!simblDir) {
     throw new Error('No .simbl directory found. Run `simbl init` first.');
   }
+  return simblDir;
+}
+
+/**
+ * Get the simbl paths
+ */
+function getPathsOrThrow() {
+  const simblDir = getSimblDirOrThrow();
   return getSimblPaths(simblDir);
+}
+
+/**
+ * Log a task event to the centralized log file
+ */
+async function logTaskEvent(taskId: string, message: string): Promise<void> {
+  const simblDir = getSimblDirOrThrow();
+  await appendLogToFile(simblDir, {
+    taskId,
+    timestamp: new Date(),
+    message,
+  });
 }
 
 /**
@@ -255,7 +276,8 @@ export async function startServer(options: ServerOptions): Promise<void> {
             return new Response('Task not found', { status: 404 });
           }
 
-          return new Response(renderTaskModal(task, allTasks), {
+          const simblDir = getSimblDirOrThrow();
+          return new Response(await renderTaskModal(task, allTasks, false, simblDir), {
             headers: { 'Content-Type': 'text/html' },
           });
         }
@@ -286,25 +308,15 @@ export async function startServer(options: ServerOptions): Promise<void> {
 
           if (title !== null && typeof title === 'string') {
             task.title = title;
-            // Batched log entry for title change
-            task.content = appendOrBatchLogEntry(task.content, 'Title updated');
+            await logTaskEvent(id, 'Title updated');
             updated = true;
           }
 
           if (content !== null && typeof content === 'string') {
-            // Preserve existing log section when updating content
-            const existingLog = task.content.includes('\n***\n\ntask-log\n')
-              ? task.content.slice(task.content.indexOf('\n***\n\ntask-log\n'))
-              : '';
-
-            // Strip any log from the new content (user shouldn't edit log via textarea)
+            // Strip any embedded log from user content (no longer used)
             const newUserContent = stripTaskLog(shiftHeadingsForStorage(content));
-
-            // Combine user content with existing log
-            task.content = existingLog ? newUserContent + existingLog : newUserContent;
-
-            // Add batched log entry for content change
-            task.content = appendOrBatchLogEntry(task.content, 'Content updated');
+            task.content = newUserContent;
+            await logTaskEvent(id, 'Content updated');
             updated = true;
           }
 
@@ -374,9 +386,6 @@ export async function startServer(options: ServerOptions): Promise<void> {
             content = shiftHeadingsForStorage(contentInput);
           }
 
-          // Add "Task created" log entry
-          content = appendLogEntry(content, 'Task created');
-
           // Create task
           const task: Task = {
             id,
@@ -390,6 +399,9 @@ export async function startServer(options: ServerOptions): Promise<void> {
 
           file.backlog.push(task);
           saveTasks(file);
+
+          // Log task creation
+          await logTaskEvent(id, 'Task created');
 
           // Return updated task list + close modal
           return new Response(
@@ -414,13 +426,14 @@ export async function startServer(options: ServerOptions): Promise<void> {
           const task = file.backlog.splice(taskIndex, 1)[0];
           task.section = 'done';
           task.status = 'done';
-          task.content = appendLogEntry(task.content, 'Moved to Done');
           file.done.push(task);
           saveTasks(file);
+          await logTaskEvent(id, 'Moved to Done');
 
           // Return updated modal
           const allTasks = getAllTasks(file);
-          return new Response(renderTaskModal(task, allTasks), {
+          const simblDir = getSimblDirOrThrow();
+          return new Response(await renderTaskModal(task, allTasks, false, simblDir), {
             headers: { 'Content-Type': 'text/html' },
           });
         }
@@ -450,13 +463,14 @@ export async function startServer(options: ServerOptions): Promise<void> {
             task.tags.push('canceled');
           }
           task.reserved = parseReservedTags(task.tags);
-          task.content = appendLogEntry(task.content, 'Marked as canceled');
           file.done.push(task);
           saveTasks(file);
+          await logTaskEvent(id, 'Marked as canceled');
 
           // Return updated modal
           const allTasks = getAllTasks(file);
-          return new Response(renderTaskModal(task, allTasks), {
+          const simblDir = getSimblDirOrThrow();
+          return new Response(await renderTaskModal(task, allTasks, false, simblDir), {
             headers: { 'Content-Type': 'text/html' },
           });
         }
@@ -474,8 +488,8 @@ export async function startServer(options: ServerOptions): Promise<void> {
               task.tags.push('in-progress');
               task.reserved = parseReservedTags(task.tags);
               task.status = deriveStatus('backlog', task.reserved);
-              task.content = appendLogEntry(task.content, 'Marked in-progress');
               saveTasks(file);
+              await logTaskEvent(id, 'Marked in-progress');
             }
           } else {
             // Check if task is in done
@@ -497,14 +511,15 @@ export async function startServer(options: ServerOptions): Promise<void> {
             }
             task.reserved = parseReservedTags(task.tags);
             task.status = deriveStatus('backlog', task.reserved);
-            task.content = appendLogEntry(task.content, 'Moved to In-Progress from Done');
             file.backlog.push(task);
             saveTasks(file);
+            await logTaskEvent(id, 'Moved to In-Progress from Done');
           }
 
           // Return updated modal
           const allTasks = getAllTasks(file);
-          return new Response(renderTaskModal(task, allTasks), {
+          const simblDir = getSimblDirOrThrow();
+          return new Response(await renderTaskModal(task, allTasks, false, simblDir), {
             headers: { 'Content-Type': 'text/html' },
           });
         }
@@ -526,13 +541,14 @@ export async function startServer(options: ServerOptions): Promise<void> {
             task.tags.splice(tagIndex, 1);
             task.reserved = parseReservedTags(task.tags);
             task.status = deriveStatus('backlog', task.reserved);
-            task.content = appendLogEntry(task.content, 'Moved to Backlog');
             saveTasks(file);
+            await logTaskEvent(id, 'Moved to Backlog');
           }
 
           // Return updated modal
           const allTasks = getAllTasks(file);
-          return new Response(renderTaskModal(task, allTasks), {
+          const simblDir = getSimblDirOrThrow();
+          return new Response(await renderTaskModal(task, allTasks, false, simblDir), {
             headers: { 'Content-Type': 'text/html' },
           });
         }
@@ -567,13 +583,14 @@ export async function startServer(options: ServerOptions): Promise<void> {
             task.tags.push(cleanTag);
             task.reserved = parseReservedTags(task.tags);
             task.status = deriveStatus(section, task.reserved);
-            task.content = appendLogEntry(task.content, `Added tag [${cleanTag}]`);
             saveTasks(file);
+            await logTaskEvent(id, `Added tag [${cleanTag}]`);
           }
 
           // Return updated modal with saved indicator
           const allTasks = getAllTasks(file);
-          return new Response(renderTaskModal(task, allTasks, true), {
+          const simblDir = getSimblDirOrThrow();
+          return new Response(await renderTaskModal(task, allTasks, true, simblDir), {
             headers: { 'Content-Type': 'text/html' },
           });
         }
@@ -605,7 +622,8 @@ export async function startServer(options: ServerOptions): Promise<void> {
           // Skip if priority unchanged
           if (oldPriority === newPriority) {
             const allTasks = getAllTasks(file);
-            return new Response(renderTaskModal(task, allTasks, false), {
+            const simblDir = getSimblDirOrThrow();
+            return new Response(await renderTaskModal(task, allTasks, false, simblDir), {
               headers: { 'Content-Type': 'text/html' },
             });
           }
@@ -616,18 +634,19 @@ export async function startServer(options: ServerOptions): Promise<void> {
           task.tags.unshift(newPriority);
           task.reserved = parseReservedTags(task.tags);
           task.status = deriveStatus(section, task.reserved);
+          saveTasks(file);
 
           // Log priority change
           if (oldPriority) {
-            task.content = appendLogEntry(task.content, `Priority changed from [${oldPriority}] to [${newPriority}]`);
+            await logTaskEvent(id, `Priority changed from [${oldPriority}] to [${newPriority}]`);
           } else {
-            task.content = appendLogEntry(task.content, `Priority set to [${newPriority}]`);
+            await logTaskEvent(id, `Priority set to [${newPriority}]`);
           }
-          saveTasks(file);
 
           // Return updated modal with saved indicator
           const allTasks = getAllTasks(file);
-          return new Response(renderTaskModal(task, allTasks, true), {
+          const simblDir = getSimblDirOrThrow();
+          return new Response(await renderTaskModal(task, allTasks, true, simblDir), {
             headers: { 'Content-Type': 'text/html' },
           });
         }
@@ -655,14 +674,15 @@ export async function startServer(options: ServerOptions): Promise<void> {
           task.tags = task.tags.filter((t) => !/^p[1-9]$/.test(t));
           task.reserved = parseReservedTags(task.tags);
           task.status = deriveStatus(section, task.reserved);
-          if (oldPriority) {
-            task.content = appendLogEntry(task.content, `Removed priority [${oldPriority}]`);
-          }
           saveTasks(file);
+          if (oldPriority) {
+            await logTaskEvent(id, `Removed priority [${oldPriority}]`);
+          }
 
           // Return updated modal with saved indicator
           const allTasks = getAllTasks(file);
-          return new Response(renderTaskModal(task, allTasks, true), {
+          const simblDir = getSimblDirOrThrow();
+          return new Response(await renderTaskModal(task, allTasks, true, simblDir), {
             headers: { 'Content-Type': 'text/html' },
           });
         }
@@ -693,13 +713,14 @@ export async function startServer(options: ServerOptions): Promise<void> {
             task.tags.splice(tagIndex, 1);
             task.reserved = parseReservedTags(task.tags);
             task.status = deriveStatus(section, task.reserved);
-            task.content = appendLogEntry(task.content, `Removed tag [${tagToRemove}]`);
             saveTasks(file);
+            await logTaskEvent(id, `Removed tag [${tagToRemove}]`);
           }
 
           // Return updated modal with saved indicator
           const allTasks = getAllTasks(file);
-          return new Response(renderTaskModal(task, allTasks, true), {
+          const simblDir = getSimblDirOrThrow();
+          return new Response(await renderTaskModal(task, allTasks, true, simblDir), {
             headers: { 'Content-Type': 'text/html' },
           });
         }
@@ -737,18 +758,19 @@ export async function startServer(options: ServerOptions): Promise<void> {
           task.tags.push(projectTag);
           task.reserved = parseReservedTags(task.tags);
           task.status = deriveStatus(section, task.reserved);
+          saveTasks(file);
 
           // Log project change
           if (oldProject) {
-            task.content = appendLogEntry(task.content, `Project changed from [${oldProject}] to [${projectTag}]`);
+            await logTaskEvent(id, `Project changed from [${oldProject}] to [${projectTag}]`);
           } else {
-            task.content = appendLogEntry(task.content, `Added to project [${projectTag}]`);
+            await logTaskEvent(id, `Added to project [${projectTag}]`);
           }
-          saveTasks(file);
 
           // Return updated modal with saved indicator
           const allTasks = getAllTasks(file);
-          return new Response(renderTaskModal(task, allTasks, true), {
+          const simblDir = getSimblDirOrThrow();
+          return new Response(await renderTaskModal(task, allTasks, true, simblDir), {
             headers: { 'Content-Type': 'text/html' },
           });
         }
@@ -775,14 +797,15 @@ export async function startServer(options: ServerOptions): Promise<void> {
           task.tags = task.tags.filter((t) => !t.startsWith('project:'));
           task.reserved = parseReservedTags(task.tags);
           task.status = deriveStatus(section, task.reserved);
-          if (oldProject) {
-            task.content = appendLogEntry(task.content, `Removed from project [${oldProject}]`);
-          }
           saveTasks(file);
+          if (oldProject) {
+            await logTaskEvent(id, `Removed from project [${oldProject}]`);
+          }
 
           // Return updated modal with saved indicator
           const allTasks = getAllTasks(file);
-          return new Response(renderTaskModal(task, allTasks, true), {
+          const simblDir = getSimblDirOrThrow();
+          return new Response(await renderTaskModal(task, allTasks, true, simblDir), {
             headers: { 'Content-Type': 'text/html' },
           });
         }
@@ -852,12 +875,32 @@ export async function startServer(options: ServerOptions): Promise<void> {
     throw new Error(`Could not find available port after ${maxAttempts} attempts starting from ${startPort}`);
   }
 
-  // Set up file watcher on tasks.md AFTER successful server bind
-  const watcher = watch(paths.tasks, (eventType) => {
-    if (eventType === 'change') {
-      broadcastUpdate();
-    }
-  });
+  // Set up file watchers on tasks.md and log.ndjson AFTER successful server bind
+  const simblDir = getSimblDirOrThrow();
+  const logPath = join(simblDir, 'log.ndjson');
+  const watchers: FSWatcher[] = [];
+
+  // Watch tasks.md for changes
+  watchers.push(
+    watch(paths.tasks, (eventType) => {
+      if (eventType === 'change') {
+        broadcastUpdate();
+      }
+    })
+  );
+
+  // Watch log.ndjson for changes (new log entries will trigger refresh)
+  try {
+    watchers.push(
+      watch(logPath, (eventType) => {
+        if (eventType === 'change') {
+          broadcastUpdate();
+        }
+      })
+    );
+  } catch {
+    // Log file may not exist yet, that's OK
+  }
 
   // Warn if we're running on a different port than requested
   if (boundPort !== startPort) {
@@ -874,7 +917,9 @@ export async function startServer(options: ServerOptions): Promise<void> {
   // Keep the process alive
   process.on('SIGINT', () => {
     console.log('\n👋 Shutting down SIMBL server...');
-    watcher.close();
+    for (const watcher of watchers) {
+      watcher.close();
+    }
     server.stop();
     process.exit(0);
   });

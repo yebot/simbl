@@ -5,6 +5,7 @@ import { parseSimblFile, serializeSimblFile } from '../../core/parser.ts';
 import { generateNextId } from '../../utils/id.ts';
 import { parseTagLine, parseReservedTags, deriveStatus, type Task } from '../../core/task.ts';
 import { appendLogToFile } from '../../core/log.ts';
+import { sanitizeObjectForJson } from '../../core/sanitize.ts';
 
 /**
  * Normalize heading levels in content.
@@ -132,7 +133,7 @@ export const addCommand = defineCommand({
     });
 
     if (args.json) {
-      console.log(JSON.stringify(task, null, 2));
+      console.log(JSON.stringify(sanitizeObjectForJson(task), null, 2));
     } else {
       console.log(`Created ${id}: ${args.title}`);
       if (tags.length > 0) {

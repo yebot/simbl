@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import { findSimblDir, getSimblPaths } from '../../core/config.ts';
 import { parseSimblFile, serializeSimblFile } from '../../core/parser.ts';
 import { appendLogToFile } from '../../core/log.ts';
+import { sanitizeObjectForJson } from '../../core/sanitize.ts';
 
 export const doneCommand = defineCommand({
   meta: {
@@ -74,7 +75,7 @@ export const doneCommand = defineCommand({
     });
 
     if (args.json) {
-      console.log(JSON.stringify(task, null, 2));
+      console.log(JSON.stringify(sanitizeObjectForJson(task), null, 2));
       return;
     }
 

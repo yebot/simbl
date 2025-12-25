@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import { findSimblDir, getSimblPaths } from '../../core/config.ts';
 import { parseSimblFile, findTaskById } from '../../core/parser.ts';
 import { parseTaskLog, formatLogEntriesForDisplay } from '../../core/log.ts';
+import { sanitizeObjectForJson } from '../../core/sanitize.ts';
 
 export const logCommand = defineCommand({
   meta: {
@@ -47,10 +48,10 @@ export const logCommand = defineCommand({
         timestamp: e.timestamp.toISOString(),
         message: e.message,
       }));
-      console.log(JSON.stringify({
+      console.log(JSON.stringify(sanitizeObjectForJson({
         taskId: task.id,
         entries: jsonEntries,
-      }, null, 2));
+      }), null, 2));
       return;
     }
 

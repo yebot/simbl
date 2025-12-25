@@ -2,6 +2,7 @@ import { defineCommand } from 'citty';
 import { readFileSync } from 'fs';
 import { findSimblDir, getSimblPaths } from '../../core/config.ts';
 import { parseSimblFile, getAllTasks } from '../../core/parser.ts';
+import { sanitizeObjectForJson } from '../../core/sanitize.ts';
 import type { Task } from '../../core/task.ts';
 
 /**
@@ -196,7 +197,7 @@ export const listCommand = defineCommand({
       });
 
       if (args.json) {
-        console.log(JSON.stringify(filtered, null, 2));
+        console.log(JSON.stringify(sanitizeObjectForJson(filtered), null, 2));
         return;
       }
 
@@ -223,7 +224,7 @@ export const listCommand = defineCommand({
 
     // Default view: grouped by section
     if (args.json) {
-      console.log(JSON.stringify(file, null, 2));
+      console.log(JSON.stringify(sanitizeObjectForJson(file), null, 2));
       return;
     }
 

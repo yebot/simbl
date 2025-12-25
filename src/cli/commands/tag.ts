@@ -4,6 +4,7 @@ import { findSimblDir, getSimblPaths } from '../../core/config.ts';
 import { parseSimblFile, serializeSimblFile, findTaskById } from '../../core/parser.ts';
 import { parseReservedTags, deriveStatus } from '../../core/task.ts';
 import { appendLogToFile } from '../../core/log.ts';
+import { sanitizeObjectForJson } from '../../core/sanitize.ts';
 
 /**
  * Check if a tag is a priority tag (p1-p9)
@@ -58,7 +59,7 @@ const addTagCommand = defineCommand({
 
     if (task.tags.includes(tag)) {
       if (args.json) {
-        console.log(JSON.stringify(task, null, 2));
+        console.log(JSON.stringify(sanitizeObjectForJson(task), null, 2));
         return;
       }
       console.log(`Task "${args.id}" already has tag [${tag}].`);
@@ -98,7 +99,7 @@ const addTagCommand = defineCommand({
     });
 
     if (args.json) {
-      console.log(JSON.stringify(task, null, 2));
+      console.log(JSON.stringify(sanitizeObjectForJson(task), null, 2));
       return;
     }
 
@@ -156,7 +157,7 @@ const removeTagCommand = defineCommand({
 
     if (!task.tags.includes(tag)) {
       if (args.json) {
-        console.log(JSON.stringify(task, null, 2));
+        console.log(JSON.stringify(sanitizeObjectForJson(task), null, 2));
         return;
       }
       console.log(`Task "${args.id}" doesn't have tag [${tag}].`);
@@ -182,7 +183,7 @@ const removeTagCommand = defineCommand({
     });
 
     if (args.json) {
-      console.log(JSON.stringify(task, null, 2));
+      console.log(JSON.stringify(sanitizeObjectForJson(task), null, 2));
       return;
     }
 

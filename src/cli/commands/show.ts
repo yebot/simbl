@@ -2,6 +2,7 @@ import { defineCommand } from 'citty';
 import { readFileSync } from 'fs';
 import { findSimblDir, getSimblPaths } from '../../core/config.ts';
 import { parseSimblFile, findTaskById } from '../../core/parser.ts';
+import { sanitizeObjectForJson } from '../../core/sanitize.ts';
 
 export const showCommand = defineCommand({
   meta: {
@@ -40,7 +41,7 @@ export const showCommand = defineCommand({
     }
 
     if (args.json) {
-      console.log(JSON.stringify(task, null, 2));
+      console.log(JSON.stringify(sanitizeObjectForJson(task), null, 2));
       return;
     }
 

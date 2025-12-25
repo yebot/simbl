@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import { findSimblDir, getSimblPaths } from '../../core/config.ts';
 import { parseSimblFile, serializeSimblFile, findTaskById } from '../../core/parser.ts';
 import { parseReservedTags, deriveStatus } from '../../core/task.ts';
+import { sanitizeObjectForJson } from '../../core/sanitize.ts';
 
 export const unrelateCommand = defineCommand({
   meta: {
@@ -89,7 +90,7 @@ export const unrelateCommand = defineCommand({
     writeFileSync(paths.tasks, newContent, 'utf-8');
 
     if (args.json) {
-      console.log(JSON.stringify(task, null, 2));
+      console.log(JSON.stringify(sanitizeObjectForJson(task), null, 2));
       return;
     }
 

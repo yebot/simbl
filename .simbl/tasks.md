@@ -350,6 +350,36 @@ perhaps its like this:
 
 ... so we can establish multiple children in one shot
 
+## smb-78 Sync test
+
+## smb-79 Another sync test
+
+***
+
+task-log
+
+- 2025-12-25T08:24:41Z | Task created
+
+## smb-80 Debug test
+
+## smb-82 Debug add test
+
+[debug-tag]
+
+## smb-83 Tag test
+
+[mytag][anothertag]
+
+***
+
+task-log
+
+- 2025-12-25T08:26:35Z | Added tag [anothertag]
+- 2025-12-25T08:26:14Z | Added tag [mytag]
+- 2025-12-25T08:26:14Z | Task created
+
+# Done
+
 ## smb-74 Bug: JSON output contains invalid control characters
 
 [p1][bug][cli][json]
@@ -389,35 +419,31 @@ Task content likely contains raw control characters (newlines, tabs, etc.) that 
 - [ ] Control characters in task content are properly escaped
 - [ ] Add test case for tasks with special characters
 
-## smb-78 Sync test
+##### Implementation Notes
 
-## smb-79 Another sync test
+Created `src/core/sanitize.ts` with:
 
+- `sanitizeForJson(value)` - escapes control characters (0x00-0x1F except tab/newline/CR)
+- `sanitizeObjectForJson(obj)` - recursively sanitizes all string values
+
+Updated 12 commands to use sanitization before JSON.stringify:
+
+- list.ts, show.ts, add.ts, done.ts, cancel.ts, tag.ts, update.ts
+- relate.ts, unrelate.ts, log.ts
+
+Tests: 12 test cases in sanitize.test.ts covering:
+
+- Normal strings pass through unchanged
+- Control characters get escaped as \uXXXX
+- Tab, newline, CR are preserved
+- Nested objects and arrays are handled
+- Complex task structures work correctly
 ***
 
 task-log
 
-- 2025-12-25T08:24:41Z | Task created
-
-## smb-80 Debug test
-
-## smb-82 Debug add test
-
-[debug-tag]
-
-## smb-83 Tag test
-
-[mytag][anothertag]
-
-***
-
-task-log
-
-- 2025-12-25T08:26:35Z | Added tag [anothertag]
-- 2025-12-25T08:26:14Z | Added tag [mytag]
-- 2025-12-25T08:26:14Z | Task created
-
-# Done
+- 2025-12-25T08:38:07Z | Moved to Done
+- 2025-12-25T08:38:02Z | Content updated
 
 ## smb-67 Update update command to use centralized logging
 

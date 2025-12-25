@@ -134,53 +134,6 @@ Add a GitHub Actions workflow that allows quick task capture from the GitHub mob
 - Consider adding a special tag to these tasks so, once imported, we can give it special consideration
 - Use the prefix from config.yaml if accessible, or derive from existing task IDs, or default to 'task'
 
-## smb-59 Define centralized log format and types
-
-[p2][child-of-smb-55][logging]
-
-### Description
-
-##### Description
-
-Define TypeScript types and interfaces for the new centralized log format.
-
-##### Tasks
-
-- Create LogEntry interface with taskId, timestamp, event, and optional metadata fields
-- Define LogEvent enum/type for all event types (created, done, canceled, tag_added, tag_removed, priority_changed, title_updated, content_updated, etc.)
-- Add JSDoc documentation for the log format
-- Export from core/log.ts
-
-##### Acceptance Criteria
-
-- All event types from current system are mapped
-- Type definitions support future extensibility
-- Clear documentation of JSON schema
-
-## smb-60 Add log file path and version to config
-
-[p2][child-of-smb-55][logging]
-
-### Description
-
-##### Description
-
-Extend config.ts to support the new centralized logging system.
-
-##### Tasks
-
-- Add logVersion field (default: 1 for old, 2 for new)
-- Add logFilePath field (default: '.simbl/log.ndjson')
-- Update SimblConfig type definition
-- Update default config initialization
-- Ensure backward compatibility
-
-##### Acceptance Criteria
-
-- Config type includes new fields
-- Default values set correctly
-- Existing configs still load without errors
-
 ## smb-71 Integration testing for centralized logging
 
 [p2][child-of-smb-55][depends-on-smb-68][logging]
@@ -291,6 +244,64 @@ task-log
 
 # Done
 
+## smb-60 Add log file path and version to config
+
+[p2][child-of-smb-55][logging]
+
+### Description
+
+##### Description
+
+Extend config.ts to support the new centralized logging system.
+
+##### Tasks
+
+- Add logVersion field (default: 1 for old, 2 for new)
+- Add logFilePath field (default: '.simbl/log.ndjson')
+- Update SimblConfig type definition
+- Update default config initialization
+- Ensure backward compatibility
+
+##### Acceptance Criteria
+
+- Config type includes new fields
+- Default values set correctly
+- Existing configs still load without errors
+***
+
+task-log
+
+- 2025-12-25T08:50:02Z | Moved to Done
+
+## smb-59 Define centralized log format and types
+
+[p2][child-of-smb-55][logging]
+
+### Description
+
+##### Description
+
+Define TypeScript types and interfaces for the new centralized log format.
+
+##### Tasks
+
+- Create LogEntry interface with taskId, timestamp, event, and optional metadata fields
+- Define LogEvent enum/type for all event types (created, done, canceled, tag_added, tag_removed, priority_changed, title_updated, content_updated, etc.)
+- Add JSDoc documentation for the log format
+- Export from core/log.ts
+
+##### Acceptance Criteria
+
+- All event types from current system are mapped
+- Type definitions support future extensibility
+- Clear documentation of JSON schema
+
+***
+
+task-log
+
+- 2025-12-25T08:50:02Z | Moved to Done
+
 ## smb-70 Update web templates to display centralized logs
 
 [p2][child-of-smb-55][depends-on-smb-61][logging]
@@ -335,6 +346,7 @@ Files changed:
 
 - src/web/templates.ts - async renderTaskModal, uses getTaskLog()
 - src/web/server.ts - await renderTaskModal with simblDir parameter
+
 ***
 
 task-log

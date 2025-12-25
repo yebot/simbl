@@ -232,40 +232,6 @@ task-log
 - 2025-12-22T20:18:29Z | Added tag [logging]
 - 2025-12-22T15:58:43Z | Task created
 
-## smb-61 Implement centralized log file operations
-
-[p1][child-of-smb-55][logging]
-
-### Description
-
-##### Description
-
-Rewrite core/log.ts to use append-only NDJSON file instead of embedding in task content.
-
-##### Tasks
-
-- Implement appendLogToFile(entry: LogEntry) - append single NDJSON line
-- Implement readLogFile(): LogEntry[] - parse entire log file
-- Implement getTaskLog(taskId: string): LogEntry[] - filter logs for one task
-- Remove old parseTaskLog() and stripTaskLog() functions
-- Update appendLogEntry() to use new file-based approach
-- Update appendOrBatchLogEntry() to use new file-based approach
-- Handle missing log file gracefully (create on first write)
-
-##### Acceptance Criteria
-
-- Atomic append operations (use fs.appendFileSync or equivalent)
-- Parse NDJSON correctly (one JSON object per line)
-- No file rewrites for single appends
-- Backward compatible with logVersion check
-
-***
-
-task-log
-
-- 2025-12-22T20:18:29Z | Added tag [logging]
-- 2025-12-22T15:58:43Z | Task created
-
 ## smb-62 Build migration utility for existing logs
 
 [p1][child-of-smb-55][logging]
@@ -688,6 +654,48 @@ task-log
 
 # Done
 
+## smb-61 Implement centralized log file operations
+
+[p1][child-of-smb-55][logging]
+
+### Description
+
+##### Description
+
+Rewrite core/log.ts to use append-only NDJSON file instead of embedding in task content.
+
+##### Tasks
+
+- Implement appendLogToFile(entry: LogEntry) - append single NDJSON line
+- Implement readLogFile(): LogEntry[] - parse entire log file
+- Implement getTaskLog(taskId: string): LogEntry[] - filter logs for one task
+- Remove old parseTaskLog() and stripTaskLog() functions
+- Update appendLogEntry() to use new file-based approach
+- Update appendOrBatchLogEntry() to use new file-based approach
+- Handle missing log file gracefully (create on first write)
+
+##### Acceptance Criteria
+
+- Atomic append operations (use fs.appendFileSync or equivalent)
+- Parse NDJSON correctly (one JSON object per line)
+- No file rewrites for single appends
+- Backward compatible with logVersion check
+
+##### Implementation Notes
+
+- Added `FileLogEntry` interface with taskId, timestamp, message
+- Implemented `appendLogToFile()` using synchronous append for atomicity
+- Implemented `readLogFile()` with graceful handling of malformed lines
+- Implemented `getTaskLog()` with filtering and newest-first sorting
+- Used TDD: wrote 18 tests first, then implemented to pass
+- Log file path: `.simbl/log.ndjson`
+***
+
+task-log
+
+- 2025-12-25T07:46:49Z | Moved to Done
+- 2025-12-25T07:46:44Z | Content updated
+
 ## smb-57 Discovery: web URLs
 
 [p2][web][project:discovery][refined]
@@ -888,6 +896,7 @@ The implementation is straightforward because:
 - pushState integration is well-documented
 
 **Next step:** Create implementation subtasks if desired.
+
 ***
 
 task-log

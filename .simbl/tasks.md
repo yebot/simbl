@@ -181,145 +181,6 @@ Extend config.ts to support the new centralized logging system.
 - Default values set correctly
 - Existing configs still load without errors
 
-## smb-63 Update add command to use centralized logging
-
-[p2][child-of-smb-55][depends-on-smb-61][logging]
-
-### Description
-
-##### Description
-
-Migrate add.ts from embedded logging to centralized log file.
-
-##### Tasks
-
-- Replace appendLogEntry() call to use new log file approach
-- Remove any task content manipulation for logs
-- Ensure 'created' event is logged with proper metadata
-- Update tests if any exist
-
-##### Dependencies
-
-- Requires smb-61 (log operations) completed
-
-##### Acceptance Criteria
-
-- 'simbl add' writes to log.ndjson
-- No log markers in tasks.md
-- Task creation timestamp preserved
-
-## smb-64 Update done command to use centralized logging
-
-[p2][child-of-smb-55][depends-on-smb-61][logging]
-
-### Description
-
-##### Description
-
-Migrate done.ts from embedded logging to centralized log file.
-
-##### Tasks
-
-- Replace appendLogEntry() call to use new log file approach
-- Remove any task content manipulation for logs
-- Ensure 'done' event is logged with proper metadata
-- Update tests if any exist
-
-##### Dependencies
-
-- Requires smb-61 (log operations) completed
-
-##### Acceptance Criteria
-
-- 'simbl done' writes to log.ndjson
-- No log markers in tasks.md
-- Completion timestamp preserved
-
-## smb-65 Update cancel command to use centralized logging
-
-[p2][child-of-smb-55][depends-on-smb-61][logging]
-
-### Description
-
-##### Description
-
-Migrate cancel.ts from embedded logging to centralized log file.
-
-##### Tasks
-
-- Replace appendLogEntry() call to use new log file approach
-- Remove any task content manipulation for logs
-- Ensure 'canceled' event is logged with proper metadata
-- Update tests if any exist
-
-##### Dependencies
-
-- Requires smb-61 (log operations) completed
-
-##### Acceptance Criteria
-
-- 'simbl cancel' writes to log.ndjson
-- No log markers in tasks.md
-- Cancellation timestamp preserved
-
-## smb-66 Update tag command to use centralized logging
-
-[p2][child-of-smb-55][depends-on-smb-61][logging]
-
-### Description
-
-##### Description
-
-Migrate tag.ts from embedded logging to centralized log file.
-
-##### Tasks
-
-- Replace appendLogEntry() calls for tag operations
-- Support logging: tag_added, tag_removed, priority_changed events
-- Remove any task content manipulation for logs
-- Ensure proper event metadata (which tag, old/new values)
-- Update tests if any exist
-
-##### Dependencies
-
-- Requires smb-61 (log operations) completed
-
-##### Acceptance Criteria
-
-- 'simbl tag' operations write to log.ndjson
-- All tag change types properly logged
-- No log markers in tasks.md
-
-## smb-67 Update update command to use centralized logging
-
-[p2][child-of-smb-55][depends-on-smb-61][logging]
-
-### Description
-
-##### Description
-
-Migrate update.ts from embedded logging to centralized log file.
-
-##### Tasks
-
-- Replace appendOrBatchLogEntry() call to use new approach
-- Support logging: title_updated, content_updated, content_appended events
-- Handle batching logic for multiple updates
-- Remove any task content manipulation for logs
-- Capture old/new values in metadata
-- Update tests if any exist
-
-##### Dependencies
-
-- Requires smb-61 (log operations) completed
-
-##### Acceptance Criteria
-
-- 'simbl update' operations write to log.ndjson
-- Batched updates still create single log entry where appropriate
-- No log markers in tasks.md
-- Metadata includes what changed
-
 ## smb-68 Enhance log command with new capabilities
 
 [p2][child-of-smb-55][depends-on-smb-61][logging]
@@ -528,7 +389,212 @@ Task content likely contains raw control characters (newlines, tabs, etc.) that 
 - [ ] Control characters in task content are properly escaped
 - [ ] Add test case for tasks with special characters
 
+## smb-78 Sync test
+
+## smb-79 Another sync test
+
+***
+
+task-log
+
+- 2025-12-25T08:24:41Z | Task created
+
+## smb-80 Debug test
+
+## smb-82 Debug add test
+
+[debug-tag]
+
+## smb-83 Tag test
+
+[mytag][anothertag]
+
+***
+
+task-log
+
+- 2025-12-25T08:26:35Z | Added tag [anothertag]
+- 2025-12-25T08:26:14Z | Added tag [mytag]
+- 2025-12-25T08:26:14Z | Task created
+
 # Done
+
+## smb-67 Update update command to use centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Migrate update.ts from embedded logging to centralized log file.
+
+##### Tasks
+
+- Replace appendOrBatchLogEntry() call to use new approach
+- Support logging: title_updated, content_updated, content_appended events
+- Handle batching logic for multiple updates
+- Remove any task content manipulation for logs
+- Capture old/new values in metadata
+- Update tests if any exist
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- 'simbl update' operations write to log.ndjson
+- Batched updates still create single log entry where appropriate
+- No log markers in tasks.md
+- Metadata includes what changed
+
+## smb-66 Update tag command to use centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Migrate tag.ts from embedded logging to centralized log file.
+
+##### Tasks
+
+- Replace appendLogEntry() calls for tag operations
+- Support logging: tag_added, tag_removed, priority_changed events
+- Remove any task content manipulation for logs
+- Ensure proper event metadata (which tag, old/new values)
+- Update tests if any exist
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- 'simbl tag' operations write to log.ndjson
+- All tag change types properly logged
+- No log markers in tasks.md
+
+## smb-65 Update cancel command to use centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Migrate cancel.ts from embedded logging to centralized log file.
+
+##### Tasks
+
+- Replace appendLogEntry() call to use new log file approach
+- Remove any task content manipulation for logs
+- Ensure 'canceled' event is logged with proper metadata
+- Update tests if any exist
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- 'simbl cancel' writes to log.ndjson
+- No log markers in tasks.md
+- Cancellation timestamp preserved
+
+## smb-64 Update done command to use centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Migrate done.ts from embedded logging to centralized log file.
+
+##### Tasks
+
+- Replace appendLogEntry() call to use new log file approach
+- Remove any task content manipulation for logs
+- Ensure 'done' event is logged with proper metadata
+- Update tests if any exist
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- 'simbl done' writes to log.ndjson
+- No log markers in tasks.md
+- Completion timestamp preserved
+
+## smb-63 Update add command to use centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Migrate add.ts from embedded logging to centralized log file.
+
+##### Tasks
+
+- Replace appendLogEntry() call to use new log file approach
+- Remove any task content manipulation for logs
+- Ensure 'created' event is logged with proper metadata
+- Update tests if any exist
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- 'simbl add' writes to log.ndjson
+- No log markers in tasks.md
+- Task creation timestamp preserved
+
+## smb-81 Full flow test
+
+[test-tag]
+
+***
+
+task-log
+
+- 2025-12-25T08:25:04Z | Moved to Done
+- 2025-12-25T08:25:04Z | Added tag [test-tag]
+- 2025-12-25T08:25:04Z | Task created
+
+## smb-77 Test complete flow
+
+***
+
+task-log
+
+- 2025-12-25T08:24:22Z | Moved to Done
+- 2025-12-25T08:24:22Z | Task created
+
+## smb-76 Test log order
+
+***
+
+task-log
+
+- 2025-12-25T08:23:54Z | Moved to Done
+- 2025-12-25T08:23:54Z | Task created
+
+## smb-75 Test centralized logging
+
+***
+
+task-log
+
+- 2025-12-25T08:23:39Z | Moved to Done
 
 ## smb-62 Build migration utility for existing logs
 
@@ -606,6 +672,7 @@ Ready for implementation of `migrate.ts` module to make tests pass.
 - Added `logVersion` field to config (set to 2 after migration)
 - Successfully migrated 1199 log entries from 57 tasks in this project
 - Used TDD: 21 tests written first, then implementation
+
 ***
 
 task-log

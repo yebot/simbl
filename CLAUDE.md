@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 bun run dev                    # Run CLI in development
 bun run src/index.ts <cmd>     # Run specific command
 bun run typecheck              # TypeScript type checking
+bun run test                   # Run test suite
 bun run build                  # Compile to macOS ARM binary (dist/simbl)
 bun run build:x64              # Compile to macOS Intel binary (dist/simbl-x64)
 bun run build-and-install      # Build and copy to /usr/local/bin
@@ -60,6 +61,10 @@ Uses remark (unified ecosystem) for parsing. The parser must:
 2. Extract tasks from H1 sections
 3. Parse tag lines into structured data
 4. Handle arbitrary markdown content within tasks
+
+## TDD Policy
+
+TDD is decided per task. Ask before each implementation whether to use TDD.
 
 ## Key Patterns
 

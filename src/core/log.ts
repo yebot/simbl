@@ -1,3 +1,6 @@
+import { existsSync, appendFileSync } from 'fs';
+import { join } from 'path';
+
 /**
  * Task Log parsing and manipulation utilities
  *
@@ -14,12 +17,26 @@
  */
 
 /**
- * A single log entry
+ * A single log entry (legacy format, embedded in task content)
  */
 export interface LogEntry {
   timestamp: Date;
   message: string;
 }
+
+/**
+ * A log entry in the centralized log file (NDJSON format)
+ */
+export interface FileLogEntry {
+  taskId: string;
+  timestamp: Date;
+  message: string;
+}
+
+/**
+ * Log file name within .simbl directory
+ */
+const LOG_FILE = 'log.ndjson';
 
 /**
  * Marker that identifies the start of the log section
@@ -237,4 +254,97 @@ export function formatLogEntriesForDisplay(entries: LogEntry[]): string {
       return `  ${i + 1}. ${dateStr} - ${e.message}`;
     })
     .join('\n');
+}
+
+// ============================================================================
+// Centralized Log File Operations (NDJSON format)
+// ============================================================================
+
+/**
+ * Append a log entry to the centralized log file
+ *
+ * @param simblDir - Path to .simbl directory
+ * @param entry - Log entry to append
+ */
+export async function appendLogToFile(simblDir: string, entry: FileLogEntry): Promise<void> {
+  const logPath = join(simblDir, LOG_FILE);
+
+  const line =
+    JSON.stringify({
+      taskId: entry.taskId,
+      timestamp: entry.timestamp.toISOString(),
+      message: entry.message,
+    }) + '\n';
+
+  // Use synchronous append for atomic operation
+  appendFileSync(logPath, line, 'utf-8');
+}
+
+/**
+ * Read all log entries from the centralized log file
+ *
+ * @param simblDir - Path to .simbl directory
+ * @returns Array of log entries in file order
+ */
+export async function readLogFile(simblDir: string): Promise<FileLogEntry[]> {
+  const logPath = join(simblDir, LOG_FILE);
+
+  if (!existsSync(logPath)) {
+    return [];
+  }
+
+  const file = Bun.file(logPath);
+  const content = await file.text();
+
+  if (!content.trim()) {
+    return [];
+  }
+
+  const entries: FileLogEntry[] = [];
+  const lines = content.split('\n');
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    try {
+      const parsed = JSON.parse(trimmed);
+
+      // Validate required fields
+      if (
+        typeof parsed.taskId === 'string' &&
+        typeof parsed.timestamp === 'string' &&
+        typeof parsed.message === 'string'
+      ) {
+        entries.push({
+          taskId: parsed.taskId,
+          timestamp: new Date(parsed.timestamp),
+          message: parsed.message,
+        });
+      }
+    } catch {
+      // Skip malformed lines
+    }
+  }
+
+  return entries;
+}
+
+/**
+ * Get log entries for a specific task, sorted newest-first
+ *
+ * @param simblDir - Path to .simbl directory
+ * @param taskId - Task ID to filter by
+ * @returns Array of log entries for the task, newest first
+ */
+export async function getTaskLog(simblDir: string, taskId: string): Promise<FileLogEntry[]> {
+  const allEntries = await readLogFile(simblDir);
+
+  // Filter by exact taskId match
+  const taskEntries = allEntries.filter((e) => e.taskId === taskId);
+
+  // Sort newest first (descending by timestamp)
+  taskEntries.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+  return taskEntries;
 }

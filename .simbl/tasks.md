@@ -134,22 +134,6 @@ Add a GitHub Actions workflow that allows quick task capture from the GitHub mob
 - Consider adding a special tag to these tasks so, once imported, we can give it special consideration
 - Use the prefix from config.yaml if accessible, or derive from existing task IDs, or default to 'task'
 
-## smb-73 Create a one-shot command to set parent relationship
-
-[p2][cli]
-
-right now the only way to establish a parent relationship is
-
-`simbl relate smb-56 --parent smb-55`
-
-make is so this command support multiple children args.
-
-perhaps its like this:
-
-`simbl relate smb-55 --children smb-56 smb-57 smb-58 smb-63`
-
-... so we can establish multiple children in one shot
-
 ## smb-78 Sync test
 
 ## smb-79 Another sync test
@@ -179,6 +163,27 @@ task-log
 - 2025-12-25T08:26:14Z | Task created
 
 # Done
+
+## smb-73 Create a one-shot command to set parent relationship
+
+[p2][cli]
+
+right now the only way to establish a parent relationship is
+
+`simbl relate smb-56 --parent smb-55`
+
+make is so this command support multiple children args.
+
+perhaps its like this:
+
+`simbl relate smb-55 --children smb-56 smb-57 smb-58 smb-63`
+
+... so we can establish multiple children in one shot
+***
+
+task-log
+
+- 2025-12-25T08:57:12Z | Moved to Done
 
 ## smb-72 Update documentation for centralized logging
 

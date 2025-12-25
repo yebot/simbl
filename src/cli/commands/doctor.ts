@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import { findSimblDir, getSimblPaths, loadConfig } from '../../core/config.ts';
 import { parseSimblFile, getAllTasks } from '../../core/parser.ts';
 import { parseMarkdown } from '../../core/parser.ts';
+import { needsMigration } from '../../core/migrate.ts';
 import type { Task } from '../../core/task.ts';
 import type { Heading } from 'mdast';
 
@@ -268,8 +269,17 @@ export const doctorCommand = defineCommand({
 
     const issues = validateTasksFile(content, config.prefix);
 
+    // Check for pending log migration
+    const migrationNeeded = await needsMigration(simblDir);
+    if (migrationNeeded) {
+      issues.push({
+        level: 'warning',
+        message: 'Embedded task logs detected. Run `simbl migrate-logs` to migrate to centralized logging.',
+      });
+    }
+
     if (args.json) {
-      console.log(JSON.stringify({ issues }, null, 2));
+      console.log(JSON.stringify({ issues, migrationNeeded }, null, 2));
       return;
     }
 

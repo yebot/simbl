@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import { findSimblDir, getSimblPaths } from '../../core/config.ts';
 import { parseSimblFile, getAllTasks } from '../../core/parser.ts';
 import { sanitizeObjectForJson } from '../../core/sanitize.ts';
+import { needsMigration } from '../../core/migrate.ts';
 import type { Task } from '../../core/task.ts';
 
 /**
@@ -219,6 +220,12 @@ export const listCommand = defineCommand({
         console.log(formatTask(task));
         if (args.full) console.log('');
       }
+
+      // Check for pending migration
+      const migrationNeeded = await needsMigration(simblDir);
+      if (migrationNeeded) {
+        console.log('\n⚠ Embedded logs detected. Run `simbl migrate-logs` to upgrade.');
+      }
       return;
     }
 
@@ -265,6 +272,12 @@ export const listCommand = defineCommand({
         console.log(formatTask(task));
         if (args.full) console.log('');
       }
+    }
+
+    // Check for pending migration (only in human-readable mode)
+    const migrationNeeded = await needsMigration(simblDir);
+    if (migrationNeeded) {
+      console.log('\n⚠ Embedded logs detected. Run `simbl migrate-logs` to upgrade.');
     }
   },
 });

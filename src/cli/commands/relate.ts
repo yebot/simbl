@@ -62,6 +62,10 @@ export const relateCommand = defineCommand({
       type: 'string',
       description: 'Set parent task ID (creates child-of relationship)',
     },
+    children: {
+      type: 'string',
+      description: 'Child task IDs (comma-separated, e.g., "task-1,task-2,task-3")',
+    },
     'depends-on': {
       type: 'string',
       description: 'Add dependency on task ID',
@@ -80,8 +84,8 @@ export const relateCommand = defineCommand({
       process.exit(1);
     }
 
-    if (!args.parent && !args['depends-on']) {
-      console.error('Provide --parent or --depends-on to create a relationship.');
+    if (!args.parent && !args['depends-on'] && !args.children) {
+      console.error('Provide --parent, --children, or --depends-on to create a relationship.');
       process.exit(1);
     }
 
@@ -123,6 +127,47 @@ export const relateCommand = defineCommand({
       // Add new parent tag
       task.tags.push(`child-of-${args.parent}`);
       changes.push(`parent: ${args.parent}`);
+    }
+
+    // Handle children relationship (make this task the parent of multiple children)
+    if (args.children) {
+      const childIds = args.children.split(',').map((id) => id.trim()).filter(Boolean);
+      const updatedChildren: string[] = [];
+
+      for (const childId of childIds) {
+        const childTask = findTaskById(file, childId);
+        if (!childTask) {
+          console.error(`Child task "${childId}" not found.`);
+          process.exit(1);
+        }
+
+        if (childId === args.id) {
+          console.error('A task cannot be its own child.');
+          process.exit(1);
+        }
+
+        // Check for circular dependency
+        if (wouldCreateCycle(childId, args.id, allTasks)) {
+          console.error(`Cannot add child "${childId}": would create circular dependency.`);
+          process.exit(1);
+        }
+
+        // Remove existing parent tag if any
+        childTask.tags = childTask.tags.filter((t) => !t.startsWith('child-of-'));
+
+        // Add new parent tag
+        childTask.tags.push(`child-of-${args.id}`);
+
+        // Reparse reserved tags for this child
+        childTask.reserved = parseReservedTags(childTask.tags);
+        childTask.status = deriveStatus(childTask.section, childTask.reserved);
+
+        updatedChildren.push(childId);
+      }
+
+      if (updatedChildren.length > 0) {
+        changes.push(`children: ${updatedChildren.join(', ')}`);
+      }
     }
 
     // Handle depends-on relationship

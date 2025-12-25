@@ -134,37 +134,6 @@ Add a GitHub Actions workflow that allows quick task capture from the GitHub mob
 - Consider adding a special tag to these tasks so, once imported, we can give it special consideration
 - Use the prefix from config.yaml if accessible, or derive from existing task IDs, or default to 'task'
 
-## smb-72 Update documentation for centralized logging
-
-[p2][child-of-smb-55][depends-on-smb-71][logging]
-
-### Description
-
-##### Description
-
-Document the new centralized logging system for users and contributors.
-
-##### Tasks
-
-- Update SPEC.md with new log format details
-- Update CLAUDE.md with architecture changes
-- Add migration guide to docs/ or README
-- Document new 'simbl log' command options
-- Add troubleshooting section for log issues
-- Update CHANGELOG.md with this milestone
-- Add example log.ndjson snippets
-
-##### Dependencies
-
-- Requires integration testing (smb-70) completed
-
-##### Acceptance Criteria
-
-- All public documentation reflects new system
-- Migration path clearly explained
-- New features documented with examples
-- CHANGELOG updated
-
 ## smb-73 Create a one-shot command to set parent relationship
 
 [p2][cli]
@@ -211,6 +180,43 @@ task-log
 
 # Done
 
+## smb-72 Update documentation for centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-71][logging]
+
+### Description
+
+##### Description
+
+Document the new centralized logging system for users and contributors.
+
+##### Tasks
+
+- Update SPEC.md with new log format details
+- Update CLAUDE.md with architecture changes
+- Add migration guide to docs/ or README
+- Document new 'simbl log' command options
+- Add troubleshooting section for log issues
+- Update CHANGELOG.md with this milestone
+- Add example log.ndjson snippets
+
+##### Dependencies
+
+- Requires integration testing (smb-70) completed
+
+##### Acceptance Criteria
+
+- All public documentation reflects new system
+- Migration path clearly explained
+- New features documented with examples
+- CHANGELOG updated
+
+***
+
+task-log
+
+- 2025-12-25T08:55:15Z | Moved to Done
+
 ## smb-71 Integration testing for centralized logging
 
 [p2][child-of-smb-55][depends-on-smb-68][logging]
@@ -243,6 +249,7 @@ Test the complete logging system across CLI and web interfaces.
 - No regression in functionality
 - Migration works on real SIMBL projects
 - Documentation updated with testing results
+
 ***
 
 task-log

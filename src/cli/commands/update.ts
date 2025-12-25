@@ -2,7 +2,7 @@ import { defineCommand } from 'citty';
 import { readFileSync, writeFileSync } from 'fs';
 import { findSimblDir, getSimblPaths } from '../../core/config.ts';
 import { parseSimblFile, serializeSimblFile, findTaskById } from '../../core/parser.ts';
-import { appendOrBatchLogEntry, stripTaskLog } from '../../core/log.ts';
+import { appendLogToFile, getTaskLog } from '../../core/log.ts';
 
 /**
  * Normalize heading levels in content.
@@ -77,43 +77,57 @@ export const updateCommand = defineCommand({
     }
 
     const changes: string[] = [];
+    const logMessages: string[] = [];
 
     if (args.title) {
       task.title = args.title;
       changes.push('title');
-      // Add batched log entry for title change
-      task.content = appendOrBatchLogEntry(task.content, 'Title updated');
+      logMessages.push('Title updated');
     }
 
     if (args.content) {
-      // Strip existing log before replacing content, then add log entry
-      const existingLog = task.content;
       const userContent = normalizeHeadings(args.content);
-      // Preserve log section by stripping from old, adding to new
-      const logSection = existingLog.includes('\n***\n\ntask-log\n')
-        ? existingLog.slice(existingLog.indexOf('\n***\n\ntask-log\n'))
-        : '';
-      task.content = userContent + logSection;
-      task.content = appendOrBatchLogEntry(task.content, 'Content updated');
+      task.content = userContent;
       changes.push('content');
+      logMessages.push('Content updated');
     }
 
     if (args.append) {
       const normalizedAppend = normalizeHeadings(args.append);
-      const userContent = stripTaskLog(task.content);
-      if (userContent) {
-        task.content = userContent + '\n\n' + normalizedAppend;
+      if (task.content) {
+        task.content = task.content + '\n\n' + normalizedAppend;
       } else {
         task.content = normalizedAppend;
       }
-      // Restore log section and add entry
-      task.content = appendOrBatchLogEntry(task.content, 'Content updated');
       changes.push('content (appended)');
+      logMessages.push('Content updated');
     }
 
     // Write back
     const newContent = serializeSimblFile(file);
     writeFileSync(paths.tasks, newContent, 'utf-8');
+
+    // Log to centralized log file (with batching for repeated messages)
+    const now = new Date();
+    const recentLogs = await getTaskLog(simblDir, args.id);
+    const batchWindowMs = 30 * 60 * 1000; // 30 minutes
+
+    for (const logMessage of logMessages) {
+      // Check if same message was logged recently (for batching)
+      const recentSame = recentLogs.find(
+        (entry) =>
+          entry.message === logMessage &&
+          now.getTime() - entry.timestamp.getTime() < batchWindowMs
+      );
+
+      if (!recentSame) {
+        await appendLogToFile(simblDir, {
+          taskId: args.id,
+          timestamp: now,
+          message: logMessage,
+        });
+      }
+    }
 
     if (args.json) {
       console.log(JSON.stringify(task, null, 2));

@@ -2,7 +2,7 @@ import { defineCommand } from 'citty';
 import { readFileSync, writeFileSync } from 'fs';
 import { findSimblDir, getSimblPaths } from '../../core/config.ts';
 import { parseSimblFile, serializeSimblFile } from '../../core/parser.ts';
-import { appendLogEntry } from '../../core/log.ts';
+import { appendLogToFile } from '../../core/log.ts';
 
 export const doneCommand = defineCommand({
   meta: {
@@ -59,15 +59,19 @@ export const doneCommand = defineCommand({
     task.tags = task.tags.filter((t) => t !== 'in-progress');
     task.reserved.inProgress = false;
 
-    // Add log entry
-    task.content = appendLogEntry(task.content, 'Moved to Done');
-
     // Add to beginning of done section (most recent first)
     file.done.unshift(task);
 
     // Write back
     const newContent = serializeSimblFile(file);
     writeFileSync(paths.tasks, newContent, 'utf-8');
+
+    // Log to centralized log file
+    await appendLogToFile(simblDir, {
+      taskId: args.id,
+      timestamp: new Date(),
+      message: 'Moved to Done',
+    });
 
     if (args.json) {
       console.log(JSON.stringify(task, null, 2));

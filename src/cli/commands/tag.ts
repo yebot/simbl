@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import { findSimblDir, getSimblPaths } from '../../core/config.ts';
 import { parseSimblFile, serializeSimblFile, findTaskById } from '../../core/parser.ts';
 import { parseReservedTags, deriveStatus } from '../../core/task.ts';
-import { appendLogEntry } from '../../core/log.ts';
+import { appendLogToFile } from '../../core/log.ts';
 
 /**
  * Check if a tag is a priority tag (p1-p9)
@@ -83,16 +83,19 @@ const addTagCommand = defineCommand({
     task.reserved = parseReservedTags(task.tags);
     task.status = deriveStatus(task.section, task.reserved);
 
-    // Add log entry
-    if (removedPriority) {
-      task.content = appendLogEntry(task.content, `Priority changed from [${removedPriority}] to [${tag}]`);
-    } else {
-      task.content = appendLogEntry(task.content, `Added tag [${tag}]`);
-    }
-
     // Write back
     const newContent = serializeSimblFile(file);
     writeFileSync(paths.tasks, newContent, 'utf-8');
+
+    // Log to centralized log file
+    const logMessage = removedPriority
+      ? `Priority changed from [${removedPriority}] to [${tag}]`
+      : `Added tag [${tag}]`;
+    await appendLogToFile(simblDir, {
+      taskId: args.id,
+      timestamp: new Date(),
+      message: logMessage,
+    });
 
     if (args.json) {
       console.log(JSON.stringify(task, null, 2));
@@ -167,12 +170,16 @@ const removeTagCommand = defineCommand({
     task.reserved = parseReservedTags(task.tags);
     task.status = deriveStatus(task.section, task.reserved);
 
-    // Add log entry
-    task.content = appendLogEntry(task.content, `Removed tag [${tag}]`);
-
     // Write back
     const newContent = serializeSimblFile(file);
     writeFileSync(paths.tasks, newContent, 'utf-8');
+
+    // Log to centralized log file
+    await appendLogToFile(simblDir, {
+      taskId: args.id,
+      timestamp: new Date(),
+      message: `Removed tag [${tag}]`,
+    });
 
     if (args.json) {
       console.log(JSON.stringify(task, null, 2));

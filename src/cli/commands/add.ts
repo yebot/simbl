@@ -4,7 +4,7 @@ import { findSimblDir, getSimblPaths, loadConfig } from '../../core/config.ts';
 import { parseSimblFile, serializeSimblFile } from '../../core/parser.ts';
 import { generateNextId } from '../../utils/id.ts';
 import { parseTagLine, parseReservedTags, deriveStatus, type Task } from '../../core/task.ts';
-import { appendLogEntry } from '../../core/log.ts';
+import { appendLogToFile } from '../../core/log.ts';
 
 /**
  * Normalize heading levels in content.
@@ -105,9 +105,6 @@ export const addCommand = defineCommand({
       taskContent = `### Description\n\n${normalizedContent}`;
     }
 
-    // Add "Task created" log entry
-    taskContent = appendLogEntry(taskContent, 'Task created');
-
     // Create task object
     const reserved = parseReservedTags(tags);
     const task: Task = {
@@ -126,6 +123,13 @@ export const addCommand = defineCommand({
     // Write back
     const newContent = serializeSimblFile(file);
     writeFileSync(paths.tasks, newContent, 'utf-8');
+
+    // Log task creation to centralized log file
+    await appendLogToFile(simblDir, {
+      taskId: id,
+      timestamp: new Date(),
+      message: 'Task created',
+    });
 
     if (args.json) {
       console.log(JSON.stringify(task, null, 2));

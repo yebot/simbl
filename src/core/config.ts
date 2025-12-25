@@ -12,6 +12,8 @@ export interface SimblConfig {
   prefix: string;
   /** Preferred port for web UI (default: 3497) */
   webPort?: number;
+  /** Log format version (1 = embedded, 2 = centralized NDJSON) */
+  logVersion?: number;
 }
 
 /**

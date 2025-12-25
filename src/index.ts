@@ -17,6 +17,7 @@ import { serveCommand } from './cli/commands/serve.ts';
 import { syncCommand } from './cli/commands/sync.ts';
 import { acCommand } from './cli/commands/ac.ts';
 import { logCommand } from './cli/commands/log.ts';
+import { migrateLogsCommand } from './cli/commands/migrate-logs.ts';
 import { runTuiMenu } from './cli/tui/menu.ts';
 
 const main = defineCommand({
@@ -42,6 +43,7 @@ const main = defineCommand({
     sync: syncCommand,
     ac: acCommand,
     log: logCommand,
+    'migrate-logs': migrateLogsCommand,
   },
 });
 

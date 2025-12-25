@@ -181,37 +181,6 @@ Extend config.ts to support the new centralized logging system.
 - Default values set correctly
 - Existing configs still load without errors
 
-## smb-68 Enhance log command with new capabilities
-
-[p2][child-of-smb-55][depends-on-smb-61][logging]
-
-### Description
-
-##### Description
-
-Rewrite log.ts to read from centralized log file and add new features.
-
-##### Tasks
-
-- Replace parseTaskLog() with getTaskLog() from new API
-- Add filtering options: --event, --since, --until
-- Add format options: --json for machine-readable output
-- Add --all flag to show logs for all tasks (not just one)
-- Add stats summary: 'X events over Y days'
-- Improve output formatting with color/grouping
-- Update help text and examples
-
-##### Dependencies
-
-- Requires smb-61 (log operations) completed
-
-##### Acceptance Criteria
-
-- 'simbl log <task-id>' shows task history
-- 'simbl log --all' shows global activity
-- Filtering and formatting work as documented
-- Performance acceptable for large log files (stream if needed)
-
 ## smb-69 Update web server to use centralized logging
 
 [p2][child-of-smb-55][depends-on-smb-61][logging]
@@ -380,6 +349,69 @@ task-log
 
 # Done
 
+## smb-68 Enhance log command with new capabilities
+
+[p2][child-of-smb-55][depends-on-smb-61][logging]
+
+### Description
+
+##### Description
+
+Rewrite log.ts to read from centralized log file and add new features.
+
+##### Tasks
+
+- Replace parseTaskLog() with getTaskLog() from new API
+- Add filtering options: --event, --since, --until
+- Add format options: --json for machine-readable output
+- Add --all flag to show logs for all tasks (not just one)
+- Add stats summary: 'X events over Y days'
+- Improve output formatting with color/grouping
+- Update help text and examples
+
+##### Dependencies
+
+- Requires smb-61 (log operations) completed
+
+##### Acceptance Criteria
+
+- 'simbl log <task-id>' shows task history
+- 'simbl log --all' shows global activity
+- Filtering and formatting work as documented
+- Performance acceptable for large log files (stream if needed)
+
+##### Implementation Notes
+
+Rewrote log.ts command to use centralized log file (log.ndjson):
+
+- Uses getTaskLog() and readLogFile() instead of parseTaskLog()
+- Added --all flag to show logs for all tasks
+- Added --since and --until date filtering
+- Added --limit/-n to limit number of entries
+- Added stats summary (X events across Y tasks over Z days)
+- Grouped output by date with time-only entries
+- Shows task ID in brackets when using --all
+
+Example output:
+
+```
+simbl log smb-68
+Log for "smb-68"
+3 event(s) across 1 task(s) today
+
+2025-12-25
+----------
+  12:00:00 - Moved to Done
+  11:30:00 - Added tag [in-progress]
+  11:00:00 - Task created
+```
+***
+
+task-log
+
+- 2025-12-25T08:40:27Z | Moved to Done
+- 2025-12-25T08:40:23Z | Content updated
+
 ## smb-74 Bug: JSON output contains invalid control characters
 
 [p1][bug][cli][json]
@@ -438,6 +470,7 @@ Tests: 12 test cases in sanitize.test.ts covering:
 - Tab, newline, CR are preserved
 - Nested objects and arrays are handled
 - Complex task structures work correctly
+
 ***
 
 task-log

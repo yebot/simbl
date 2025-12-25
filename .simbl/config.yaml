@@ -1,3 +1,4 @@
 name: simbl.dev
 prefix: smb
 webPort: 3277
+logVersion: 2

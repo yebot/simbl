@@ -4,13 +4,6 @@
 
 [needs-refinement][project:core][on-ice]
 
-***
-
-task-log
-
-- 2025-12-20T17:41:00Z | Added tag [on-ice]
-- 2025-12-20T17:40:56Z | Removed priority [p5]
-
 ## smb-25 Consolidate inline styles into CSS classes in web UI
 
 [depends-on-smb-24][project:web][on-ice]
@@ -37,14 +30,6 @@ Extract ~50 inline style attributes from templates.ts and page.ts into proper CS
 #### Depends on
 
 smb-24 (template tag refactor should be done first)
-
-***
-
-task-log
-
-- 2025-12-20T17:41:14Z | Added tag [on-ice]
-- 2025-12-20T17:41:07Z | Removed priority [p3]
-- 2025-12-20T03:17:10Z | Priority set to [p3]
 
 ## smb-26 Add automated XSS prevention tests for web UI
 
@@ -73,14 +58,6 @@ Add tests to verify XSS prevention in web UI templates.
 #### Depends on
 
 smb-24 (template tag refactor should be done first)
-
-***
-
-task-log
-
-- 2025-12-20T17:41:27Z | Added tag [on-ice]
-- 2025-12-20T17:41:23Z | Removed priority [p3]
-- 2025-12-20T03:17:14Z | Priority set to [p3]
 
 ## smb-37 Add simbl sync command for pulling remote task changes
 
@@ -114,13 +91,6 @@ simbl sync
 - Conflicts in tasks.md → show warning, let user resolve
 - No changes → 'Already up to date'
 - Dirty working tree → warn but proceed (or require clean?)
-
-***
-
-task-log
-
-- 2025-12-20T17:40:44Z | Added tag [on-ice]
-- 2025-12-20T17:40:33Z | Removed priority [p4]
 
 ## smb-36 Add GitHub workflow_dispatch for mobile task capture
 
@@ -164,13 +134,6 @@ Add a GitHub Actions workflow that allows quick task capture from the GitHub mob
 - Consider adding a special tag to these tasks so, once imported, we can give it special consideration
 - Use the prefix from config.yaml if accessible, or derive from existing task IDs, or default to 'task'
 
-***
-
-task-log
-
-- 2025-12-20T17:41:37Z | Added tag [on-ice]
-- 2025-12-20T17:41:32Z | Removed priority [p4]
-
 ## smb-59 Define centralized log format and types
 
 [p2][child-of-smb-55][logging]
@@ -193,13 +156,6 @@ Define TypeScript types and interfaces for the new centralized log format.
 - All event types from current system are mapped
 - Type definitions support future extensibility
 - Clear documentation of JSON schema
-
-***
-
-task-log
-
-- 2025-12-22T20:18:29Z | Added tag [logging]
-- 2025-12-22T15:58:43Z | Task created
 
 ## smb-60 Add log file path and version to config
 
@@ -224,49 +180,6 @@ Extend config.ts to support the new centralized logging system.
 - Config type includes new fields
 - Default values set correctly
 - Existing configs still load without errors
-
-***
-
-task-log
-
-- 2025-12-22T20:18:29Z | Added tag [logging]
-- 2025-12-22T15:58:43Z | Task created
-
-## smb-62 Build migration utility for existing logs
-
-[p1][child-of-smb-55][logging]
-
-### Description
-
-##### Description
-
-Create migration function to extract embedded logs from tasks.md and convert to centralized format.
-
-##### Tasks
-
-- Detect if migration needed (check for '***\n\ntask-log\n' in any task content)
-- Parse existing embedded logs from all tasks
-- Convert to new LogEntry format with proper timestamps
-- Write to log.ndjson file
-- Strip log sections from tasks.md
-- Update config.yaml with logVersion: 2
-- Add migration command: 'simbl migrate-logs' for manual trigger
-- Auto-migrate on first command with logVersion: 1
-
-##### Acceptance Criteria
-
-- No data loss during migration
-- Preserves all timestamps and event history
-- Tasks.md cleaned of log markers
-- Idempotent (safe to run multiple times)
-- Migration logged/reported to user
-
-***
-
-task-log
-
-- 2025-12-22T20:18:30Z | Added tag [logging]
-- 2025-12-22T15:58:44Z | Task created
 
 ## smb-63 Update add command to use centralized logging
 
@@ -295,13 +208,6 @@ Migrate add.ts from embedded logging to centralized log file.
 - No log markers in tasks.md
 - Task creation timestamp preserved
 
-***
-
-task-log
-
-- 2025-12-22T20:18:30Z | Added tag [logging]
-- 2025-12-22T15:59:22Z | Task created
-
 ## smb-64 Update done command to use centralized logging
 
 [p2][child-of-smb-55][depends-on-smb-61][logging]
@@ -328,13 +234,6 @@ Migrate done.ts from embedded logging to centralized log file.
 - 'simbl done' writes to log.ndjson
 - No log markers in tasks.md
 - Completion timestamp preserved
-
-***
-
-task-log
-
-- 2025-12-22T20:18:30Z | Added tag [logging]
-- 2025-12-22T15:59:22Z | Task created
 
 ## smb-65 Update cancel command to use centralized logging
 
@@ -363,13 +262,6 @@ Migrate cancel.ts from embedded logging to centralized log file.
 - No log markers in tasks.md
 - Cancellation timestamp preserved
 
-***
-
-task-log
-
-- 2025-12-22T20:18:30Z | Added tag [logging]
-- 2025-12-22T15:59:23Z | Task created
-
 ## smb-66 Update tag command to use centralized logging
 
 [p2][child-of-smb-55][depends-on-smb-61][logging]
@@ -397,13 +289,6 @@ Migrate tag.ts from embedded logging to centralized log file.
 - 'simbl tag' operations write to log.ndjson
 - All tag change types properly logged
 - No log markers in tasks.md
-
-***
-
-task-log
-
-- 2025-12-22T20:18:31Z | Added tag [logging]
-- 2025-12-22T15:59:23Z | Task created
 
 ## smb-67 Update update command to use centralized logging
 
@@ -434,13 +319,6 @@ Migrate update.ts from embedded logging to centralized log file.
 - Batched updates still create single log entry where appropriate
 - No log markers in tasks.md
 - Metadata includes what changed
-
-***
-
-task-log
-
-- 2025-12-22T20:18:31Z | Added tag [logging]
-- 2025-12-22T15:59:23Z | Task created
 
 ## smb-68 Enhance log command with new capabilities
 
@@ -473,13 +351,6 @@ Rewrite log.ts to read from centralized log file and add new features.
 - Filtering and formatting work as documented
 - Performance acceptable for large log files (stream if needed)
 
-***
-
-task-log
-
-- 2025-12-22T20:18:31Z | Added tag [logging]
-- 2025-12-22T15:59:24Z | Task created
-
 ## smb-69 Update web server to use centralized logging
 
 [p2][child-of-smb-55][depends-on-smb-61][logging]
@@ -509,13 +380,6 @@ Migrate web/server.ts from embedded logging to centralized log file for all web 
 - No log markers in tasks.md
 - Performance acceptable (file watch not too heavy)
 
-***
-
-task-log
-
-- 2025-12-22T20:18:31Z | Added tag [logging]
-- 2025-12-22T15:59:24Z | Task created
-
 ## smb-70 Update web templates to display centralized logs
 
 [p2][child-of-smb-55][depends-on-smb-61][logging]
@@ -544,13 +408,6 @@ Migrate web/templates.ts from parseTaskLog() to new getTaskLog() API.
 - All event types display correctly
 - Timestamps formatted properly
 - UI matches or improves on old design
-
-***
-
-task-log
-
-- 2025-12-22T20:18:31Z | Added tag [logging]
-- 2025-12-22T15:59:25Z | Task created
 
 ## smb-71 Integration testing for centralized logging
 
@@ -585,13 +442,6 @@ Test the complete logging system across CLI and web interfaces.
 - Migration works on real SIMBL projects
 - Documentation updated with testing results
 
-***
-
-task-log
-
-- 2025-12-22T20:18:32Z | Added tag [logging]
-- 2025-12-22T15:59:25Z | Task created
-
 ## smb-72 Update documentation for centralized logging
 
 [p2][child-of-smb-55][depends-on-smb-71][logging]
@@ -623,13 +473,6 @@ Document the new centralized logging system for users and contributors.
 - New features documented with examples
 - CHANGELOG updated
 
-***
-
-task-log
-
-- 2025-12-22T20:18:32Z | Added tag [logging]
-- 2025-12-22T15:59:25Z | Task created
-
 ## smb-73 Create a one-shot command to set parent relationship
 
 [p2][cli]
@@ -646,13 +489,129 @@ perhaps its like this:
 
 ... so we can establish multiple children in one shot
 
+## smb-74 Bug: JSON output contains invalid control characters
+
+[p1][bug][cli][json]
+
+### Description
+
+##### Description
+
+`simbl list --json` outputs JSON that cannot be parsed by external tools due to invalid/unescaped control characters in task content.
+
+##### Error
+
+```
+json.decoder.JSONDecodeError: Invalid control character at: line 128 column 62943 (char 80321)
+```
+
+##### Reproduction
+
+```bash
+simbl list --project interactive-plugin-workflow --json | python3 -c 'import json,sys; json.load(sys.stdin)'
+```
+
+##### Root Cause (suspected)
+
+Task content likely contains raw control characters (newlines, tabs, etc.) that are not being properly escaped when serialized to JSON. The `JSON.stringify()` should handle this, but something may be injecting raw characters.
+
+##### Investigation Steps
+
+1. Identify which task(s) contain the problematic characters
+2. Find where in the content the control character exists (char 80321)
+3. Trace the JSON serialization path in `src/cli/commands/list.ts`
+4. Ensure all string content is properly escaped before JSON output
+
+##### Acceptance Criteria
+
+- [ ] `simbl list --json` output is valid JSON parseable by any JSON parser
+- [ ] Control characters in task content are properly escaped
+- [ ] Add test case for tasks with special characters
+
+# Done
+
+## smb-62 Build migration utility for existing logs
+
+[p1][child-of-smb-55][logging]
+
+### Description
+
+##### Description
+
+Create migration function to extract embedded logs from tasks.md and convert to centralized format.
+
+##### Tasks
+
+- Detect if migration needed (check for '***\n\ntask-log\n' in any task content)
+- Parse existing embedded logs from all tasks
+- Convert to new LogEntry format with proper timestamps
+- Write to log.ndjson file
+- Strip log sections from tasks.md
+- Update config.yaml with logVersion: 2
+- Add migration command: 'simbl migrate-logs' for manual trigger
+- Auto-migrate on first command with logVersion: 1
+
+##### Acceptance Criteria
+
+- No data loss during migration
+- Preserves all timestamps and event history
+- Tasks.md cleaned of log markers
+- Idempotent (safe to run multiple times)
+- Migration logged/reported to user
+
+##### Implementation Progress
+
+**Tests Written (TDD):**
+
+- Created comprehensive test suite in `src/core/migrate.test.ts` (832 lines, 21 test cases)
+- Tests cover both `needsMigration()` and `migrateTaskLogs()` functions
+- Tests verify all acceptance criteria including data integrity, idempotency, and error handling
+- Updated `SimblConfig` interface to include `logVersion?: number` field
+- All tests fail as expected (TDD requirement met - tests written BEFORE implementation)
+
+**Test Coverage:**
+
+needsMigration() - 7 tests:
+
+- Empty tasks.md
+- Already migrated (logVersion: 2)
+- Tasks with embedded logs (needs migration)
+- Mixed scenarios (with/without logs)
+- Edge cases (missing files)
+
+migrateTaskLogs() - 12 tests:
+
+- Single task migration
+- Multiple tasks migration
+- Content preservation
+- Log format conversion
+- Config updates (logVersion: 2)
+- Idempotency verification
+- Mixed tasks (some with logs, some without)
+- Edge cases (empty sections, minimal tasks, formatting)
+- Correct counts in result
+
+MigrationResult type - 2 tests:
+
+- Type structure validation
+- Error handling
+
+**Next Steps:**
+Ready for implementation of `migrate.ts` module to make tests pass.
+
+##### Implementation Notes
+
+- Created `src/core/migrate.ts` with `needsMigration()` and `migrateTaskLogs()`
+- Added `simbl migrate-logs` command with --json and --force flags
+- Added `logVersion` field to config (set to 2 after migration)
+- Successfully migrated 1199 log entries from 57 tasks in this project
+- Used TDD: 21 tests written first, then implementation
 ***
 
 task-log
 
-- 2025-12-22T16:11:19Z | Task created
-
-# Done
+- 2025-12-25T08:02:20Z | Moved to Done
+- 2025-12-25T08:02:15Z | Content updated
 
 ## smb-61 Implement centralized log file operations
 
@@ -689,12 +648,6 @@ Rewrite core/log.ts to use append-only NDJSON file instead of embedding in task 
 - Implemented `getTaskLog()` with filtering and newest-first sorting
 - Used TDD: wrote 18 tests first, then implemented to pass
 - Log file path: `.simbl/log.ndjson`
-***
-
-task-log
-
-- 2025-12-25T07:46:49Z | Moved to Done
-- 2025-12-25T07:46:44Z | Content updated
 
 ## smb-57 Discovery: web URLs
 
@@ -897,17 +850,6 @@ The implementation is straightforward because:
 
 **Next step:** Create implementation subtasks if desired.
 
-***
-
-task-log
-
-- 2025-12-22T21:53:51Z | Moved to Done
-- 2025-12-22T21:53:51Z | Added tag [refined]
-- 2025-12-22T21:53:44Z | Content updated
-- 2025-12-22T21:51:08Z | Added to project [project:discovery]
-- 2025-12-22T21:46:42Z | Title updated
-- 2025-12-21T19:45:55Z | Task created
-
 ## smb-55 Discovery: moving logging to a separate file
 
 [p1][core][logging][refined][project:discovery]
@@ -1043,18 +985,6 @@ With centralized logs we could add:
 
 **Next step:** Create implementation subtasks for this work.
 
-***
-
-task-log
-
-- 2025-12-22T21:51:20Z | Added to project [project:discovery]
-- 2025-12-22T15:57:04Z | Content updated
-- 2025-12-22T08:56:38Z | Moved to Done
-- 2025-12-22T08:56:33Z | Added tag [refined]
-- 2025-12-22T08:56:24Z | Content updated
-- 2025-12-20T18:49:44Z | Content updated
-- 2025-12-20T18:47:00Z | Task created
-
 ## smb-58 add help command flag
 
 [p1][cli]
@@ -1069,23 +999,9 @@ Fixed in src/index.ts by adding detection for help/version flags (`-h`, `--help`
 
 Note: `-v` is not supported by citty as a short form of `--version` (shows help with error instead). Only `--version` works.
 
-***
-
-task-log
-
-- 2025-12-22T08:39:58Z | Moved to Done
-- 2025-12-22T08:39:58Z | Content updated
-
 ## smb-54 Disable GIthub Actions
 
 [p1][cicd]
-
-***
-
-task-log
-
-- 2025-12-20T17:42:28Z | Moved to Done
-- 2025-12-20T04:02:48Z | Task created
 
 ## smb-53 Confirmations should use PicoCSS Modal
 
@@ -1096,13 +1012,6 @@ Clicking 'Archive' should use PicoCSS modal
 Clicking 'Cancel' should use PicoCSS modal
 
 https://picocss.com/docs/modal
-
-***
-
-task-log
-
-- 2025-12-20T03:34:32Z | Moved to Done
-- 2025-12-20T03:23:35Z | Task created
 
 ## smb-39 Show status badges for all relation links in task modal
 
@@ -1149,22 +1058,9 @@ In the task modal Relations section, show status badges (in-progress, done, canc
 - [ ] Badge does not break layout on mobile
 - [ ] Clicking relation link still opens that task's modal
 
-***
-
-task-log
-
-- 2025-12-20T03:21:03Z | Moved to Done
-
 ## smb-52 Bug: Canceling a task in both CLI and Web should also move it to Done
 
 [p1][bug]
-
-***
-
-task-log
-
-- 2025-12-20T03:19:01Z | Moved to Done
-- 2025-12-20T03:16:00Z | Task created
 
 ## smb-51 Task IDs in Archive duplication prevention
 
@@ -1174,13 +1070,6 @@ When a task is moved to archive, its task ID no longer appears in the Backlog or
 
 When a new tasks is created, there should be a check on all IDs in BOTH files to ensure no duplicate IDs are created.
 
-***
-
-task-log
-
-- 2025-12-20T03:18:29Z | Moved to Done
-- 2025-12-20T03:04:44Z | Task created
-
 ## smb-15 Add 'No Project' filter to web UI
 
 [p2][feature][canceled][canceled]
@@ -1188,12 +1077,6 @@ task-log
 ### Description
 
 The filter section above the table should have a button that only shows tasks that do not belong to a project.
-
-***
-
-task-log
-
-- 2025-12-20T03:16:14Z | Marked as canceled
 
 ## smb-8 Fix CLI cancel to move task to Done section
 
@@ -1221,12 +1104,6 @@ The CLI cancel command exists but does not move tasks to the Done section. Fix t
 
 Mirror the pattern from `done.ts` (lines 45-57) for moving tasks between sections. Also add validation to reject canceling already-done tasks.
 
-***
-
-task-log
-
-- 2025-12-20T03:13:12Z | Moved to Done
-
 ## smb-40 Updates to CLAUDE.md snippet
 
 [p1][claude.md]
@@ -1236,33 +1113,15 @@ update `const CLAUDE_MD_SECTION`:
 1. give it knowledge of the file path location of `tasks.md`, `config.yaml`, `tasks-archive.md`
 2. add an IMPORTANT instruction to always proactively update task descriptions when new information, surprises, course-corrections or architectural decisions are made. And, provide an example CLI command that does this.
 
-***
-
-task-log
-
-- 2025-12-20T03:09:40Z | Moved to Done
-
 ## smb-41 the CLAUDE.md init update should mention task ID format
 
 [p2][init]
 
 if the config has a custom prefix, CLAUDE.md should inform accordingly, if no prefix specified in config, default 'task-' prefix should be mentioned.
 
-***
-
-task-log
-
-- 2025-12-20T03:09:39Z | Moved to Done
-
 ## smb-42 inti wizard should ask if the user wants to specify a custom port
 
 [p1][init]
-
-***
-
-task-log
-
-- 2025-12-20T03:09:39Z | Moved to Done
 
 ## smb-43 Expand implementation of json output flag
 
@@ -1272,25 +1131,9 @@ For every CLI command that an agentic AI tool might run on SIMBL, there should b
 
 ##### Implementation Notes\nAdded --json flag to: done, cancel, update, relate, unrelate, tag add, tag remove
 
-***
-
-task-log
-
-- 2025-12-20T03:09:39Z | Moved to Done
-
 ## smb-49 Test task for logging
 
 [feature][p2]
-
-***
-
-task-log
-
-- 2025-12-20T03:09:39Z | Moved to Done
-- 2025-12-17T22:38:32Z | Moved to Done
-- 2025-12-17T22:38:27Z | Priority changed from [p1] to [p2]
-- 2025-12-17T22:38:23Z | Added tag [feature]
-- 2025-12-17T22:37:51Z | Task created
 
 ## smb-47 Task log: auto-generate on mutations
 
@@ -1349,12 +1192,6 @@ Update `simbl usage` with log command documentation.
 - [ ] `simbl usage` documents log command
 - [ ] TypeScript compiles (`bun run typecheck`)
 
-***
-
-task-log
-
-- 2025-12-20T03:09:39Z | Moved to Done
-
 ## smb-46 Task log: markdown format and parser
 
 [p2][project:core][child-of-smb-28]
@@ -1369,267 +1206,13 @@ Implement the core parsing layer for task log sections. This is the foundation f
 
 ###### Log Section Format
 
-`````markdown
-***
-
-task-log
-
-- 2025-12-20T03:09:39Z | Moved to Done
-- 2025-12-17T14:32:00Z | Message here
-- 2025-12-17T14:30:00Z | Another message
-
-## smb-45 Acceptance Criteria CLI Additions
-
-[p1][cli]
-
-as an AI user, I should be able to add an acceptance criterion to
-
-All acceptance criteria commands should have logic that looks for or creates a standard acceptance criteria header in the content of a task so it can always be found and be consistent.
-
-The doctor command should verify acceptance criteria headers and formatting.
-
-Example acceptance criteria commands
-
-- `simbl ac add task-1 "All tests pass" ` // adds one acceptance criterion to task-1
-
-- `simbl ac add task-1 "All tests pass" "Background is now red" "Test coverage > 80%" ` // adds multiple acceptance criterion to task-1 (Variadic positional arguments)
-
-- `simbl ac list task-1` // displays all acceptance criteria for task-1 as a numbered list
-
-- `simbl ac meets task-1 1` // updates task-1's acceptance criterion #1 by making it checked `- [x]`
-
-- `simbl ac update task-1 2 "Background is now blue"` // updates task-1's acceptance criterion #2 by changing its description
-
-- `simbl ac fails task-1 3` // updates task-1's acceptance criterion #3 by making it unchecked `- [ ]`
-
-- `simbl ac delete task-1 4` // deletes task-1's acceptance criterion #4
-
-ALL commands when successful should respond with the up-to-date entire list of acceptance criteria. All commands should support adding `--json` so the output is json.
-
-The `simbl usage` command should provide complete instructions on how to us `simbl ac` commands.
-
-### Acceptance Criteria
-
-- [x] All 6 ac subcommands work correctly
-- [x] Usage docs updated
-- [x] Doctor validates AC format
-
-***
-
-task-log
-
-- 2025-12-20T03:09:39Z | Moved to Done
-
-## smb-34 Improve *.bun-build file handling
-
-[p1][bun]
-
-1. Config Bun to NOT put *.bun-build files in the root
-
-2. Make sure *.bun-build files are gitignore'd.
-
-***
-
-task-log
-
-- 2025-12-20T03:09:39Z | Moved to Done
-
-## smb-30 Update sorting for the HTMX table of tasks
-
-[web][ui][p1]
-
-1. Always show [done] items unless filtered out by 'in-progress' filter
-
-2. Change the default sort
-
-Sort by header DESC (# Header or # Done) The tasks under `# Header` will come before the tasks under `# Done`
-Then by task-ID ASC
-
-3. Change the sort behavior
-
-If the user clicks the ID sort table heading from ASC to DESC,
-Sort by header DESC, then by task-ID DESC
-
-If the user clicks the ID sort table heading from DESC to ASC,
-Sort by header DESC, then by task-ID ASC
-
-If the user clicks the Task sort table heading from ASC to DESC,
-Sort by header DESC, then by Task Title DESC
-
-If the user clicks the Task sort table heading from DESC to ASC,
-Sort by header DESC, then by Task Title ASC
-
-FOLLOW UP! There's still default behavior on initial page load that omits [done] tasks
-
-***
-
-task-log
-
-- 2025-12-20T03:09:38Z | Moved to Done
-
-## smb-28 Add Task Log Feature
-
-[p2][project:core][refined]
-
-##### Overview
-
-Add an automatic changelog/audit trail for individual tasks that records all modifications. Log entries are stored in a designated section of task content, hidden from the user-facing Content textarea but viewable via a toggle in the task modal.
-
-##### Technical Approach
-
-###### Markdown Format
-
-Use horizontal rule + keyword pattern to delineate log section:
-
 ````markdown
-##### Description
-User content here...
-***
-
-task-log
-
-- 2025-12-20T03:09:38Z | Moved to Done
-- 2025-12-17T23:55:08Z | Title updated
-- 2025-12-17T14:32:00Z | Priority changed from P2 to P1
-- 2025-12-17T14:30:00Z | Added tag [feature]
-- 2025-12-17T14:28:00Z | Task created
-- 2025-12-17T23:18:47Z | Moved to Done
-
-## smb-27 Add 'Backlog' Status filter button
-
-[p1][project:web]
-
-### Description
-
-Add a "Backlog" status filter button alongside the existing "In-Progress" and "Done" filters.
-
-### Requirements
-
-- Filter shows tasks that do NOT have `[in-progress]` or `[done]` tags (pure backlog items)
-- Clicking a status filter clears any active project filter (mutual exclusivity with project filters)
-- Button styling matches existing status filter buttons
-
-### Acceptance Criteria
-
-- [ ] "Backlog" filter button appears in status filter section
-- [ ] Clicking "Backlog" shows only tasks without `[in-progress]` or `[done]` tags
-- [ ] Clicking "Backlog" clears any active project filter
-- [ ] Button uses consistent styling with other status filters
-
-***
-
-task-log
-
-- 2025-12-20T03:09:38Z | Moved to Done
-
-## smb-22 Simbl plugin: update all commands that accept a task-id argument
-
-[plugin]
-
-For any commands that expects a task ID (task-##) as its argument. If the user supplies only digits, (Ex. "9"), assume they want you to refer to "task-9" (or "abc-9" if the config task prefix is "abc")
-
-***
-
-task-log
-
-- 2025-12-20T03:09:38Z | Moved to Done
-
-## smb-21 Web UI Task modal: make entire Task ID clickable (to clipboard)
-
-[web][p3][project:web][p5]
-
-- remove the clipboard icon.
-- make the entire "badge" clickable.
-- inform user it was copied to clipboard.
-
-***
-
-task-log
-
-- 2025-12-20T03:09:38Z | Moved to Done
-
-## smb-20 Add 'Mark Canceled' button to Web UI task modal
-
-[p1][web][ui][depends-on-smb-8][refined][project:web]
-
-Add a cancel button to the Web UI task modal for backlog and in-progress tasks.
-
-#### Requirements
-
-- Add "Mark Canceled" button in task modal for backlog and in-progress tasks
-- Button should use red outline style (matches "Send to Archive" pattern)
-- Show confirmation dialog before canceling
-- After cancel, task moves to Done section with [canceled] tag
-- Canceled tasks appear under "done" filter (no separate filter needed)
-- When sending a canceled task back to in-progress, auto-remove the [canceled] tag
-
-#### Acceptance Criteria
-
-- [ ] "Mark Canceled" button appears in task modal for backlog tasks
-- [ ] "Mark Canceled" button appears in task modal for in-progress tasks
-- [ ] "Mark Canceled" button does NOT appear for done tasks
-- [ ] Clicking button shows confirmation: "Mark this task as canceled and move it to Done?"
-- [ ] After confirming, task moves to Done section with [canceled] tag
-- [ ] Task modal updates to show "canceled" status with red badge
-- [ ] Task list updates via WebSocket broadcast
-- [ ] Sending canceled task to in-progress removes the [canceled] tag automatically
-
-#### Implementation Notes
-
-##### New endpoint in server.ts
-
-Add POST /task/:id/cancel following the pattern of /task/:id/done (lines 354-376):
-
-```typescript
-if (path.match(/^\/task\/[^/]+\/cancel$/) && req.method === "POST") {
-  const id = path.split("/")[2];
-  // Find task in backlog, add [canceled] tag, move to done
-  // Return updated modal HTML
-}
-`````
-
-##### Button in templates.ts
-
-Add to renderTaskModal() status action row (around line 627-652):
-
-```html
-<button
-  hx-post="/task/${taskId}/cancel"
-  hx-target="#modal-container"
-  hx-swap="innerHTML"
-  hx-confirm="Mark this task as canceled and move it to Done?"
-  class="outline"
-  style="padding: 4px 12px; font-size: 0.8em; color: var(--pico-del-color); border-color: var(--pico-del-color);"
->
-  Mark Canceled
-</button>
-```
-
-##### Auto-remove [canceled] on send to in-progress
-
-Modify the /task/:id/in-progress handler to remove the [canceled] tag when present.
-
-##### user reminders
-
-remind them to use this feat on smb-6 and smb-15
-
-***
-
-task-log
-
-- 2025-12-20T03:09:38Z | Moved to Done
 
 ## smb-18 Add auto-complete to new tag input field
 
 [feature][p3][project:web]
 
 Wherever there exists a tag input field, auto-complete functionality should exist where the auto-complete has knowledge of all existing tags in tasks.md as well as reserved special tags so its easier to add tags to a task w/o making mistakes.
-
-***
-
-task-log
-
-- 2025-12-20T03:09:38Z | Moved to Done
 
 ## smb-17 Add priority selection UI to the 'Add Task' modal
 
@@ -1638,14 +1221,6 @@ task-log
 Allow the user to specify which Priority tag to add to a task in the 'Add Task' modal.
 
 This field is optional.
-
-***
-
-task-log
-
-- 2025-12-20T03:09:38Z | Moved to Done
-- 2025-12-18T01:00:56Z | Priority changed from [p3] to [p1]
-- 2025-12-18T01:00:54Z | Priority changed from [p2] to [p3]
 
 ## smb-16 Add webPort config option with serve command warning
 
@@ -1686,12 +1261,6 @@ Add a `webPort` config option to `.simbl/config.yaml` that specifies the preferr
 - [ ] When actual bound port differs from preferred, a warning is displayed
 - [ ] Warning includes both preferred and actual port numbers
 - [ ] Default port remains 3497 when not configured
-
-***
-
-task-log
-
-- 2025-12-20T03:09:37Z | Moved to Done
 
 ## smb-14 Project UX Refinements
 
@@ -1764,23 +1333,11 @@ if (projects.length === 0) return "";
 - [ ] Editing priority still shows "Saved ✓" notification (regression)
 - [ ] Editing tags still shows "Saved ✓" notification (regression)
 
-***
-
-task-log
-
-- 2025-12-20T03:09:37Z | Moved to Done
-
 ## smb-12 Task list project badge should not navigate to project view
 
 ### Description
 
 Clicking project badge in the task list should NOT go to project view. Clicking the row always opens the modal. Follow-up to smb-2.
-
-***
-
-task-log
-
-- 2025-12-20T03:09:37Z | Moved to Done
 
 ## smb-11 Add copy-to-clipboard button for task ID in modal
 
@@ -1789,12 +1346,6 @@ task-log
 ### Description
 
 When viewing a task in the modal, there should be a small icon next to the task ID that, when clicked or tapped, copies the task ID to the clipboard.
-
-***
-
-task-log
-
-- 2025-12-20T03:09:37Z | Moved to Done
 
 ## smb-10 Add project filter section to web UI
 
@@ -1828,14 +1379,6 @@ Add a dedicated project filter section to the web UI, similar to priority/status
 - [ ] Project filter combines with priority/status/tag filters (AND logic)
 - [ ] URL reflects active project filter
 - [ ] "All Projects" or clear option to remove filter
-
-***
-
-task-log
-
-- 2025-12-20T03:09:37Z | Moved to Done
-- 2025-12-17T23:59:57Z | Priority changed from [p4] to [p3]
-- 2025-12-17T23:59:48Z | Priority changed from [p2] to [p4]
 
 ## smb-24 Refactor web UI using html-template-tag
 
@@ -1888,15 +1431,6 @@ Refactor src/web/templates.ts and src/web/page.ts to use `html-template-tag` for
 
 https://www.npmjs.com/package/html-template-tag
 
-***
-
-task-log
-
-- 2025-12-18T09:58:42Z | Moved to Done
-- 2025-12-17T23:54:13Z | Content updated
-- 2025-12-17T23:11:50Z | Content updated
-- 2025-12-17T23:11:50Z | Content updated
-
 ## smb-50 A task's task-log web show/hide behavior
 
 [p1][project:web][bug]
@@ -1907,1102 +1441,11 @@ in the web UI, a separate, hidden-by-default, read-only textarea that displays t
 
 Logging nitpick: the logging logic should never log "Priority changed from [p1] to [p1]".
 
-***
-
-task-log
-
-- 2025-12-18T00:13:41Z | Moved to Done
-- 2025-12-18T00:09:28Z | Added tag [bug]
-- 2025-12-18T00:09:19Z | Removed tag [web]
-- 2025-12-18T00:09:14Z | Content updated
-- 2025-12-18T00:08:34Z | Priority changed from [p1] to [p1]
-- 2025-12-18T00:08:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:32Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:31Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:29Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:19Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:06Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:04Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:02Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:48Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:37Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:35Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:33Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:27Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:26Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:21Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:09Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:08Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:58Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Title updated
-- 2025-12-18T00:06:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:49Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:44Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:40Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:38Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:09:10Z | Content updated
-- 2025-12-18T00:08:34Z | Priority changed from [p1] to [p1]
-- 2025-12-18T00:08:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:32Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:31Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:29Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:19Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:06Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:04Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:02Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:48Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:37Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:35Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:33Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:27Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:26Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:21Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:09Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:08Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:58Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Title updated
-- 2025-12-18T00:06:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:49Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:44Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:40Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:38Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:09:09Z | Content updated
-- 2025-12-18T00:08:34Z | Priority changed from [p1] to [p1]
-- 2025-12-18T00:08:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:32Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:31Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:29Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:19Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:06Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:04Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:02Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:48Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:37Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:35Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:33Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:27Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:26Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:21Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:09Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:08Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:58Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Title updated
-- 2025-12-18T00:06:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:49Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:44Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:40Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:38Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:09:09Z | Content updated
-- 2025-12-18T00:08:34Z | Priority changed from [p1] to [p1]
-- 2025-12-18T00:08:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:32Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:31Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:29Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:19Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:06Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:04Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:02Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:48Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:37Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:35Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:33Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:27Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:26Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:21Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:09Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:08Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:58Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Title updated
-- 2025-12-18T00:06:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:49Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:44Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:40Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:38Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:09:08Z | Content updated
-- 2025-12-18T00:08:34Z | Priority changed from [p1] to [p1]
-- 2025-12-18T00:08:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:32Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:31Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:29Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:19Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:06Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:04Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:02Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:48Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:37Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:35Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:33Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:27Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:26Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:21Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:09Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:08Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:58Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Title updated
-- 2025-12-18T00:06:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:49Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:44Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:40Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:38Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:09:06Z | Content updated
-- 2025-12-18T00:08:34Z | Priority changed from [p1] to [p1]
-- 2025-12-18T00:08:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:32Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:31Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:29Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:19Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:06Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:04Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:02Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:48Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:37Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:35Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:33Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:27Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:26Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:21Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:09Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:08Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:58Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Title updated
-- 2025-12-18T00:06:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:49Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:44Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:40Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:38Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:09:03Z | Content updated
-- 2025-12-18T00:08:34Z | Priority changed from [p1] to [p1]
-- 2025-12-18T00:08:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:32Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:31Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:29Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:19Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:06Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:04Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:02Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:48Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:37Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:35Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:33Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:27Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:26Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:21Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:09Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:08Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:58Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Title updated
-- 2025-12-18T00:06:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:49Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:44Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:40Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:38Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:58Z | Content updated
-- 2025-12-18T00:08:34Z | Priority changed from [p1] to [p1]
-- 2025-12-18T00:08:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:32Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:31Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:29Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:19Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:06Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:04Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:02Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:48Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:37Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:35Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:33Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:27Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:26Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:21Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:09Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:08Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:58Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Title updated
-- 2025-12-18T00:06:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:49Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:44Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:40Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:38Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:57Z | Content updated
-- 2025-12-18T00:08:34Z | Priority changed from [p1] to [p1]
-- 2025-12-18T00:08:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:32Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:31Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:29Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:19Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:06Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:04Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:02Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:48Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:37Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:35Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:33Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:27Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:26Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:21Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:09Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:08Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:58Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Title updated
-- 2025-12-18T00:06:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:49Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:44Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:40Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:38Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:56Z | Content updated
-- 2025-12-18T00:08:34Z | Priority changed from [p1] to [p1]
-- 2025-12-18T00:08:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:32Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:31Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:29Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:19Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:06Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:04Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:02Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:48Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:37Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:35Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:33Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:27Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:26Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:21Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:09Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:08Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:58Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Title updated
-- 2025-12-18T00:06:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:49Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:44Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:40Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:38Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:55Z | Content updated
-- 2025-12-18T00:08:34Z | Priority changed from [p1] to [p1]
-- 2025-12-18T00:08:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:32Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:31Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:29Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:19Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:06Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:04Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:02Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:48Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:37Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:35Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:33Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:27Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:26Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:21Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:09Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:08Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:58Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Title updated
-- 2025-12-18T00:06:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:49Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:44Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:40Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:38Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:54Z | Content updated
-- 2025-12-18T00:08:34Z | Priority changed from [p1] to [p1]
-- 2025-12-18T00:08:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:32Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:31Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:29Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:19Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:06Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:04Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:02Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:48Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:37Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:35Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:33Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:27Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:26Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:21Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:09Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:08Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:58Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Title updated
-- 2025-12-18T00:06:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:49Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:44Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:40Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:38Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:44Z | Content updated
-- 2025-12-18T00:08:34Z | Priority changed from [p1] to [p1]
-- 2025-12-18T00:08:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:32Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:31Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:29Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:19Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:06Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:04Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:02Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:48Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:37Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:35Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:33Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:27Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:26Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:21Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:09Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:08Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:58Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Title updated
-- 2025-12-18T00:06:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:49Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:44Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:40Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:38Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:34Z | Priority changed from [p1] to [p1]
-- 2025-12-18T00:08:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:32Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:31Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:29Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:19Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:06Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:04Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:08:02Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:48Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:37Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:35Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:34Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:33Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:28Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:27Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:26Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:25Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:24Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:23Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:22Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:21Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:09Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:07:08Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:58Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:52Z | Title updated
-- 2025-12-18T00:06:50Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:49Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:44Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:40Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-- 2025-12-18T00:06:38Z | Content updated
-- 2025-12-18T00:06:02Z | Task created
-
 ## smb-9 Update 'Send to...' action buttons
 
 [p3][ui][project:web][canceled]
 
 Replace all 'Send to...' action buttons with 'Move to...'.
-
-***
-
-task-log
-
-- 2025-12-20T02:57:43Z | Marked as canceled
 
 ## smb-29 Emoji-fy all Icons and rename buttons
 
@@ -3027,12 +1470,6 @@ task-log
 - If a task has [in-progress] tag,
   - The button to remove the [in-progress] tag is '⬅️ Back to Backlog'
 
-***
-
-task-log
-
-- 2025-12-20T03:05:54Z | Moved to Done
-
 ## smb-31 Change Emoji to Unicode
 
 [p1][ui]
@@ -3042,12 +1479,6 @@ from ⬅️ to ⬅
 from ➕ to ＋
 from ✅ to ✔
 from ❌ to ✖
-
-***
-
-task-log
-
-- 2025-12-20T03:06:30Z | Moved to Done
 
 ## smb-32 Change Colors of Priority badges & buttons
 
@@ -3077,23 +1508,11 @@ Values come from https://picocss.com/docs/colors.
   - background use orange-50
   - foreground use orange-400
 
-***
-
-task-log
-
-- 2025-12-20T03:06:43Z | Moved to Done
-
 ## smb-33 Bug: why does 'refined' tag not show up in the tag cloud?
 
 [bug][p1]
 
 Why does 'refined' tag not show up in the tag cloud even though there are tasks in the backlog that have it?
-
-***
-
-task-log
-
-- 2025-12-20T03:06:58Z | Moved to Done
 
 ## smb-35 Add app icons & favicons
 
@@ -3101,38 +1520,17 @@ task-log
 
 Add supplied files in `icons` directory to give this app icons and favicons.
 
-***
-
-task-log
-
-- 2025-12-20T03:07:21Z | Moved to Done
-
-```
-```
-
 ## smb-38 Update the web app title tag
 
 [p1][web]
 
 make the title tag, `<title>{config.name} - Simbl</title>`
 
-***
-
-task-log
-
-- 2025-12-20T03:10:17Z | Moved to Done
-
 ## smb-44 Bug: missing icons
 
 [p1][bug][web][ui]
 
 both /apple-touch-icon.png and /favicon.ico are giving 404 in production build.
-
-***
-
-task-log
-
-- 2025-12-20T03:10:22Z | Moved to Done
 
 ## smb-19 Update the /refine custom command in this repo
 
@@ -3142,12 +1540,6 @@ Update the /refine custom command in this repo.
 
 Look for evidence of a tag added by the user indicating that this task needs refinement. When asking clarifying questions to the user, ask if the tag in question should be removed when the refinement is complete.
 
-***
-
-task-log
-
-- 2025-12-20T03:15:22Z | Marked as canceled
-
 ## smb-56 bug: init bug
 
 [p1][canceled]
@@ -3155,10 +1547,4 @@ task-log
 I just ran simbl init in '~/code/Juce/little-heater' and it claimed to have NOT found a CLAUDE.md file even though there is definitly one there. and it offered to create one with SIMBL addition. I didn't add the SIMBL addition.
 
 update: canceling this. false alarm. i ran simbl init in the wrong directory.
-
-***
-
-task-log
-
-- 2025-12-21T00:00:30Z | Marked as canceled
-- 2025-12-21T00:00:28Z | Content updated
+````

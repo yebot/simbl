@@ -67,9 +67,14 @@ export const migrateLogsCommand = defineCommand({
           tasksMigrated: result.tasksMigrated,
           entriesMigrated: result.entriesMigrated,
           errors: result.errors,
+          backupPath: result.backupPath,
         })
       );
     } else {
+      if (result.backupPath) {
+        p.log.info(`Backup created: ${result.backupPath}`);
+      }
+
       if (result.tasksMigrated === 0) {
         p.log.info('No tasks had embedded logs to migrate.');
       } else {

@@ -4,7 +4,7 @@
  * Migrates from embedded task logs (in task content) to centralized NDJSON log file.
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, copyFileSync } from 'fs';
 import { join } from 'path';
 import { loadConfig, saveConfig, FILES } from './config.ts';
 import { parseSimblFile, serializeSimblFile } from './parser.ts';
@@ -17,6 +17,17 @@ export interface MigrationResult {
   tasksMigrated: number;
   entriesMigrated: number;
   errors: string[];
+  backupPath?: string;
+}
+
+/**
+ * Create a timestamped backup of tasks.md
+ */
+function createBackup(tasksPath: string): string {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const backupPath = `${tasksPath}.backup.${timestamp}`;
+  copyFileSync(tasksPath, backupPath);
+  return backupPath;
 }
 
 /**
@@ -83,6 +94,9 @@ export async function migrateTaskLogs(simblDir: string): Promise<MigrationResult
     saveConfig(simblDir, config);
     return result;
   }
+
+  // Create backup before any modifications
+  result.backupPath = createBackup(tasksPath);
 
   // Parse tasks file
   const content = readFileSync(tasksPath, 'utf-8');

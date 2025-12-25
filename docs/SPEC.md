@@ -38,6 +38,7 @@ A SIMBL instance is init'd in a repo like this:
 - `.simbl/tasks.md`
 - `.simbl/tasks-archive.md`
 - `.simbl/config.yaml`
+- `.simbl/log.ndjson` (auto-generated, contains task activity logs)
 
 ## Example SIMBL File
 
@@ -73,6 +74,32 @@ We need to change the logo theme color. Put reqs, acceptance criteria or definit
   - A tasks's top-most section header is an H3 ('###') only.
   - Useful subsections can be 'Description', 'Tasks', 'Acceptance Criteria', etc.
   - A task section can have subsections in the form of H4, H5, H6, ('####', '#####', '######')
+
+## Logging
+
+Task activity is automatically logged to `.simbl/log.ndjson` (newline-delimited JSON):
+
+```ndjson
+{"taskId":"task-1","timestamp":"2025-12-25T10:30:00.000Z","message":"Task created"}
+{"taskId":"task-1","timestamp":"2025-12-25T11:00:00.000Z","message":"Marked as done"}
+```
+
+View logs with `simbl log`:
+
+```bash
+simbl log <task-id>          # Show logs for a specific task
+simbl log --all              # Show all task logs
+simbl log --all --since 2025-01-01  # Filter by date
+simbl log --all --until 2025-12-31  # Filter by date
+simbl log --all -n 10        # Limit to 10 entries
+simbl log <task-id> --json   # JSON output
+```
+
+Migrate existing embedded logs (from older SIMBL versions):
+
+```bash
+simbl migrate-logs           # One-time migration to centralized log format
+```
 
 ## Config options
 

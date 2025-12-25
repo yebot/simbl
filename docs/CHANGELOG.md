@@ -2,6 +2,10 @@
 
 Brief milestone history of SIMBL development.
 
+## 2025-12-25
+
+- **Centralized Logging**: Migrated from embedded task logs to `.simbl/log.ndjson` file with `simbl log` command supporting filtering by task, date range, and limit
+
 ## 2025-12-19
 
 - **PicoCSS Confirmation Modals**: Replace browser-native confirms with styled PicoCSS dialogs for Archive/Cancel actions

@@ -69,6 +69,7 @@ bun run typecheck    # Type check
 | `simbl tag add/remove` | Manage tags |
 | `simbl update <id>` | Update title or content |
 | `simbl relate/unrelate` | Manage relationships |
+| `simbl log <id>` | View task activity logs |
 | `simbl serve` | Start web UI |
 | `simbl doctor` | Validate tasks.md |
 | `simbl usage` | Full command reference |

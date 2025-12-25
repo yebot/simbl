@@ -134,39 +134,6 @@ Add a GitHub Actions workflow that allows quick task capture from the GitHub mob
 - Consider adding a special tag to these tasks so, once imported, we can give it special consideration
 - Use the prefix from config.yaml if accessible, or derive from existing task IDs, or default to 'task'
 
-## smb-71 Integration testing for centralized logging
-
-[p2][child-of-smb-55][depends-on-smb-68][logging]
-
-### Description
-
-##### Description
-
-Test the complete logging system across CLI and web interfaces.
-
-##### Tasks
-
-- Test migration on sample project with existing logs
-- Test all CLI commands write correct log entries
-- Test web UI mutations write correct log entries
-- Test 'simbl log' command with various filters
-- Verify no log markers in tasks.md after operations
-- Test concurrent writes (multiple commands)
-- Test large log files (performance)
-- Document any gotchas or limitations
-
-##### Dependencies
-
-- Requires all command updates (smb-63 through smb-69) completed
-- Requires migration utility (smb-62) completed
-
-##### Acceptance Criteria
-
-- All commands properly log events
-- No regression in functionality
-- Migration works on real SIMBL projects
-- Documentation updated with testing results
-
 ## smb-72 Update documentation for centralized logging
 
 [p2][child-of-smb-55][depends-on-smb-71][logging]
@@ -244,6 +211,44 @@ task-log
 
 # Done
 
+## smb-71 Integration testing for centralized logging
+
+[p2][child-of-smb-55][depends-on-smb-68][logging]
+
+### Description
+
+##### Description
+
+Test the complete logging system across CLI and web interfaces.
+
+##### Tasks
+
+- Test migration on sample project with existing logs
+- Test all CLI commands write correct log entries
+- Test web UI mutations write correct log entries
+- Test 'simbl log' command with various filters
+- Verify no log markers in tasks.md after operations
+- Test concurrent writes (multiple commands)
+- Test large log files (performance)
+- Document any gotchas or limitations
+
+##### Dependencies
+
+- Requires all command updates (smb-63 through smb-69) completed
+- Requires migration utility (smb-62) completed
+
+##### Acceptance Criteria
+
+- All commands properly log events
+- No regression in functionality
+- Migration works on real SIMBL projects
+- Documentation updated with testing results
+***
+
+task-log
+
+- 2025-12-25T08:53:30Z | Moved to Done
+
 ## smb-60 Add log file path and version to config
 
 [p2][child-of-smb-55][logging]
@@ -267,6 +272,7 @@ Extend config.ts to support the new centralized logging system.
 - Config type includes new fields
 - Default values set correctly
 - Existing configs still load without errors
+
 ***
 
 task-log
